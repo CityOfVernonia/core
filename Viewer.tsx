@@ -134,9 +134,18 @@ export default class Viewer extends Widget {
       container,
     } = this;
 
+    // assure no view or dom race conditions
+    await setTimeout(() => {
+      return 0;
+    }, 0);
+
+    // set view container
+    view.container = document.querySelector('div[data-viewer-view-container]') as HTMLDivElement;
+
     // clear default zoom
     view.ui.empty('top-left');
 
+    // add title to header if no header
     if (!includeHeader) {
       const uiTitle = document.createElement('div');
       uiTitle.classList.add(CSS.uiTitle);
@@ -174,11 +183,6 @@ export default class Viewer extends Widget {
       );
     }
 
-    // assure no view or dom race conditions
-    await setTimeout(() => {
-      return 0;
-    }, 0);
-
     // search
     if (includeHeader && includeSearch) {
       const search = new Search();
@@ -190,11 +194,6 @@ export default class Viewer extends Widget {
       }
       search.container = document.querySelector('div[data-viewer-search-container]') as HTMLDivElement;
     }
-
-    // set view container
-    whenOnce(this, 'view', () => {
-      view.container = document.querySelector('div[data-viewer-view-container]') as HTMLDivElement;
-    });
   }
 
   render(): tsx.JSX.Element {
