@@ -1,0 +1,67 @@
+{
+  "name": "@vernonia/core",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx",
+    "prettier": "prettier --write \"src/**/*.ts?(x)\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CityOfVernonia/core.git"
+  },
+  "author": "COV-GIS",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CityOfVernonia/core/issues"
+  },
+  "homepage": "https://github.com/CityOfVernonia/core#readme",
+  "devDependencies": {
+    "@arcgis/core": "^4.20.2",
+    "@typescript-eslint/eslint-plugin": "^4.28.2",
+    "@typescript-eslint/parser": "^4.28.2",
+    "eslint": "^7.30.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "prettier": "^2.3.2",
+    "tslib": "^2.3.0",
+    "typescript": "^4.3.5"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true
+    },
+    "parser": "@typescript-eslint/parser",
+    "ignorePatterns": [
+      "package.json",
+      "package-lock.json",
+      "node_modules/**",
+      "scripts/**",
+      "src/public/**",
+      "vite.config.js"
+    ],
+    "rules": {
+      "no-console": 0,
+      "@typescript-eslint/no-explicit-any": 0,
+      "@typescript-eslint/ban-ts-comment": 1
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:prettier/recommended"
+    ],
+    "plugins": [
+      "@typescript-eslint"
+    ]
+  },
+  "prettier": {
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "printWidth": 120,
+    "tabWidth": 2
+  }
+}

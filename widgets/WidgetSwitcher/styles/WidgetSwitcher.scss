@@ -1,0 +1,20 @@
+.cov-widget-switcher {
+  display: flex;
+  flex-flow: row;
+  box-shadow: none !important;
+}
+
+.cov-widget-switcher--container {
+  margin-right: 0.5rem;
+}
+
+.cov-widget-switcher--widget {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
+  border-radius: 4px;
+}
+
+.cov-widget-switcher--pad {
+  calcite-action-pad {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
+  }
+}

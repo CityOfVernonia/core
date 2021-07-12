@@ -1,0 +1,16 @@
+.cov-print {
+  width: 200px;
+  padding: 0.75rem;
+  background-color: var(--calcite-ui-background);
+
+  calcite-button {
+    margin-top: 0.5rem;
+  }
+}
+
+.cov-print--result {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  margin-top: 0.125rem;
+}

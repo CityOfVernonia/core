@@ -1,0 +1,62 @@
+.cov-loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 500;
+  user-select: none;
+  color: var(--calcite-ui-text-3);
+  background-color: var(--calcite-ui-background);
+}
+
+.cov-loading-screen--info {
+  display: flex;
+  flex-flow: column;
+  width: 300px;
+
+  p {
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-size: var(--calcite-font-size--1);
+
+    &:nth-child(1) {
+      font-size: var(--calcite-font-size-1);
+      margin-bottom: 1.25rem;
+      color: var(--calcite-ui-text-2);
+    }
+
+    &:nth-child(3) {
+      margin: 1.25rem 0 0.5rem 0;
+    }
+  }
+}
+
+.cov-loading-screen--heart,
+.cov-loading-screen--coffee {
+  width: var(--calcite-font-size--1);
+  height: var(--calcite-font-size--1);
+  margin: 0 0.35rem;
+}
+
+.cov-loading-screen--heart {
+  color: #d9534f;
+}
+
+.cov-loading-screen--coffee {
+  color: #be9969;
+}
+
+.cov-loading-screen--built-with {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  color: var(--calcite-ui-brand);
+  font-size: var(--calcite-font-size--2);
+}
