@@ -142,6 +142,9 @@ export default class Viewer extends Widget {
     // set view container
     view.container = document.querySelector('div[data-viewer-view-container]') as HTMLDivElement;
 
+    // wait for serviceable view
+    await view.when();
+
     // clear default zoom
     view.ui.empty('top-left');
 
