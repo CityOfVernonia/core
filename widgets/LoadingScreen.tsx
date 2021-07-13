@@ -83,7 +83,7 @@ export default class LoadingScreen extends Widget {
     return (
       <div class={CSS.loading} style={`transition: opacity ${fadeDelay}s;`}>
         <div class={CSS.loadingInfo}>
-          <p>Loading {title}</p>
+          <p>Loading {title.replace('<br>', ' ')}</p>
           <calcite-progress type="indeterminate"></calcite-progress>
           <p>Copyright &copy; {new Date().getFullYear()} City of Vernonia</p>
           <p>
