@@ -1,8 +1,9 @@
 {
   "name": "@vernonia/core",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "",
   "scripts": {
+    "build": "tsc",
     "lint": "eslint . --ext .ts,.tsx",
     "prettier": "prettier --write \"**/*.ts?(x)\"",
     "test": "echo \"Error: no test specified\" && exit 1"

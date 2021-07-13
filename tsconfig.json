@@ -13,12 +13,5 @@
     "experimentalDecorators": true,
     "jsx": "react",
     "jsxFactory": "tsx",
-  },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules/**/*"
-  ]
+  }
 }
