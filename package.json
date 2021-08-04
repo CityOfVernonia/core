@@ -1,6 +1,6 @@
 {
   "name": "@vernonia/core",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "",
   "scripts": {
     "build": "tsc",
@@ -18,6 +18,9 @@
     "url": "https://github.com/CityOfVernonia/core/issues"
   },
   "homepage": "https://github.com/CityOfVernonia/core#readme",
+  "dependencies": {
+    "@vernonia/assessor-urls": "^1.0.1"
+  },
   "devDependencies": {
     "@arcgis/core": "^4.20.2",
     "@typescript-eslint/eslint-plugin": "^4.28.3",

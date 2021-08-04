@@ -12,6 +12,8 @@ import PopupTemplate from '@arcgis/core/PopupTemplate';
 
 import CustomContent from '@arcgis/core/popup/content/CustomContent';
 
+import { propertyInfoUrl, taxMapUrl } from '@vernonia/assessor-urls/src/AssessorURLs';
+
 interface ContentProperties extends esri.WidgetProperties {
   graphic: esri.Graphic;
 }
@@ -129,11 +131,7 @@ class Content extends Widget {
         <tr>
           <th class={CSS.th}>Tax Map</th>
           <td class={CSS.td}>
-            <a
-              href={`http://65.122.151.216/geomoose2/taxlots_map_images/${attributes.TAXMAP}`}
-              target="_blank"
-              rel="noopener"
-            >
+            <a href={taxMapUrl(attributes.TAXMAP)} target="_blank" rel="noopener">
               {`${attributes.TOWN}${attributes.TOWN_DIR}${attributes.RANGE}${attributes.RANGE_DIR} ${attributes.SECTION} ${attributes.QTR}${attributes.QTR_QTR}`}
             </a>
           </td>
@@ -174,12 +172,7 @@ class Content extends Widget {
           <td class={CSS.td}>
             {attributes.ACCOUNT_IDS.split(',').map((accountId: string) => {
               return (
-                <a
-                  style="margin-right:0.75rem;"
-                  href={`http://www.helioncentral.com/columbiaat/MainQueryDetails.aspx?AccountID=${accountId}&QueryYear=2021&Roll=R`}
-                  target="_blank"
-                  rel="noopener"
-                >
+                <a style="margin-right:0.75rem;" href={propertyInfoUrl(accountId, 2021)} target="_blank" rel="noopener">
                   {accountId}
                 </a>
               );
