@@ -3,25 +3,9 @@
  */
 
 // namespaces and types
+import { __cov } from '../interfaces';
+import cov = __cov;
 import esri = __esri;
-
-// constructor properties
-export interface OAuthViewModelProperties extends Object {
-  /**
-   * esri.portal.Portal instance to sign into.
-   */
-  portal: esri.Portal;
-  /**
-   * esri.identity.OAuthInfo instance to perform authentication against.
-   */
-  oAuthInfo: esri.OAuthInfo;
-  /**
-   * Alternate sign in url.
-   *
-   * Overrides default `${portal.url}/sharing/rest`.
-   */
-  signInUrl?: string;
-}
 
 // base imports
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
@@ -61,7 +45,7 @@ export default class OAuthViewModel extends Accessor {
   @property()
   signedIn = false;
 
-  constructor(properties: OAuthViewModelProperties) {
+  constructor(properties: cov.OAuthViewModelProperties) {
     super(properties);
   }
 

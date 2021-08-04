@@ -3,49 +3,9 @@
  */
 
 // namespaces and types
+import { __cov } from '../interfaces';
+import cov = __cov;
 import esri = __esri;
-
-// constructor properties
-export interface UnitsViewModelProperties extends Object {
-  /**
-   * CSS class string for <select>s.
-   *
-   * @default 'esri-select'
-   */
-  selectClass?: string;
-  /**
-   * Current location unit.
-   */
-  locationUnit?: string;
-  /**
-   * Available location unit and display text key/value pairs.
-   */
-  locationUnits?: HashMap<string>;
-  /**
-   * Current length unit.
-   */
-  lengthUnit?: esri.LinearUnits;
-  /**
-   * Available length unit and display text key/value pairs.
-   */
-  lengthUnits?: HashMap<string>;
-  /**
-   * Current area unit.
-   */
-  areaUnit?: esri.ArealUnits;
-  /**
-   * Available area unit and display text key/value pairs.
-   */
-  areaUnits?: HashMap<string>;
-  /**
-   * Current elevation unit.
-   */
-  elevationUnit?: string;
-  /**
-   * Available elevation unit and display text key/value pairs.
-   */
-  elevationUnits?: HashMap<string>;
-}
 
 // base imports
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
@@ -135,7 +95,7 @@ export default class UnitsViewModel extends Accessor {
     meters: 'Meters',
   };
 
-  constructor(properties?: UnitsViewModelProperties) {
+  constructor(properties?: cov.UnitsViewModelProperties) {
     super(properties);
   }
 

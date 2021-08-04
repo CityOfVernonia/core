@@ -3,7 +3,9 @@
  */
 
 // namespaces and types
+import { __cov } from '../interfaces';
 import cov = __cov;
+import esri = __esri;
 
 // base imports
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
