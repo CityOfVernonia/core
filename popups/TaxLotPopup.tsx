@@ -170,13 +170,20 @@ class Content extends Widget {
         <tr>
           <th class={CSS.th}>Tax Account(s)</th>
           <td class={CSS.td}>
-            {attributes.ACCOUNT_IDS.split(',').map((accountId: string) => {
-              return (
-                <a style="margin-right:0.75rem;" href={propertyInfoUrl(accountId, 2021)} target="_blank" rel="noopener">
-                  {accountId}
-                </a>
-              );
-            })}
+            {attributes.ACCOUNT_IDS
+              ? attributes.ACCOUNT_IDS.split(',').map((accountId: string) => {
+                  return (
+                    <a
+                      style="margin-right:0.75rem;"
+                      href={propertyInfoUrl(accountId, 2021)}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      {accountId}
+                    </a>
+                  );
+                })
+              : 'No related account id(s)'}
           </td>
         </tr>
         {/* assessor values */}

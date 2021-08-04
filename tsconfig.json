@@ -12,6 +12,6 @@
     },
     "experimentalDecorators": true,
     "jsx": "react",
-    "jsxFactory": "tsx",
+    "jsxFactory": "tsx"
   }
 }

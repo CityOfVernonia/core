@@ -3,15 +3,7 @@
  */
 
 // namespaces and types
-import esri = __esri;
-
-// constructor properties
-export interface LayerListLegendProperties extends esri.WidgetProperties {
-  /**
-   * Application title.
-   */
-  view: esri.MapView | esri.SceneView;
-}
+import cov = __cov;
 
 // base imports
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
@@ -34,7 +26,7 @@ export default class LayerListLegend extends Widget {
   @property()
   view!: esri.MapView | esri.SceneView;
 
-  constructor(properties: LayerListLegendProperties) {
+  constructor(properties: cov.LayerListLegendProperties) {
     super(properties);
   }
 
