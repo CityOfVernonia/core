@@ -63,15 +63,22 @@ new Viewer({
   view,
   title,
   includeHeader: false,
-  widgets: [{
-    widget: new Measure({ view }),
-    text: 'Measure',
-    icon: 'measure',
-  }, {
-    widget: new Print({ view, printServiceUrl: 'https://gisportal.vernonia-or.gov/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task', }),
-    text: 'Print',
-    icon: 'print',
-  }],
+  widgets: [
+    {
+      widget: new Measure({ view }),
+      text: 'Measure',
+      icon: 'measure',
+    },
+    {
+      widget: new Print({
+        view,
+        printServiceUrl:
+          'https://gisportal.vernonia-or.gov/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task',
+      }),
+      text: 'Print',
+      icon: 'print',
+    },
+  ],
 });
 
 view.when(() => {

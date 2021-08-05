@@ -268,6 +268,46 @@ declare namespace __cov {
     clear(): void;
     onHide(): void;
   }
+
+  export interface PrintProperties extends esri.WidgetProperties {
+    /**
+     * Map or scene view.
+     */
+    view: esri.MapView;
+    /**
+     * URL of REST Export Web Map Task.
+     */
+    printServiceUrl: string;
+    /**
+     * Default print title.
+     * @default 'Map Print'
+     */
+    title?: string;
+    /**
+     * Key/value pairs of layouts and text for select.
+     */
+    layouts?: HashMap<string>;
+    /**
+     * Calcite theme.
+     * @default 'light'
+     */
+    theme?: 'light' | 'dark';
+    /**
+     * Calcite scale.
+     * @default 'm'
+     */
+    scale?: 's' | 'm' | 'l';
+  }
+  export class Print extends esri.Widget {
+    constructor(properties: PrintProperties);
+    view: esri.MapView | esri.SceneView;
+    printServiceUrl: string;
+    title: string;
+    layouts: HashMap<string>;
+    theme: 'light' | 'dark';
+    scale: 's' | 'm' | 'l';
+    printer: esri.PrintViewModel;
+  }
 }
 /**
  * End namespace.
@@ -333,4 +373,9 @@ declare module '@vernonia/core/widgets/LayerListLegend' {
 declare module '@vernonia/core/widgets/Measure' {
   import Measure = __cov.Measure;
   export = Measure;
+}
+
+declare module '@vernonia/core/widgets/Print' {
+  import Print = __cov.Print;
+  export = Print;
 }

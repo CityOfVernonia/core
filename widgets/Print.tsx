@@ -1,26 +1,9 @@
 /**
- * Simple print widget with title, layout and format.
+ * Super stupid simple print widget.
  */
 
 // namespaces and types
-import esri = __esri;
-
-// constructor properties
-export interface PrintProperties extends esri.WidgetProperties {
-  /**
-   * Map or scene view.
-   */
-  view: esri.MapView;
-  /**
-   * URL of REST Export Web Map Task.
-   */
-  printServiceUrl: string;
-  /**
-   * Default print title.
-   * @default 'Map Print'
-   */
-  title?: string;
-}
+import cov = __cov;
 
 // base imports
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
@@ -33,7 +16,7 @@ import PrintViewModel from '@arcgis/core/widgets/Print/PrintViewModel';
 import PrintTemplate from '@arcgis/core/rest/support/PrintTemplate';
 
 // styles
-import './Print/styles/Print.scss';
+import './Print.scss';
 const CSS = {
   base: 'cov-print',
   result: 'cov-print--result',
@@ -59,45 +42,60 @@ export default class Print extends Widget {
   title = 'Map Print';
 
   @property()
+  layouts: HashMap<string> = {
+    'Letter ANSI A Landscape': 'Letter Landscape',
+    'Letter ANSI A Portrait': 'Letter Portrait',
+    'Tabloid ANSI B Landscape': 'Tabloid Landscape',
+    'Tabloid ANSI B Portrait': 'Tabloid Portrait',
+  };
+
+  @property()
+  theme = 'light';
+
+  @property()
+  scale = 'm';
+
+  @property()
   printer = new PrintViewModel();
 
   @property()
-  private _titleInput = (<calcite-input scale="s" type="text" placeholder="Title"></calcite-input>);
+  private _titleInput!: tsx.JSX.Element;
 
   @property()
   private _layoutSelect!: tsx.JSX.Element;
-
-  @property()
-  private _formatSelect!: tsx.JSX.Element;
 
   @property()
   private _results: Collection<{
     element: tsx.JSX.Element;
   }> = new Collection();
 
-  constructor(properties: PrintProperties) {
+  constructor(properties: cov.PrintProperties) {
     super(properties);
-    const { printer } = this;
-    printer.load().then(this._renderSelects.bind(this)).catch();
+  }
+
+  postInitialize(): void {
+    const { theme, scale } = this;
+    this._titleInput = (
+      <calcite-input type="text" theme={theme} scale={scale} placeholder="Title (optional)"></calcite-input>
+    );
+    this._renderLayoutSelects();
   }
 
   /**
    * Initiate print task and handle results.
    */
   private _print(): void {
-    const { title, printer, _titleInput, _layoutSelect, _formatSelect, _results } = this;
+    const { theme, scale, title, printer, _titleInput, _layoutSelect, _results } = this;
 
     //@ts-ignore
     const titleText = (_titleInput.domNode as HTMLCalciteInputElement).value || title;
-    //@ts-ignore
-    const format = (_formatSelect.domNode as HTMLCalciteSelectElement).selectedOption.value as any;
     //@ts-ignore
     const layout = (_layoutSelect.domNode as HTMLCalciteSelectElement).selectedOption.value as any;
 
     const result = {
       element: (
         <div key={KEY++} class={CSS.result}>
-          <calcite-button scale="s" round="" appearance="outline" loading="">
+          <calcite-button theme={theme} scale={scale} round="" appearance="transparent" loading="">
             {titleText}
           </calcite-button>
         </div>
@@ -109,7 +107,7 @@ export default class Print extends Widget {
     printer
       .print(
         new PrintTemplate({
-          format,
+          format: 'pdf',
           layout,
           layoutOptions: {
             titleText,
@@ -120,9 +118,10 @@ export default class Print extends Widget {
         result.element = (
           <div key={KEY++} class={CSS.result}>
             <calcite-button
-              scale="s"
+              theme={theme}
+              scale={scale}
               round=""
-              appearance="outline"
+              appearance="transparent"
               icon-start="download"
               onclick={(): void => {
                 window.open(printResult.url, '_blank');
@@ -138,11 +137,12 @@ export default class Print extends Widget {
         result.element = (
           <div key={KEY++} class={CSS.result}>
             <calcite-button
-              scale="s"
+              theme={theme}
+              scale={scale}
               round=""
               color="red"
               disabled=""
-              appearance="outline"
+              appearance="transparent"
               icon-start="exclamation-mark-triangle"
             >
               {titleText}
@@ -154,22 +154,18 @@ export default class Print extends Widget {
   }
 
   render(): tsx.JSX.Element {
-    const { _titleInput, _layoutSelect, _formatSelect, _results } = this;
+    const { theme, scale, _titleInput, _layoutSelect, _results } = this;
     return (
       <div class={CSS.base}>
-        <calcite-label scale="s">
+        <calcite-label theme={theme} scale={scale}>
           Title
           {_titleInput}
         </calcite-label>
-        <calcite-label scale="s">
+        <calcite-label theme={theme} scale={scale}>
           Layout
           {_layoutSelect}
         </calcite-label>
-        <calcite-label scale="s">
-          Format
-          {_formatSelect}
-        </calcite-label>
-        <calcite-button scale="s" width="full" onclick={this._print.bind(this)}>
+        <calcite-button theme={theme} scale={scale} width="full" onclick={this._print.bind(this)}>
           Print
         </calcite-button>
         <div>
@@ -182,38 +178,19 @@ export default class Print extends Widget {
   }
 
   /**
-   * Render layout and format selects from print service info.
+   * Render layout selects.
    */
-  private _renderSelects(printer: PrintViewModel): void {
-    const {
-      defaultTemplates,
-      templatesInfo: { format, layout },
-    } = printer;
+  private _renderLayoutSelects(): void {
+    const { theme, scale, layouts } = this;
+    const options = [];
+
+    for (const layout in layouts) {
+      options.push(<calcite-option label={layouts[layout]} value={layout}></calcite-option>);
+    }
 
     this._layoutSelect = (
-      <calcite-select scale="s">
-        {layout.choiceList.map((choice: 'string') => {
-          const dt = defaultTemplates.find((item: esri.CustomTemplate) => {
-            return (item.layout as any) === choice;
-          });
-          return (
-            <calcite-option label={dt.label} value={choice} selected={layout.defaultValue === choice}></calcite-option>
-          );
-        })}
-      </calcite-select>
-    );
-
-    this._formatSelect = (
-      <calcite-select scale="s">
-        {format.choiceList.map((choice: 'string') => {
-          return (
-            <calcite-option
-              label={choice.toUpperCase()}
-              value={choice}
-              selected={format.defaultValue === choice}
-            ></calcite-option>
-          );
-        })}
+      <calcite-select theme={theme} scale={scale}>
+        {options}
       </calcite-select>
     );
   }

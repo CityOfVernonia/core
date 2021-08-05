@@ -4,7 +4,7 @@
   background-color: var(--calcite-ui-background);
 
   calcite-button {
-    margin-top: 0.5rem;
+    margin-top: 0.3rem;
   }
 }
 
@@ -12,5 +12,8 @@
   display: flex;
   flex-flow: row;
   align-items: center;
-  margin-top: 0.125rem;
+  margin-top: 0.0265rem;
+  &:first-child {
+    margin-top: 0.5rem;
+  }
 }
