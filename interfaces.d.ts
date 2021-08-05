@@ -1,7 +1,5 @@
 import esri = __esri;
 
-import type { tsx } from '@arcgis/core/widgets/support/widget';
-
 /**
  * Start namespace.
  */
@@ -50,11 +48,11 @@ declare namespace __cov {
 
   export interface OAuthViewModelProperties extends Object {
     /**
-     * esri.portal.Portal instance to sign into.
+     * Portal instance to sign into.
      */
     portal: esri.Portal;
     /**
-     * esri.identity.OAuthInfo instance to perform authentication against.
+     * OAuthInfo instance to perform authentication against.
      */
     oAuthInfo: esri.OAuthInfo;
     /**
@@ -130,15 +128,34 @@ declare namespace __cov {
     areaUnits: HashMap<string>;
     elevationUnit: string;
     elevationUnits: HashMap<string>;
-    locationSelect(name?: null | string, title?: null | string): tsx.JSX.Element;
-    lengthSelect(name?: null | string, title?: null | string): tsx.JSX.Element;
-    areaSelect(name?: null | string, title?: null | string): tsx.JSX.Element;
-    elevationSelect(name?: null | string, title?: null | string): tsx.JSX.Element;
+    locationSelect(name?: null | string, title?: null | string): esri.widget.tsx.JSX.Element;
+    lengthSelect(name?: null | string, title?: null | string): esri.widget.tsx.JSX.Element;
+    areaSelect(name?: null | string, title?: null | string): esri.widget.tsx.JSX.Element;
+    elevationSelect(name?: null | string, title?: null | string): esri.widget.tsx.JSX.Element;
   }
 
   ////////////////////////////////////////////////////////////////////////////////
   // Widgets
   ////////////////////////////////////////////////////////////////////////////////
+
+  export interface DisclaimerModalProperties extends esri.WidgetProperties {
+    /**
+     * Modal title.
+     * @default 'Disclaimer'
+     */
+    title?: string;
+    /**
+     * Disclaimer text.
+     * @default 'The purpose of this application is to support...'
+     */
+    text?: string;
+  }
+  export class DisclaimerModal extends esri.Widget {
+    constructor(properties: DisclaimerModalProperties);
+    title: string;
+    text: string;
+    static isAccepted(): boolean;
+  }
 
   export interface LayerListLegendProperties extends esri.WidgetProperties {
     /**
@@ -192,6 +209,11 @@ declare module '@vernonia/core/viewModels/OAuthViewModel' {
 ////////////////////////////////////////////////////////////////////////////////
 // Widgets
 ////////////////////////////////////////////////////////////////////////////////
+declare module '@vernonia/core/widgets/DisclaimerModal' {
+  import DisclaimerModal = __cov.DisclaimerModal;
+  export = DisclaimerModal;
+}
+
 declare module '@vernonia/core/widgets/LayerListLegend' {
   import LayerListLegend = __cov.LayerListLegend;
   export = LayerListLegend;
