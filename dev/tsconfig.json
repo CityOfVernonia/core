@@ -8,8 +8,7 @@
     "esModuleInterop": true,
     "importHelpers": true,
     "paths": {
-      "tslib": ["./node_modules/tslib/tslib.d.ts"],
-      "cov": ["./../"]
+      "tslib": ["./node_modules/tslib/tslib.d.ts"]
     },
     "experimentalDecorators": true,
     "jsx": "react",
