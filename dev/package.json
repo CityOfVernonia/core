@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "dev": "vite"
+  },
+  "devDependencies": {
+    "sass": "^1.37.5",
+    "tslib": "^2.3.0",
+    "typescript": "^4.3.5",
+    "vite": "^2.4.4"
+  },
+  "dependencies": {
+    "@arcgis/core": "^4.20.2",
+    "@esri/calcite-components": "^1.0.0-beta.61"
+  }
+}
