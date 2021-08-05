@@ -1,49 +1,7 @@
 /**
  * Provides logic for measuring widgets.
  */
-import esri = __esri;
-
-interface MeasureViewModelProperties extends Object {
-  /**
-   * Map view.
-   */
-  view?: esri.MapView;
-  /**
-   * Show text graphic in view.
-   * @default true
-   */
-  showText?: boolean;
-  /**
-   * Color for markers, lines, and text.
-   * Any color the API recognizes https://developers.arcgis.com/javascript/latest/api-reference/esri-Color.html.
-   * @default [230, 82, 64]
-   */
-  color?: any;
-  /**
-   * Color for fills.
-   * Any color the API recognizes https://developers.arcgis.com/javascript/latest/api-reference/esri-Color.html.
-   * @default [230, 82, 64, 0.15]
-   */
-  fillColor?: any;
-}
-
-export interface MeasureState {
-  action:
-    | 'ready'
-    | 'measuringLength'
-    | 'measuringArea'
-    | 'length'
-    | 'area'
-    | 'queryingLocation'
-    | 'location'
-    | 'queryingElevation'
-    | 'elevation';
-  length: number;
-  area: number;
-  x: number | string;
-  y: number | string;
-  z: number;
-}
+import cov = __cov;
 
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import { watch, whenOnce, pausable } from '@arcgis/core/core/watchUtils';
@@ -52,7 +10,7 @@ import Accessor from '@arcgis/core/core/Accessor';
 
 import SnappingOptions from '@arcgis/core/views/interactive/snapping/SnappingOptions';
 
-import UnitsViewModel from '../../viewModels/UnitsViewModel';
+import UnitsViewModel from './UnitsViewModel';
 
 import Draw from '@arcgis/core/views/draw/Draw';
 import Graphic from '@arcgis/core/Graphic';
@@ -64,7 +22,7 @@ import { geodesicArea, geodesicLength, simplify } from '@arcgis/core/geometry/ge
 import { webMercatorToGeographic } from '@arcgis/core/geometry/support/webMercatorUtils';
 import { Point, Polygon, Polyline } from '@arcgis/core/geometry';
 import { SimpleFillSymbol, SimpleLineSymbol, SimpleMarkerSymbol, TextSymbol } from '@arcgis/core/symbols';
-import { midpoint } from '../../support/cogo';
+import { midpoint } from '../support/cogo';
 import SketchViewModel from '@arcgis/core/widgets/Sketch/SketchViewModel';
 import FeatureSnappingLayerSource from '@arcgis/core/views/interactive/snapping/FeatureSnappingLayerSource';
 
@@ -97,7 +55,7 @@ export default class MeasureViewModel extends Accessor {
   protected hasGround = false;
 
   @property()
-  protected state: MeasureState = {
+  protected state: cov.MeasureState = {
     action: 'ready',
     length: 0,
     area: 0,
@@ -106,18 +64,14 @@ export default class MeasureViewModel extends Accessor {
     z: 0,
   };
 
-  @property({
-    type: SketchViewModel,
-  })
+  @property()
   protected sketchViewModel = new SketchViewModel({
     snappingOptions: new SnappingOptions({
       enabled: true,
     }),
   });
 
-  @property({
-    type: UnitsViewModel,
-  })
+  @property()
   protected units = new UnitsViewModel();
 
   @property()
@@ -147,7 +101,7 @@ export default class MeasureViewModel extends Accessor {
   @property()
   private _fillColor!: Color;
 
-  constructor(properties?: MeasureViewModelProperties) {
+  constructor(properties?: cov.MeasureViewModelProperties) {
     super(properties);
     whenOnce(this, 'view', this._init.bind(this));
   }

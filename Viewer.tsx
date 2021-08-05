@@ -54,7 +54,6 @@ export interface ViewerProperties extends esri.WidgetProperties {
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
-import { whenOnce } from '@arcgis/core/core/watchUtils';
 
 // class imports
 import ViewControl from './widgets/ViewControl';
@@ -64,7 +63,7 @@ import Search from '@arcgis/core/widgets/Search';
 import BasemapToggle from '@arcgis/core/widgets/BasemapToggle';
 
 // styles
-import './Viewer/styles/Viewer.scss';
+import './Viewer.scss';
 const CSS = {
   base: 'cov-viewer',
   uiTitle: 'cov-viewer--ui-title',

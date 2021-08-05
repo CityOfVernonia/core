@@ -46,6 +46,66 @@ declare namespace __cov {
     markup(tool: 'point' | 'polyline' | 'polygon' | 'rectangle' | 'circle'): void;
   }
 
+  export interface MeasureState {
+    action:
+      | 'ready'
+      | 'measuringLength'
+      | 'measuringArea'
+      | 'length'
+      | 'area'
+      | 'queryingLocation'
+      | 'location'
+      | 'queryingElevation'
+      | 'elevation';
+    length: number;
+    area: number;
+    x: number | string;
+    y: number | string;
+    z: number;
+  }
+  export interface MeasureViewModelProperties extends Object {
+    /**
+     * Map view.
+     */
+    view?: esri.MapView;
+    /**
+     * Show text graphic in view.
+     * @default true
+     */
+    showText?: boolean;
+    /**
+     * Color for markers, lines, and text.
+     * Any color the API recognizes https://developers.arcgis.com/javascript/latest/api-reference/esri-Color.html.
+     * @default [230, 82, 64]
+     */
+    color?: any;
+    /**
+     * Color for fills.
+     * Any color the API recognizes https://developers.arcgis.com/javascript/latest/api-reference/esri-Color.html.
+     * @default [230, 82, 64, 0.15]
+     */
+    fillColor?: any;
+  }
+  export class MeasureViewModel extends esri.Accessor {
+    constructor(properties: MeasureViewModelProperties);
+    view: esri.MapView | esri.SceneView;
+    showText: boolean;
+    color: any;
+    fillColor: any;
+    protected hasGround: boolean;
+    protected state: MeasureState;
+    protected sketchViewModel: esri.SketchViewModel;
+    protected units: UnitsViewModel;
+    protected draw: esri.Draw;
+    protected ground: esri.Ground;
+    protected layer: esri.GraphicsLayer;
+    length(): void;
+    area(): void;
+    location(): void;
+    elevation(): void;
+    clear(): void;
+  }
+
   export interface OAuthViewModelProperties extends Object {
     /**
      * Portal instance to sign into.
@@ -167,6 +227,47 @@ declare namespace __cov {
     constructor(properties: LayerListLegendProperties);
     view: esri.MapView | esri.SceneView;
   }
+
+  export interface MeasureProperties extends esri.WidgetProperties {
+    /**
+     * The view to measure with.
+     */
+    view?: esri.MapView;
+    /**
+     * Show text with geometry in map when measuring.
+     * @default false
+     */
+    showText?: boolean;
+    /**
+     * Color for markers, lines, and text.
+     * Any color the API recognizes https://developers.arcgis.com/javascript/latest/api-reference/esri-Color.html.
+     * @default [230, 82, 64]
+     */
+    color?: any;
+    /**
+     * Color for fills.
+     * Any color the API recognizes https://developers.arcgis.com/javascript/latest/api-reference/esri-Color.html.
+     * @default [230, 82, 64, 0.15]
+     */
+    fillColor?: any;
+  }
+  export class Measure extends esri.Widget {
+    constructor(properties: MeasureProperties);
+    view: esri.MapView | esri.SceneView;
+    showText: boolean;
+    color: any;
+    fillColor: any;
+    viewModel: MeasureViewModel;
+    protected state: MeasureState;
+    protected units: UnitsViewModel;
+    protected hasGround: boolean;
+    length(): void;
+    area(): void;
+    location(): void;
+    elevation(): void;
+    clear(): void;
+    onHide(): void;
+  }
 }
 /**
  * End namespace.
@@ -201,9 +302,19 @@ declare module '@vernonia/core/viewModels/MarkupViewModel' {
   export = MarkupViewModel;
 }
 
+declare module '@vernonia/core/viewModels/MeasureViewModel' {
+  import MeasureViewModel = __cov.MeasureViewModel;
+  export = MeasureViewModel;
+}
+
 declare module '@vernonia/core/viewModels/OAuthViewModel' {
   import OAuthViewModel = __cov.OAuthViewModel;
   export = OAuthViewModel;
+}
+
+declare module '@vernonia/core/viewModels/UnitsViewModel' {
+  import UnitsViewModel = __cov.UnitsViewModel;
+  export = UnitsViewModel;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -217,4 +328,9 @@ declare module '@vernonia/core/widgets/DisclaimerModal' {
 declare module '@vernonia/core/widgets/LayerListLegend' {
   import LayerListLegend = __cov.LayerListLegend;
   export = LayerListLegend;
+}
+
+declare module '@vernonia/core/widgets/Measure' {
+  import Measure = __cov.Measure;
+  export = Measure;
 }

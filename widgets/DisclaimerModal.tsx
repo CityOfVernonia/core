@@ -63,9 +63,11 @@ export default class DisclaimerModal extends Widget {
           <h3 slot="header">{title}</h3>
           <div slot="content">{text}</div>
           <calcite-label slot="back" layout="inline" alignment="end">
-            <calcite-checkbox afterCreate={(checkbox: HTMLCalciteCheckboxElement) => {
-              this._checkbox = checkbox;
-            }}></calcite-checkbox>
+            <calcite-checkbox
+              afterCreate={(checkbox: HTMLCalciteCheckboxElement) => {
+                this._checkbox = checkbox;
+              }}
+            ></calcite-checkbox>
             Don't show me this again
           </calcite-label>
           <calcite-button slot="primary" width="full" onclick={this._accept.bind(this)}>

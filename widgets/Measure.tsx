@@ -1,38 +1,14 @@
 /**
  * Classic Vernonia measure in Calcite.
  */
-import esri = __esri;
-
-interface MeasureProperties extends esri.WidgetProperties {
-  /**
-   * The view to measure with.
-   */
-  view?: esri.MapView;
-  /**
-   * Show text with geometry in map when measuring.
-   * @default false
-   */
-  showText?: boolean;
-  /**
-   * Color for markers, lines, and text.
-   * Any color the API recognizes https://developers.arcgis.com/javascript/latest/api-reference/esri-Color.html.
-   * @default [230, 82, 64]
-   */
-  color?: any;
-  /**
-   * Color for fills.
-   * Any color the API recognizes https://developers.arcgis.com/javascript/latest/api-reference/esri-Color.html.
-   * @default [230, 82, 64, 0.15]
-   */
-  fillColor?: any;
-}
+import cov = __cov;
 
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
 
 import { accessibleHandler, tsx } from '@arcgis/core/widgets/support/widget';
 import Widget from '@arcgis/core/widgets/Widget';
 
-import MeasureViewModel, { MeasureState } from './Measure/MeasureViewModel';
+import MeasureViewModel from '../viewModels/MeasureViewModel';
 import UnitsViewModel from '../viewModels/UnitsViewModel';
 
 // styles
@@ -81,7 +57,7 @@ export default class Measure extends Widget {
   @property({
     aliasOf: 'viewModel.state',
   })
-  protected state!: MeasureState;
+  protected state!: cov.MeasureState;
 
   @property({
     aliasOf: 'viewModel.units',
@@ -93,7 +69,7 @@ export default class Measure extends Widget {
   })
   protected hasGround!: boolean;
 
-  constructor(properties?: MeasureProperties) {
+  constructor(properties?: cov.MeasureProperties) {
     super(properties);
   }
 
@@ -126,7 +102,14 @@ export default class Measure extends Widget {
   }
 
   /**
-   * Wire swich change to showText.
+   * Convenience method for other widgets to clear when hiding this widget.
+   */
+  onHide(): void {
+    this.viewModel.clear();
+  }
+
+  /**
+   * Wire switch change to showText.
    * @param _switch
    */
   private _showTextHandle(_switch: HTMLCalciteSwitchElement): void {
@@ -208,27 +191,19 @@ export default class Measure extends Widget {
           {/* length and area */}
           <calcite-tab active="">
             <div class={CSS.row}>
-              <calcite-button title="Measure length" scale="s" onclick={this.length.bind(this)}>
+              <calcite-button title="Measure length" onclick={this.length.bind(this)}>
                 Length
               </calcite-button>
-              <calcite-select
-                title="Select length unit"
-                scale="s"
-                afterCreate={this._unitChangeHandle.bind(this, 'length')}
-              >
+              <calcite-select title="Select length unit" afterCreate={this._unitChangeHandle.bind(this, 'length')}>
                 {this._createUnitOptions(lengthUnits, lengthUnit)}
               </calcite-select>
             </div>
 
             <div class={CSS.row}>
-              <calcite-button title="Measure area" scale="s" onclick={this.area.bind(this)}>
+              <calcite-button title="Measure area" onclick={this.area.bind(this)}>
                 Area
               </calcite-button>
-              <calcite-select
-                title="Select area unit"
-                scale="s"
-                afterCreate={this._unitChangeHandle.bind(this, 'area')}
-              >
+              <calcite-select title="Select area unit" afterCreate={this._unitChangeHandle.bind(this, 'area')}>
                 {this._createUnitOptions(areaUnits, areaUnit)}
               </calcite-select>
             </div>
@@ -238,7 +213,6 @@ export default class Measure extends Widget {
                 <calcite-switch
                   title="Show text while measuring"
                   switched={showText}
-                  scale="m"
                   afterCreate={this._showTextHandle.bind(this)}
                 ></calcite-switch>
                 Show text
@@ -248,7 +222,7 @@ export default class Measure extends Widget {
             {this._createMeasureResult()}
 
             <div class={this.classes(CSS.clear, measureClear)}>
-              <calcite-button title="Clear" scale="s" onclick={this.clear.bind(this)}>
+              <calcite-button title="Clear" onclick={this.clear.bind(this)}>
                 Clear
               </calcite-button>
             </div>
@@ -257,14 +231,10 @@ export default class Measure extends Widget {
           {/* location */}
           <calcite-tab>
             <div class={CSS.row}>
-              <calcite-button title="Identify location" scale="s" onclick={this.location.bind(this)}>
+              <calcite-button title="Identify location" onclick={this.location.bind(this)}>
                 Location
               </calcite-button>
-              <calcite-select
-                title="Select location unit"
-                scale="s"
-                afterCreate={this._unitChangeHandle.bind(this, 'location')}
-              >
+              <calcite-select title="Select location unit" afterCreate={this._unitChangeHandle.bind(this, 'location')}>
                 {this._createUnitOptions(locationUnits, locationUnit)}
               </calcite-select>
             </div>
@@ -274,7 +244,6 @@ export default class Measure extends Widget {
                 <calcite-switch
                   title="Show text while measuring"
                   switched={showText}
-                  scale="m"
                   afterCreate={this._showTextHandle.bind(this)}
                 ></calcite-switch>
                 Show text
@@ -287,7 +256,7 @@ export default class Measure extends Widget {
             </div>
 
             <div class={this.classes(CSS.clear, locationClear)}>
-              <calcite-button title="Clear" scale="s" onclick={this.clear.bind(this)}>
+              <calcite-button title="Clear" onclick={this.clear.bind(this)}>
                 Clear
               </calcite-button>
             </div>
@@ -296,12 +265,11 @@ export default class Measure extends Widget {
           {/* elevation */}
           <calcite-tab style={hasGround ? '' : 'display:none;'}>
             <div class={CSS.row}>
-              <calcite-button title="Identify elevation" scale="s" onclick={this.elevation.bind(this)}>
+              <calcite-button title="Identify elevation" onclick={this.elevation.bind(this)}>
                 Elevation
               </calcite-button>
               <calcite-select
                 title="Select elevation unit"
-                scale="s"
                 afterCreate={this._unitChangeHandle.bind(this, 'elevation')}
               >
                 {this._createUnitOptions(elevationUnits, elevationUnit)}
@@ -313,7 +281,6 @@ export default class Measure extends Widget {
                 <calcite-switch
                   title="Show text while measuring"
                   switched={showText}
-                  scale="m"
                   afterCreate={this._showTextHandle.bind(this)}
                 ></calcite-switch>
                 Show text
@@ -325,7 +292,7 @@ export default class Measure extends Widget {
             </div>
 
             <div class={this.classes(CSS.clear, elevationClear)}>
-              <calcite-button title="Clear" scale="s" onclick={this.clear.bind(this)}>
+              <calcite-button title="Clear" onclick={this.clear.bind(this)}>
                 Clear
               </calcite-button>
             </div>
