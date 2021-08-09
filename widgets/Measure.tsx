@@ -12,7 +12,7 @@ import MeasureViewModel from '../viewModels/MeasureViewModel';
 import UnitsViewModel from '../viewModels/UnitsViewModel';
 
 // styles
-import './Measure/styles/Measure.scss';
+import './Measure.scss';
 const CSS = {
   base: 'cov-measure',
   row: 'cov-measure--row',
