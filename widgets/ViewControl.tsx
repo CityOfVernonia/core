@@ -1,28 +1,8 @@
 /**
  * A view control widget to replace default zoom widget including home, locate,
  */
-import esri = __esri;
+import cov = __cov;
 import '@esri/calcite-components';
-
-export interface ViewControlProperties extends esri.WidgetProperties {
-  view?: esri.MapView;
-
-  theme?: 'light' | 'dark';
-
-  scale?: 's' | 'm' | 'l';
-
-  includeHome?: boolean;
-
-  includeCompass?: boolean;
-
-  includeLocate?: boolean;
-
-  includeFullscreen?: boolean;
-
-  fullscreenElement?: HTMLElement;
-
-  markupViewModel?: MarkupViewModel;
-}
 
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
@@ -33,7 +13,6 @@ import ZoomViewModel from '@arcgis/core/widgets/Zoom/ZoomViewModel';
 import HomeViewModel from '@arcgis/core/widgets/Home/HomeViewModel';
 import LocateViewModel from '@arcgis/core/widgets/Locate/LocateViewModel';
 import FullscreenViewModel from '@arcgis/core/widgets/Fullscreen/FullscreenViewModel';
-import MarkupViewModel from './../viewModels/MarkupViewModel';
 
 @subclass('cov.widgets.ViewControl')
 export default class ViewControl extends Widget {
@@ -62,7 +41,7 @@ export default class ViewControl extends Widget {
   fullscreenElement!: HTMLElement;
 
   @property()
-  markupViewModel!: MarkupViewModel;
+  markupViewModel!: cov.MarkupViewModel;
 
   @property()
   protected zoom!: ZoomViewModel;
@@ -76,7 +55,7 @@ export default class ViewControl extends Widget {
   @property()
   protected fullscreen!: FullscreenViewModel;
 
-  constructor(properties?: ViewControlProperties) {
+  constructor(properties?: cov.ViewControlProperties) {
     super(properties);
     // initialize when serviceable view
     whenOnce(this, 'view', this._init.bind(this));

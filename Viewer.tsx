@@ -3,52 +3,7 @@
  */
 
 // namespaces and types
-import esri = __esri;
-import type MarkupViewModel from './viewModels/MarkupViewModel';
-import type OAuthViewModel from './viewModels/OAuthViewModel';
-import type { SwitcherWidgetProperties } from './widgets/WidgetSwitcher';
-
-// constructor properties
-export interface ViewerProperties extends esri.WidgetProperties {
-  /**
-   * Map or scene view.
-   */
-  view: esri.MapView | esri.SceneView;
-  /**
-   * Include header.
-   * @default true
-   */
-  includeHeader?: boolean;
-  /**
-   * Application title.
-   */
-  title?: string;
-  /**
-   * Include search in header.
-   * @default true
-   */
-  includeSearch?: boolean;
-  /**
-   * Optional search view model to back search.
-   */
-  searchViewModel?: esri.SearchViewModel;
-  /**
-   * Include markup actions in view control.
-   */
-  markupViewModel?: MarkupViewModel;
-  /**
-   * OAuth view model.
-   */
-  oAuthViewModel?: OAuthViewModel;
-  /**
-   * Optional basemap toggle `nextBasemap` to include basemap toggle.
-   */
-  nextBasemap?: esri.Basemap;
-  /**
-   * Widgets to add to widget switcher.
-   */
-  widgets?: SwitcherWidgetProperties[];
-}
+import cov = __cov;
 
 // base imports
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
@@ -88,7 +43,7 @@ export default class Viewer extends Widget {
   includeHeader = true;
 
   @property()
-  title = 'Pebble Creek Road';
+  title = 'Vernonia';
 
   @property()
   includeSearch = true;
@@ -97,16 +52,16 @@ export default class Viewer extends Widget {
   searchViewModel!: esri.SearchViewModel;
 
   @property()
-  markupViewModel!: MarkupViewModel;
+  markupViewModel!: cov.MarkupViewModel;
 
   @property()
-  oAuthViewModel!: OAuthViewModel;
+  oAuthViewModel!: cov.OAuthViewModel;
 
   @property()
   nextBasemap!: esri.Basemap;
 
   @property()
-  widgets: SwitcherWidgetProperties[] = [];
+  widgets: cov.SwitcherWidgetProperties[] = [];
 
   @property()
   container = document.createElement('div');
@@ -114,7 +69,7 @@ export default class Viewer extends Widget {
   @property()
   private _userMenuVisible = false;
 
-  constructor(properties: ViewerProperties) {
+  constructor(properties: cov.ViewerProperties) {
     super(properties);
     // add directly to <body>
     document.body.append(this.container);

@@ -385,6 +385,95 @@ declare namespace __cov {
     theme: 'light' | 'dark';
     scale: 's' | 'm' | 'l';
   }
+
+  export interface ViewControlProperties extends esri.WidgetProperties {
+    view?: esri.MapView;
+
+    theme?: 'light' | 'dark';
+
+    scale?: 's' | 'm' | 'l';
+
+    includeHome?: boolean;
+
+    includeCompass?: boolean;
+
+    includeLocate?: boolean;
+
+    includeFullscreen?: boolean;
+
+    fullscreenElement?: HTMLElement;
+
+    markupViewModel?: MarkupViewModel;
+  }
+  export class ViewControl extends esri.Widget {
+    constructor(properties?: ViewControlProperties);
+    view: esri.MapView;
+    theme: 'light' | 'dark';
+    scale: 's' | 'm' | 'l';
+    includeHome: boolean;
+    includeCompass: boolean;
+    includeLocate: boolean;
+    includeFullscreen: boolean;
+    fullscreenElement: HTMLElement;
+    markupViewModel: MarkupViewModel;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // Viewer
+  ////////////////////////////////////////////////////////////////////////////////
+
+  export interface ViewerProperties extends esri.WidgetProperties {
+    /**
+     * Map or scene view.
+     */
+    view: esri.MapView | esri.SceneView;
+    /**
+     * Include header.
+     * @default true
+     */
+    includeHeader?: boolean;
+    /**
+     * Application title.
+     */
+    title?: string;
+    /**
+     * Include search in header.
+     * @default true
+     */
+    includeSearch?: boolean;
+    /**
+     * Optional search view model to back search.
+     */
+    searchViewModel?: esri.SearchViewModel;
+    /**
+     * Include markup actions in view control.
+     */
+    markupViewModel?: MarkupViewModel;
+    /**
+     * OAuth view model.
+     */
+    oAuthViewModel?: OAuthViewModel;
+    /**
+     * Optional basemap toggle `nextBasemap` to include basemap toggle.
+     */
+    nextBasemap?: esri.Basemap;
+    /**
+     * Widgets to add to widget switcher.
+     */
+    widgets?: SwitcherWidgetProperties[];
+  }
+  export class Viewer extends esri.Widget {
+    constructor(properties: ViewerProperties);
+    view: esri.MapView | esri.SceneView;
+    includeHeader: boolean;
+    title: string;
+    includeSearch: boolean;
+    searchViewModel: esri.SearchViewModel;
+    markupViewModel: MarkupViewModel;
+    oAuthViewModel: OAuthViewModel;
+    nextBasemap: esri.Basemap;
+    widgets: SwitcherWidgetProperties[];
+  }
 }
 /**
  * End namespace.
@@ -475,4 +564,18 @@ declare module '@vernonia/core/widgets/SimpleInfo' {
 declare module '@vernonia/core/widgets/WidgetSwitcher' {
   import WidgetSwitcher = __cov.WidgetSwitcher;
   export = WidgetSwitcher;
+}
+
+declare module '@vernonia/core/widgets/ViewControl' {
+  import ViewControl = __cov.ViewControl;
+  export = ViewControl;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Viewer
+////////////////////////////////////////////////////////////////////////////////
+
+declare module '@vernonia/core/Viewer' {
+  import Viewer = __cov.Viewer;
+  export = Viewer;
 }
