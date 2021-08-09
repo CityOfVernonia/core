@@ -1,0 +1,69 @@
+.cov-layer-list-legend {
+  min-width: 260px;
+  padding: 0.25rem 0 0 0;
+  background-color: var(--calcite-ui-background);
+
+  calcite-tab {
+    width: 100%;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .esri-layer-list,
+  .esri-legend {
+    width: 100%;
+    overflow: auto;
+    border-bottom-left-radius: var(--calcite-border-radius);
+    border-bottom-right-radius: var(--calcite-border-radius);
+  }
+
+  .esri-layer-list {
+    padding-top: 0;
+    padding-bottom: 0;
+    background-color: var(--calcite-ui-background);
+  }
+
+  .esri-legend {
+    padding-top: 0;
+    padding-bottom: 0;
+    background-color: var(--calcite-ui-background);
+    // disable weird focusing with legend inside calcite-tab
+    * {
+      pointer-events: none;
+    }
+
+    * {
+      font-size: var(--calcite-font-size--2);
+      font-weight: 100;
+    }
+
+    .esri-legend__service {
+      padding: 6px 7.5px;
+    }
+
+    .esri-legend__layer-table {
+      margin-bottom: 4px;
+    }
+
+    .esri-legend__layer-cell--symbols {
+      padding: 0;
+    }
+
+    .esri-legend__symbol {
+      svg {
+        transform: scale(75%);
+      }
+    }
+
+    .esri-widget__heading {
+      margin-bottom: 0.25rem;
+    }
+  }
+}
+
+.cov-layer-list-legend--scroll {
+  display: flex;
+  width: 100%;
+  max-height: 50vh;
+  overflow: hidden;
+}
