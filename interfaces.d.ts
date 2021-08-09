@@ -334,6 +334,22 @@ declare namespace __cov {
   }
 
   export class Share extends esri.Widget {}
+
+  export interface SimpleInfoProperties extends esri.WidgetProperties {
+    /**
+     * Head text.
+     */
+    heading?: string;
+    /**
+     * Array of strings of HTML paragraph element innerHTML.
+     */
+    paragraphs?: string[];
+  }
+  export class SimpleInfo extends esri.Widget {
+    constructor(properties?: SimpleInfoProperties);
+    heading: string;
+    paragraphs: string[];
+  }
 }
 /**
  * End namespace.
@@ -414,4 +430,9 @@ declare module '@vernonia/core/widgets/Print' {
 declare module '@vernonia/core/widgets/Share' {
   import Share = __cov.Share;
   export = Share;
+}
+
+declare module '@vernonia/core/widgets/SimpleInfo' {
+  import SimpleInfo = __cov.SimpleInfo;
+  export = SimpleInfo;
 }
