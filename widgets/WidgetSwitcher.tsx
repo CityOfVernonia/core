@@ -1,41 +1,11 @@
-import esri = __esri;
-
-export interface SwitcherWidgetProperties extends Object {
-  /**
-   * Calcite action text/title.
-   */
-  text: string;
-  /**
-   * Calcite action icon.
-   */
-  icon: string;
-  /**
-   * The widget of your choosing.
-   */
-  widget: esri.Widget & { onShow?: () => void | undefined; onHide?: () => void | undefined };
-}
-
-export interface WidgetSwitcherProperties extends esri.WidgetProperties {
-  /**
-   * Array of SwitcherWidgetProperties to switch between.
-   */
-  widgets: SwitcherWidgetProperties[];
-  /**
-   * Calcite theme.
-   */
-  theme?: 'light' | 'dark';
-  /**
-   * Calcite scale.
-   */
-  scale?: 's' | 'm' | 'l';
-}
+import cov = __cov;
 
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 
 // styles
-import './WidgetSwitcher/styles/WidgetSwitcher.scss';
+import './WidgetSwitcher.scss';
 const CSS = {
   base: 'cov-widget-switcher',
   container: 'cov-widget-switcher--container',
@@ -47,11 +17,8 @@ let KEY = 0;
 
 @subclass('cov.widgets.WidgetSwitcher')
 export default class WidgetSwitcher extends Widget {
-  /**
-   * Constructor/public properties.
-   */
   @property()
-  widgets: SwitcherWidgetProperties[] = [];
+  widgets: cov.SwitcherWidgetProperties[] = [];
 
   @property()
   theme = 'light';
@@ -81,7 +48,7 @@ export default class WidgetSwitcher extends Widget {
     };
   } = {};
 
-  constructor(properties?: WidgetSwitcherProperties) {
+  constructor(properties: cov.WidgetSwitcherProperties) {
     super(properties);
   }
 
@@ -90,7 +57,7 @@ export default class WidgetSwitcher extends Widget {
 
     if (!widgets.length) this.destroy();
 
-    widgets.forEach((switcherWidgetProperties: SwitcherWidgetProperties): void => {
+    widgets.forEach((switcherWidgetProperties: cov.SwitcherWidgetProperties): void => {
       const { text, icon, widget } = switcherWidgetProperties;
 
       const _id = `${id}_widget_${widget.id}`;

@@ -350,6 +350,41 @@ declare namespace __cov {
     heading: string;
     paragraphs: string[];
   }
+
+  export interface SwitcherWidgetProperties extends Object {
+    /**
+     * Calcite action text/title.
+     */
+    text: string;
+    /**
+     * Calcite action icon.
+     */
+    icon: string;
+    /**
+     * The widget of your choosing.
+     */
+    widget: esri.Widget & { onShow?: () => void | undefined; onHide?: () => void | undefined };
+  }
+  export interface WidgetSwitcherProperties extends esri.WidgetProperties {
+    /**
+     * Array of SwitcherWidgetProperties to switch between.
+     */
+    widgets: SwitcherWidgetProperties[];
+    /**
+     * Calcite theme.
+     */
+    theme?: 'light' | 'dark';
+    /**
+     * Calcite scale.
+     */
+    scale?: 's' | 'm' | 'l';
+  }
+  export class WidgetSwitcher extends esri.Widget {
+    constructor(properties: WidgetSwitcherProperties);
+    widgets: SwitcherWidgetProperties[];
+    theme: 'light' | 'dark';
+    scale: 's' | 'm' | 'l';
+  }
 }
 /**
  * End namespace.
@@ -435,4 +470,9 @@ declare module '@vernonia/core/widgets/Share' {
 declare module '@vernonia/core/widgets/SimpleInfo' {
   import SimpleInfo = __cov.SimpleInfo;
   export = SimpleInfo;
+}
+
+declare module '@vernonia/core/widgets/WidgetSwitcher' {
+  import WidgetSwitcher = __cov.WidgetSwitcher;
+  export = WidgetSwitcher;
 }
