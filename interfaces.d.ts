@@ -228,6 +228,30 @@ declare namespace __cov {
     view: esri.MapView | esri.SceneView;
   }
 
+  export interface LoadingScreenProperties extends esri.WidgetProperties {
+    /**
+     * Application title.
+     */
+    title?: string;
+    /**
+     * Delay in seconds to destroy after calling `end()`.
+     * @default 4
+     */
+    delay?: number;
+    /**
+     * Fade transition in seconds and how long before destroy to begin fade.
+     * @default 1
+     */
+    fadeDelay?: number;
+  }
+  export class LoadingScreen extends esri.Widget {
+    constructor(properties?: LoadingScreenProperties);
+    title: string;
+    delay: number;
+    fadeDelay: number;
+    end(): void;
+  }
+
   export interface MeasureProperties extends esri.WidgetProperties {
     /**
      * The view to measure with.
@@ -368,6 +392,11 @@ declare module '@vernonia/core/widgets/DisclaimerModal' {
 declare module '@vernonia/core/widgets/LayerListLegend' {
   import LayerListLegend = __cov.LayerListLegend;
   export = LayerListLegend;
+}
+
+declare module '@vernonia/core/widgets/LoadingScreen' {
+  import LoadingScreen = __cov.LoadingScreen;
+  export = LoadingScreen;
 }
 
 declare module '@vernonia/core/widgets/Measure' {
