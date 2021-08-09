@@ -332,6 +332,8 @@ declare namespace __cov {
     scale: 's' | 'm' | 'l';
     printer: esri.PrintViewModel;
   }
+
+  export class Share extends esri.Widget {}
 }
 /**
  * End namespace.
@@ -407,4 +409,9 @@ declare module '@vernonia/core/widgets/Measure' {
 declare module '@vernonia/core/widgets/Print' {
   import Print = __cov.Print;
   export = Print;
+}
+
+declare module '@vernonia/core/widgets/Share' {
+  import Share = __cov.Share;
+  export = Share;
 }

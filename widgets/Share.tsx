@@ -8,7 +8,7 @@ import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 
 // styles
-import './Share/styles/Share.scss';
+import './Share.scss';
 const CSS = {
   base: 'cov-share',
 };
