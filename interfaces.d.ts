@@ -351,6 +351,18 @@ declare namespace __cov {
     paragraphs: string[];
   }
 
+  export interface TaxMapsProperties extends esri.WidgetProperties {
+    view: esri.MapView;
+    featureLayer: esri.FeatureLayer;
+    mapImageLayer: esri.MapImageLayer;
+  }
+  export class TaxMaps extends esri.Widget {
+    constructor(properties: TaxMapsProperties);
+    view: esri.MapView;
+    featureLayer: esri.FeatureLayer;
+    mapImageLayer: esri.MapImageLayer;
+  }
+
   export interface SwitcherWidgetProperties extends Object {
     /**
      * Calcite action text/title.
@@ -559,6 +571,11 @@ declare module '@vernonia/core/widgets/Share' {
 declare module '@vernonia/core/widgets/SimpleInfo' {
   import SimpleInfo = __cov.SimpleInfo;
   export = SimpleInfo;
+}
+
+declare module '@vernonia/core/widgets/TaxMaps' {
+  import TaxMaps = __cov.TaxMaps;
+  export = TaxMaps;
 }
 
 declare module '@vernonia/core/widgets/WidgetSwitcher' {

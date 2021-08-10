@@ -1,0 +1,52 @@
+.cov-tax-maps {
+  width: 200px;
+  padding: 0.75rem;
+  background-color: var(--calcite-ui-background);
+  color: var(--calcite-ui-text-2);
+}
+
+.cov-tax-maps--title {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+
+  calcite-icon {
+    cursor: pointer;
+    user-select: none;
+    color: var(--calcite-ui-brand);
+    &:hover {
+      color: var(--calcite-ui-brand-hover);
+    }
+  }
+}
+
+.cov-tax-maps--title-text {
+  font-weight: 500;
+}
+
+.cov-tax-maps--popover {
+  background-color: var(--calcite-ui-foreground-1);
+  color: var(--calcite-ui-text-1);
+
+  p {
+    margin: 0.75rem;
+  }
+}
+
+.cov-tax-maps--popup-content {
+  display: flex;
+  flex-flow: row;
+  padding: 0.75rem;
+
+  calcite-button {
+    margin: 0 0.25rem;
+    &:first-child {
+      margin-left: 0;
+    }
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
