@@ -1,0 +1,103 @@
+/**
+ * cov styles.
+ */
+
+@import "variables";
+
+// calcite theming (overrides only)
+:root {
+  --calcite-ui-brand: #{$cov};
+  --calcite-ui-brand-hover: #{$cov-hover};
+  --calcite-ui-brand-press: #{$cov-press};
+  --calcite-ui-text-link: #{$cov-hover};
+  --calcite-link-blue-underline: rgba(#{$cov-hover}, 0.4);
+  font-family: $font-family;
+}
+
+// same here since @arcgis/core adds this to view ui since 4.20
+.calcite-theme-light {
+  --calcite-ui-brand: #{$cov};
+  --calcite-ui-brand-hover: #{$cov-hover};
+  --calcite-ui-brand-press: #{$cov-press};
+  --calcite-ui-text-link: #{$cov-hover};
+  font-family: $font-family;
+}
+
+/** global esri overrides **/
+
+// tighten up ui
+.esri-ui-top-right {
+  top: -5px;
+  right: -5px;
+}
+
+.esri-ui-top-left {
+  top: -5px;
+  left: -5px;
+}
+
+.esri-ui-bottom-left {
+  bottom: -5px;
+  left: -5px;
+}
+
+.esri-ui-top-right {
+  top: -5px;
+  right: -5px;
+}
+
+// smaller basemap toggle
+.esri-basemap-toggle {
+  width: 59px;
+  height: 59px;
+}
+
+.esri-basemap-toggle__container,
+.esri-basemap-toggle__image {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--calcite-border-radius);
+}
+
+/** widgets **/
+
+.cov-widget {
+  background-color: var(--calcite-ui-background);
+  color: var(--calcite-ui-text-1);
+  padding: 0.75rem;
+}
+
+.cov-tabbed-widget {
+  padding-top: 0.25rem;
+  background-color: var(--calcite-ui-background);
+  color: var(--calcite-ui-text-1);
+
+  calcite-tab {
+    width: 100%;
+    padding: 0.75rem;
+  }
+
+  &.cov-tabbed-widget--no-padding {
+    calcite-tab {
+      padding: 0;
+    }
+  }
+
+  &.cov-tabbed-widget--scrolling {
+    calcite-tab {
+      max-height: 50vh;
+      overflow: auto;
+    }
+  }
+}
+
+/** all apps **/
+
+html,
+body {
+  font-family: $font-family;
+  color: var(--calcite-ui-text-1);
+  background-color: var(--calcite-ui-background);
+  // set font size to scale calcite
+  font-size: 16px;
+}

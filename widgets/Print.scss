@@ -1,19 +1,48 @@
 .cov-print {
-  width: 200px;
-  padding: 0.75rem;
-  background-color: var(--calcite-ui-background);
-
-  calcite-button {
-    margin-top: 0.3rem;
-  }
+  min-width: 240px;
 }
 
-.cov-print--result {
+.cov-print--print-result {
   display: flex;
   flex-flow: row;
   align-items: center;
-  margin-top: 0.0265rem;
+  margin-top: 0.5rem;
   &:first-child {
-    margin-top: 0.5rem;
+    margin-top: 0.75rem;
   }
+}
+
+.cov-print--button-row {
+  display: flex;
+  flex-flow: row;
+
+  calcite-button {
+    margin: 0 0.25rem;
+    &:first-child {
+      margin-left: 0;
+    }
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+.cov-print--snapshot-result {
+  margin-top: 0.75rem;
+  height: 52px;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+.cov-print--snapshot-download-button {
+  opacity: 0.8;
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.cov-print--snapshot-area {
+  display: none;
+  position: absolute;
+  background: rgba(red, 0.1);
+  border: 3px dashed red;
 }

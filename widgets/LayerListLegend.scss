@@ -1,13 +1,5 @@
 .cov-layer-list-legend {
   min-width: 260px;
-  padding: 0.25rem 0 0 0;
-  background-color: var(--calcite-ui-background);
-
-  calcite-tab {
-    width: 100%;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
 
   .esri-layer-list,
   .esri-legend {
@@ -59,11 +51,4 @@
       margin-bottom: 0.25rem;
     }
   }
-}
-
-.cov-layer-list-legend--scroll {
-  display: flex;
-  width: 100%;
-  max-height: 50vh;
-  overflow: hidden;
 }

@@ -17,8 +17,7 @@ import Legend from '@arcgis/core/widgets/Legend';
 // styles
 import './LayerListLegend.scss';
 const CSS = {
-  base: 'cov-layer-list-legend',
-  scroll: 'cov-layer-list-legend--scroll',
+  base: 'cov-layer-list-legend cov-tabbed-widget cov-tabbed-widget--no-padding cov-tabbed-widget--scrolling',
 };
 
 // class export
@@ -47,32 +46,28 @@ export default class LayerListLegend extends Widget {
             <calcite-tab-title>Legend</calcite-tab-title>
           </calcite-tab-nav>
           <calcite-tab active="">
-            <div class={CSS.scroll}>
-              <div
-                bind={this}
-                afterCreate={(container: HTMLDivElement) => {
-                  const { view } = this;
-                  new LayerList({
-                    view,
-                    container,
-                  });
-                }}
-              ></div>
-            </div>
+            <div
+              bind={this}
+              afterCreate={(container: HTMLDivElement) => {
+                const { view } = this;
+                new LayerList({
+                  view,
+                  container,
+                });
+              }}
+            ></div>
           </calcite-tab>
           <calcite-tab>
-            <div class={CSS.scroll}>
-              <div
-                bind={this}
-                afterCreate={(container: HTMLDivElement) => {
-                  const { view } = this;
-                  new Legend({
-                    view,
-                    container,
-                  });
-                }}
-              ></div>
-            </div>
+            <div
+              bind={this}
+              afterCreate={(container: HTMLDivElement) => {
+                const { view } = this;
+                new Legend({
+                  view,
+                  container,
+                });
+              }}
+            ></div>
           </calcite-tab>
         </calcite-tabs>
       </div>

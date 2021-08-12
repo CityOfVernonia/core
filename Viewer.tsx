@@ -219,13 +219,12 @@ export default class Viewer extends Widget {
               My Profile
             </calcite-link>
           </div>
-          <calcite-button scale="s" width="full" onclick={oAuthViewModel.signOut.bind(oAuthViewModel)}>
+          <calcite-button width="full" onclick={oAuthViewModel.signOut.bind(oAuthViewModel)}>
             Sign Out
           </calcite-button>
           {/* close button */}
           <calcite-action
             class={CSS.headerUserMenuClose}
-            scale="s"
             appearance="clear"
             icon="x"
             onclick={(): void => {

@@ -18,7 +18,7 @@ import CustomContent from '@arcgis/core/popup/content/CustomContent';
 // styles
 import './TaxMaps.scss';
 const CSS = {
-  base: 'cov-tax-maps',
+  base: 'cov-tax-maps cov-widget',
   title: 'cov-tax-maps--title',
   titleText: 'cov-tax-maps--title-text',
   popover: 'cov-tax-maps--popover',
