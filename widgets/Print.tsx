@@ -312,7 +312,7 @@ export default class Print extends Widget {
       this;
     return (
       <div class={CSS.base}>
-        <calcite-tabs them={theme} scale={scale} layout="center">
+        <calcite-tabs theme={theme} scale={scale} layout="center">
           <calcite-tab-nav slot="tab-nav">
             <calcite-tab-title active="">Print</calcite-tab-title>
             <calcite-tab-title>Snapshot</calcite-tab-title>
