@@ -10,7 +10,7 @@
   --calcite-ui-brand-hover: #{$cov-hover};
   --calcite-ui-brand-press: #{$cov-press};
   --calcite-ui-text-link: #{$cov-hover};
-  --calcite-link-blue-underline: rgba(#{$cov-hover}, 0.4);
+  --calcite-link-blue-underline: rgba(57, 89, 51, 0.4);
   font-family: $font-family;
 }
 
@@ -20,6 +20,7 @@
   --calcite-ui-brand-hover: #{$cov-hover};
   --calcite-ui-brand-press: #{$cov-press};
   --calcite-ui-text-link: #{$cov-hover};
+  --calcite-link-blue-underline: rgba(57, 89, 51, 0.4);
   font-family: $font-family;
 }
 

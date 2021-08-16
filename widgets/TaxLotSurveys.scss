@@ -1,0 +1,27 @@
+.cov-tax-lot-surveys {
+  overflow: hidden;
+}
+
+.cov-tax-lot-surveys--results {
+  max-height: 60vh;
+  overflow: auto;
+  margin-bottom: 0.5rem;
+}
+
+.cov-tax-lot-surveys--result {
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--calcite-ui-border-1);
+
+  div {
+    margin-bottom: 0.125rem;
+  }
+}
+
+.cov-tax-lot-surveys--strong {
+  font-weight: 500;
+}
+
+.cov-tax-lot-surveys--small {
+  font-size: 0.8rem;
+}

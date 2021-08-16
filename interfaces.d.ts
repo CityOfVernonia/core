@@ -351,6 +351,23 @@ declare namespace __cov {
     paragraphs: string[];
   }
 
+  export interface TaxLotSurveysProperties extends esri.WidgetProperties {
+    view: esri.MapView;
+    taxLotLayer: esri.FeatureLayer;
+    surveysLayer: esri.FeatureLayer;
+    symbol?: esri.SimpleFillSymbol;
+    highlightSymbol?: esri.SimpleFillSymbol;
+  }
+  export class TaxLotSurveys extends esri.Widget {
+    constructor(properties: TaxLotSurveysProperties);
+    view: esri.MapView;
+    taxLotLayer: esri.FeatureLayer;
+    surveysLayer: esri.FeatureLayer;
+    symbol: esri.SimpleFillSymbol;
+    highlightSymbol: esri.SimpleFillSymbol;
+    protected graphicsLayer: esri.GraphicsLayer;
+  }
+
   export interface TaxMapsProperties extends esri.WidgetProperties {
     view: esri.MapView;
     featureLayer: esri.FeatureLayer;
@@ -571,6 +588,11 @@ declare module '@vernonia/core/widgets/Share' {
 declare module '@vernonia/core/widgets/SimpleInfo' {
   import SimpleInfo = __cov.SimpleInfo;
   export = SimpleInfo;
+}
+
+declare module '@vernonia/core/widgets/TaxLotSurveys' {
+  import TaxLotSurveys = __cov.TaxLotSurveys;
+  export = TaxLotSurveys;
 }
 
 declare module '@vernonia/core/widgets/TaxMaps' {
