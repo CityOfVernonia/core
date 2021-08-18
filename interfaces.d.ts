@@ -275,11 +275,11 @@ declare namespace __cov {
     /**
      * Default polyline symbol.
      */
-    polylineSymbol?: esri.SimpleMarkerSymbol;
+    polylineSymbol?: esri.SimpleLineSymbol;
     /**
      * Default polygon symbol.
      */
-    polygonSymbol?: esri.SimpleMarkerSymbol;
+    polygonSymbol?: esri.SimpleFillSymbol;
     /**
      * Spatial reference for offsetting polylines.
      */
@@ -299,12 +299,12 @@ declare namespace __cov {
   export class Markup extends esri.Widget {
     constructor(properties: MarkupProperties);
     view: esri.MapView;
-    pointSymbol?: esri.SimpleMarkerSymbol;
-    polylineSymbol?: esri.SimpleMarkerSymbol;
-    polygonSymbol?: esri.SimpleMarkerSymbol;
-    offsetProjectionWkid?: number;
-    theme?: 'light' | 'dark';
-    scale?: 's' | 'm' | 'l';
+    pointSymbol: esri.SimpleMarkerSymbol;
+    polylineSymbol: esri.SimpleLineSymbol;
+    polygonSymbol: esri.SimpleFillSymbol;
+    offsetProjectionWkid: number;
+    theme: 'light' | 'dark';
+    scale: 's' | 'm' | 'l';
     protected sketchViewModel: esri.SketchViewModel;
     protected unitsViewModel: UnitsViewModel;
     protected symbolEditor: MarkupSymbolEditor;
@@ -509,7 +509,7 @@ declare namespace __cov {
 
     fullscreenElement?: HTMLElement;
 
-    markupViewModel?: MarkupViewModel;
+    markup?: Markup;
   }
   export class ViewControl extends esri.Widget {
     constructor(properties?: ViewControlProperties);
@@ -521,7 +521,7 @@ declare namespace __cov {
     includeLocate: boolean;
     includeFullscreen: boolean;
     fullscreenElement: HTMLElement;
-    markupViewModel: MarkupViewModel;
+    markup: Markup;
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -554,7 +554,7 @@ declare namespace __cov {
     /**
      * Include markup actions in view control.
      */
-    markupViewModel?: MarkupViewModel;
+    markup?: Markup;
     /**
      * OAuth view model.
      */
@@ -575,7 +575,7 @@ declare namespace __cov {
     title: string;
     includeSearch: boolean;
     searchViewModel: esri.SearchViewModel;
-    markupViewModel: MarkupViewModel;
+    markup: Markup;
     oAuthViewModel: OAuthViewModel;
     nextBasemap: esri.Basemap;
     widgets: SwitcherWidgetProperties[];

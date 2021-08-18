@@ -41,7 +41,7 @@ export default class ViewControl extends Widget {
   fullscreenElement!: HTMLElement;
 
   @property()
-  markupViewModel!: cov.MarkupViewModel;
+  protected markup!: cov.Markup;
 
   @property()
   protected zoom!: ZoomViewModel;
@@ -83,7 +83,7 @@ export default class ViewControl extends Widget {
   }
 
   render(): tsx.JSX.Element {
-    const { view, theme, scale, zoom, home, includeCompass, locate, fullscreen, markupViewModel } = this;
+    const { view, theme, scale, zoom, home, includeCompass, locate, fullscreen, markup } = this;
 
     const locateIcon =
       locate.state === 'ready'
@@ -171,28 +171,28 @@ export default class ViewControl extends Widget {
           ) : null}
 
           {/* markup */}
-          {markupViewModel ? (
+          {markup ? (
             <calcite-action-group>
               <calcite-action
                 text="Draw Point"
                 title="Draw Point"
                 icon="point"
                 scale={scale}
-                onclick={() => markupViewModel.markup('point')}
+                onclick={() => markup.markup('point')}
               ></calcite-action>
               <calcite-action
                 text="Draw Polyline"
                 title="Draw Polyline"
                 icon="line"
                 scale={scale}
-                onclick={() => markupViewModel.markup('polyline')}
+                onclick={() => markup.markup('polyline')}
               ></calcite-action>
               <calcite-action
                 text="Draw Polygon"
                 title="Draw Polygon"
                 icon="polygon-vertices"
                 scale={scale}
-                onclick={() => markupViewModel.markup('polygon')}
+                onclick={() => markup.markup('polygon')}
               ></calcite-action>
               <calcite-action-menu>
                 <calcite-action slot="trigger" style="margin: 0;" icon="ellipsis" scale={scale}></calcite-action>
@@ -202,7 +202,7 @@ export default class ViewControl extends Widget {
                   text-enabled=""
                   icon="rectangle"
                   scale={scale}
-                  onclick={() => markupViewModel.markup('rectangle')}
+                  onclick={() => markup.markup('rectangle')}
                 ></calcite-action>
                 <calcite-action
                   text="Draw Circle"
@@ -210,16 +210,16 @@ export default class ViewControl extends Widget {
                   text-enabled=""
                   icon="circle"
                   scale={scale}
-                  onclick={() => markupViewModel.markup('circle')}
+                  onclick={() => markup.markup('circle')}
                 ></calcite-action>
-                <calcite-action
-                  text="Snapping Options"
-                  title="Snapping Options"
-                  text-enabled=""
-                  icon="gear"
-                  scale={scale}
-                  onclick={() => markupViewModel.showSnappingOptionsModal()}
-                ></calcite-action>
+                {/* <calcite-action
+                   text="Snapping Options"
+                   title="Snapping Options"
+                   text-enabled=""
+                   icon="gear"
+                   scale={scale}
+                   onclick={() => markup.showSnappingOptionsModal()}
+                 ></calcite-action> */}
               </calcite-action-menu>
             </calcite-action-group>
           ) : null}

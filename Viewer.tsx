@@ -52,7 +52,7 @@ export default class Viewer extends Widget {
   searchViewModel!: esri.SearchViewModel;
 
   @property()
-  markupViewModel!: cov.MarkupViewModel;
+  protected markup!: cov.Markup;
 
   @property()
   oAuthViewModel!: cov.OAuthViewModel;
@@ -76,17 +76,8 @@ export default class Viewer extends Widget {
   }
 
   async postInitialize(): Promise<void> {
-    const {
-      view,
-      includeHeader,
-      title,
-      includeSearch,
-      searchViewModel,
-      nextBasemap,
-      markupViewModel,
-      widgets,
-      container,
-    } = this;
+    const { view, includeHeader, title, includeSearch, searchViewModel, nextBasemap, markup, widgets, container } =
+      this;
 
     // assure no view or dom race conditions
     await setTimeout(() => {
@@ -112,7 +103,7 @@ export default class Viewer extends Widget {
 
     // add view control to top left
     view.ui.add(
-      new ViewControl({ view: view as esri.MapView, fullscreenElement: container as HTMLDivElement, markupViewModel }),
+      new ViewControl({ view: view as esri.MapView, fullscreenElement: container as HTMLDivElement, markup }),
       'top-left',
     );
 
