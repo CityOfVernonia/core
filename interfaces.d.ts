@@ -20,6 +20,11 @@ declare namespace __cov {
     midpoint(polyline: esri.Polyline): esri.Point;
   }
 
+  export interface colors {
+    hexColors: HashMap<string>;
+    rgbColors: HashMap<[number, number, number]>;
+  }
+
   export interface linearReferencing {
     addMValues(polyline: esri.Polyline, startM?: number): { polyline: esri.Polyline; distance: number };
     addZValues(
@@ -190,6 +195,12 @@ declare namespace __cov {
     elevationUnits: HashMap<string>;
     locationSelect(name?: null | string, title?: null | string): esri.widget.tsx.JSX.Element;
     lengthSelect(name?: null | string, title?: null | string): esri.widget.tsx.JSX.Element;
+    calciteLengthSelect(
+      name?: null | string,
+      title?: null | string,
+      theme?: null | 'light' | 'dark',
+      scale?: 's' | 'm' | 'l',
+    ): esri.widget.tsx.JSX.Element;
     areaSelect(name?: null | string, title?: null | string): esri.widget.tsx.JSX.Element;
     elevationSelect(name?: null | string, title?: null | string): esri.widget.tsx.JSX.Element;
   }
@@ -250,6 +261,72 @@ declare namespace __cov {
     delay: number;
     fadeDelay: number;
     end(): void;
+  }
+
+  export interface MarkupProperties extends esri.WidgetProperties {
+    /**
+     * Map view.
+     */
+    view: esri.MapView;
+    /**
+     * Default point symbol.
+     */
+    pointSymbol?: esri.SimpleMarkerSymbol;
+    /**
+     * Default polyline symbol.
+     */
+    polylineSymbol?: esri.SimpleMarkerSymbol;
+    /**
+     * Default polygon symbol.
+     */
+    polygonSymbol?: esri.SimpleMarkerSymbol;
+    /**
+     * Spatial reference for offsetting polylines.
+     */
+    offsetProjectionWkid?: number;
+    /**
+     * Calcite theme.
+     * @default 'light'
+     */
+    theme?: 'light' | 'dark';
+    /**
+     * Calcite scale.
+     * @default 'm'
+     */
+    scale?: 's' | 'm' | 'l';
+  }
+
+  export class Markup extends esri.Widget {
+    constructor(properties: MarkupProperties);
+    view: esri.MapView;
+    pointSymbol?: esri.SimpleMarkerSymbol;
+    polylineSymbol?: esri.SimpleMarkerSymbol;
+    polygonSymbol?: esri.SimpleMarkerSymbol;
+    offsetProjectionWkid?: number;
+    theme?: 'light' | 'dark';
+    scale?: 's' | 'm' | 'l';
+    protected sketchViewModel: esri.SketchViewModel;
+    protected unitsViewModel: UnitsViewModel;
+    protected symbolEditor: MarkupSymbolEditor;
+    protected layer: esri.GraphicsLayer;
+    protected text: esri.GraphicsLayer;
+    protected point: esri.GraphicsLayer;
+    protected polyline: esri.GraphicsLayer;
+    protected polygon: esri.GraphicsLayer;
+    protected layers: esri.GroupLayer;
+    markup(tool: 'point' | 'polyline' | 'polygon' | 'rectangle' | 'circle'): void;
+  }
+
+  export interface MarkupSymbolEditorProperties extends esri.Widget {
+    /**
+     * Graphic to edit
+     */
+    graphic?: esri.Graphic;
+  }
+
+  export class MarkupSymbolEditor extends esri.Widget {
+    graphic: esri.Graphic | null;
+    symbol: esri.Symbol2D3D;
   }
 
   export interface MeasureProperties extends esri.WidgetProperties {
@@ -524,6 +601,11 @@ declare module '@vernonia/core/support/cogo' {
   export = cogo;
 }
 
+declare module '@vernonia/core/support/colors' {
+  import colors = __cov.colors;
+  export = colors;
+}
+
 declare module '@vernonia/core/support/linearReferencing' {
   import linearReferencing = __cov.linearReferencing;
   export = linearReferencing;
@@ -568,6 +650,16 @@ declare module '@vernonia/core/widgets/LayerListLegend' {
 declare module '@vernonia/core/widgets/LoadingScreen' {
   import LoadingScreen = __cov.LoadingScreen;
   export = LoadingScreen;
+}
+
+declare module '@vernonia/core/widgets/Markup' {
+  import Markup = __cov.Markup;
+  export = Markup;
+}
+
+declare module '@vernonia/core/widgets/MarkupSymbolEditor' {
+  import MarkupSymbolEditor = __cov.MarkupSymbolEditor;
+  export = MarkupSymbolEditor;
 }
 
 declare module '@vernonia/core/widgets/Measure' {

@@ -142,6 +142,38 @@ export default class UnitsViewModel extends Accessor {
   }
 
   /**
+   * Return length <calcite-select> which updates `lengthUnit` property on change.
+   *
+   * @param name <select> `name` attribute
+   * @param title <select> `title` attribute
+   * @param theme calcite `theme` attribute
+   * @param scale calcite `scale` attribute
+   */
+  calciteLengthSelect(
+    name?: null | string,
+    title?: null | string,
+    theme?: null | 'light' | 'dark',
+    scale?: 's' | 'm' | 'l',
+  ): tsx.JSX.Element {
+    return (
+      <calcite-select
+        theme={theme || 'light'}
+        scale={scale || 'm'}
+        name={name || ''}
+        title={title || ''}
+        bind={this}
+        afterCreate={(calciteSelect: HTMLCalciteSelectElement) => {
+          calciteSelect.addEventListener('calciteSelectChange', () => {
+            this.lengthUnit = calciteSelect.selectedOption.value;
+          });
+        }}
+      >
+        {this._createCalciteUnitOptions(this.lengthUnits, this.lengthUnit.toString())}
+      </calcite-select>
+    );
+  }
+
+  /**
    * Return area <select> which updates `areaUnit` property on change.
    *
    * @param name <select> `name` attribute
@@ -193,6 +225,19 @@ export default class UnitsViewModel extends Accessor {
         <option key={KEY++} value={unit} selected={unit === defaultUnit}>
           {units[unit]}
         </option>,
+      );
+    }
+    return options;
+  }
+
+  // create calcite options
+  private _createCalciteUnitOptions(units: Record<string, string>, defaultUnit: string): tsx.JSX.Element[] {
+    const options: tsx.JSX.Element[] = [];
+    for (const unit in units) {
+      options.push(
+        <calcite-option key={KEY++} value={unit} selected={unit === defaultUnit}>
+          {units[unit]}
+        </calcite-option>,
       );
     }
     return options;
