@@ -457,6 +457,61 @@ declare namespace __cov {
     mapImageLayer: esri.MapImageLayer;
   }
 
+  export interface ViewControlProperties extends esri.WidgetProperties {
+    view?: esri.MapView;
+
+    theme?: 'light' | 'dark';
+
+    scale?: 's' | 'm' | 'l';
+
+    includeHome?: boolean;
+
+    includeCompass?: boolean;
+
+    includeLocate?: boolean;
+
+    includeFullscreen?: boolean;
+
+    fullscreenElement?: HTMLElement;
+
+    markup?: Markup;
+  }
+  export class ViewControl extends esri.Widget {
+    constructor(properties?: ViewControlProperties);
+    view: esri.MapView;
+    theme: 'light' | 'dark';
+    scale: 's' | 'm' | 'l';
+    includeHome: boolean;
+    includeCompass: boolean;
+    includeLocate: boolean;
+    includeFullscreen: boolean;
+    fullscreenElement: HTMLElement;
+    markup: Markup;
+  }
+
+  export interface WaterMetersProperties extends esri.WidgetProperties {
+    /**
+     * Map view.
+     */
+    view: esri.MapView;
+    /**
+     * Water meters feature layer.
+     */
+    waterMeters: esri.FeatureLayer;
+    /**
+     * Print service URL.
+     */
+    printServiceUrl: string;
+  }
+  export class WaterMeters extends esri.Widget {
+    constructor(properties: WaterMetersProperties);
+    protected search: esri.SearchViewModel;
+    protected print: esri.PrintViewModel;
+    view: esri.MapView;
+    waterMeters: esri.FeatureLayer;
+    printServiceUrl: string;
+  }
+
   export interface SwitcherWidgetProperties extends Object {
     /**
      * Calcite action text/title.
@@ -490,38 +545,6 @@ declare namespace __cov {
     widgets: SwitcherWidgetProperties[];
     theme: 'light' | 'dark';
     scale: 's' | 'm' | 'l';
-  }
-
-  export interface ViewControlProperties extends esri.WidgetProperties {
-    view?: esri.MapView;
-
-    theme?: 'light' | 'dark';
-
-    scale?: 's' | 'm' | 'l';
-
-    includeHome?: boolean;
-
-    includeCompass?: boolean;
-
-    includeLocate?: boolean;
-
-    includeFullscreen?: boolean;
-
-    fullscreenElement?: HTMLElement;
-
-    markup?: Markup;
-  }
-  export class ViewControl extends esri.Widget {
-    constructor(properties?: ViewControlProperties);
-    view: esri.MapView;
-    theme: 'light' | 'dark';
-    scale: 's' | 'm' | 'l';
-    includeHome: boolean;
-    includeCompass: boolean;
-    includeLocate: boolean;
-    includeFullscreen: boolean;
-    fullscreenElement: HTMLElement;
-    markup: Markup;
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -691,15 +714,19 @@ declare module '@vernonia/core/widgets/TaxMaps' {
   import TaxMaps = __cov.TaxMaps;
   export = TaxMaps;
 }
+declare module '@vernonia/core/widgets/ViewControl' {
+  import ViewControl = __cov.ViewControl;
+  export = ViewControl;
+}
+
+declare module '@vernonia/core/widgets/WaterMeters' {
+  import WaterMeters = __cov.WaterMeters;
+  export = WaterMeters;
+}
 
 declare module '@vernonia/core/widgets/WidgetSwitcher' {
   import WidgetSwitcher = __cov.WidgetSwitcher;
   export = WidgetSwitcher;
-}
-
-declare module '@vernonia/core/widgets/ViewControl' {
-  import ViewControl = __cov.ViewControl;
-  export = ViewControl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
