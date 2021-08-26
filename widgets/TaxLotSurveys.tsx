@@ -18,11 +18,16 @@ import { geodesicBuffer } from '@arcgis/core/geometry/geometryEngine';
 import './TaxLotSurveys.scss';
 const CSS = {
   base: 'cov-tax-lot-surveys cov-widget',
+  title: 'cov-widget--title',
+  titleText: 'cov-widget--title--text',
   results: 'cov-tax-lot-surveys--results',
   result: 'cov-tax-lot-surveys--result',
-  resultStrong: 'cov-tax-lot-surveys--strong',
-  resultSmall: 'cov-tax-lot-surveys--small',
+  resultHeader: 'cov-tax-lot-surveys--result-header',
+  strong: 'cov-tax-lot-surveys--strong',
+  small: 'cov-tax-lot-surveys--small',
 };
+
+let KEY = 0;
 
 // class export
 @subclass('cov.widgets.TaxLotSurveys')
@@ -80,9 +85,7 @@ export default class TaxLotSurveys extends Widget {
       view: { map },
       graphicsLayer,
     } = this;
-
     await view.when();
-
     map.add(graphicsLayer);
   }
 
@@ -92,9 +95,7 @@ export default class TaxLotSurveys extends Widget {
    */
   private _isTaxLot(): boolean {
     const { view, taxLotLayer, _selectedFeature } = this;
-
     if (!_selectedFeature || !view.popup.visible) return false;
-
     return taxLotLayer === _selectedFeature.layer;
   }
 
@@ -176,37 +177,37 @@ export default class TaxLotSurveys extends Widget {
     const url = `https://gis.columbiacountymaps.com/Surveys/${SVY_IMAGE}`;
 
     return (
-      <div class={CSS.result}>
-        <div class={CSS.resultStrong}>{type}</div>
-        <div>
-          <calcite-link
-            href={url}
-            target="_blank"
-            onclick={() => {
-              window.open(url, '_blank');
-            }}
-          >
-            {title}
-          </calcite-link>
-          &nbsp;&nbsp;
-          <calcite-link
-            href={url}
-            target="_blank"
-            onclick={() => {
-              this._highlight(feature);
-            }}
-          >
-            Highlight
-          </calcite-link>
+      <div key={KEY++} class={CSS.result}>
+        <div class={this.classes(CSS.resultHeader, CSS.strong)}>
+          <span>{title}</span>
+          <div>
+            <calcite-button
+              scale="s"
+              width="auto"
+              appearance="transparent"
+              icon-start="flash"
+              onclick={this._highlight.bind(this, feature)}
+            ></calcite-button>
+            <calcite-button
+              scale="s"
+              width="auto"
+              appearance="transparent"
+              icon-start="download"
+              onclick={() => window.open(url, '_blank')}
+            ></calcite-button>
+          </div>
         </div>
-        <div class={CSS.resultSmall}>
-          <span class={CSS.resultStrong}>Client:</span> {Client}
+        <div class={CSS.small}>
+          <span class={CSS.strong}>Type:</span> {type}
         </div>
-        <div class={CSS.resultSmall}>
-          <span class={CSS.resultStrong}>Surveyor:</span> {Firm}
+        <div class={CSS.small}>
+          <span class={CSS.strong}>Client:</span> {Client}
         </div>
-        <div class={CSS.resultSmall}>
-          <span class={CSS.resultStrong}>Date:</span> {new Date(SurveyDate).toISOString().split('T')[0]}
+        <div class={CSS.small}>
+          <span class={CSS.strong}>Surveyor:</span> {Firm}
+        </div>
+        <div class={CSS.small}>
+          <span class={CSS.strong}>Date:</span> {new Date(SurveyDate).toISOString().split('T')[0]}
         </div>
       </div>
     );
@@ -226,38 +227,64 @@ export default class TaxLotSurveys extends Widget {
   }
 
   render(): tsx.JSX.Element {
-    const { _results } = this;
+    const { id, _results } = this;
 
     const isTaxLot = this._isTaxLot();
 
-    if (isTaxLot && !_results.length) {
-      return (
-        <div class={CSS.base}>
-          <calcite-label layout="default">
-            Buffer distance (feet)
-            <calcite-input
-              type="number"
-              min="0"
-              max="500"
-              step="1"
-              value="0"
-              afterCreate={(input: HTMLCalciteInputElement) => {
-                this._bufferInput = input;
-              }}
-            ></calcite-input>
-          </calcite-label>
-          <calcite-button onclick={this._querySurveys.bind(this)}>Query Surveys</calcite-button>
+    return (
+      <div class={CSS.base}>
+        <div class={CSS.title}>
+          <div class={CSS.titleText}>Survey Search</div>
+          <calcite-popover-manager auto-close="">
+            <calcite-icon id={`popover_${id}`} icon="information" scale="s"></calcite-icon>
+          </calcite-popover-manager>
+          <calcite-popover
+            reference-element={`popover_${id}`}
+            dismissible=""
+            heading="Survey Search"
+            overlay-positioning="fixed"
+          >
+            <p>
+              Select a tax lot in the map to query related surveys. Optionally set a buffer distance to select surveys
+              within the selected tax lot.
+            </p>
+          </calcite-popover>
         </div>
-      );
-    } else if (_results.length) {
-      return (
-        <div class={CSS.base}>
-          <div class={CSS.results}>{_results.toArray()}</div>
-          <calcite-button onclick={this._clear.bind(this)}>Clear</calcite-button>
-        </div>
-      );
-    } else {
-      return <div class={CSS.base}>Select a tax lot in the map to query related surveys.</div>;
-    }
+        {_results.length ? (
+          <div>
+            <calcite-button width="full" icon-start="chevron-left" onclick={this._clear.bind(this)}>
+              Back
+            </calcite-button>
+            <div class={CSS.results}>{_results.toArray()}</div>
+          </div>
+        ) : (
+          <div>
+            <calcite-label layout="default">
+              Buffer distance (feet)
+              <calcite-input
+                type="number"
+                min="0"
+                max="500"
+                step="1"
+                value="0"
+                disabled={!isTaxLot}
+                afterCreate={(input: HTMLCalciteInputElement) => {
+                  this._bufferInput = input;
+                }}
+              ></calcite-input>
+            </calcite-label>
+            <calcite-button
+              width="full"
+              icon-start="search"
+              disabled={!isTaxLot}
+              onclick={this._querySurveys.bind(this)}
+            >
+              Search
+            </calcite-button>
+            {!isTaxLot ? <p>Select a tax lot in the map to search related surveys.</p> : null}
+          </div>
+        )}
+      </div>
+    );
   }
 }

@@ -26,21 +26,14 @@ export default class LayerListLegend extends Widget {
   @property()
   view!: esri.MapView | esri.SceneView;
 
-  @property()
-  theme = 'light';
-
-  @property()
-  scale = 'm';
-
   constructor(properties: cov.LayerListLegendProperties) {
     super(properties);
   }
 
   render(): tsx.JSX.Element {
-    const { theme, scale } = this;
     return (
       <div class={CSS.base}>
-        <calcite-tabs them={theme} scale={scale} layout="center">
+        <calcite-tabs layout="center">
           <calcite-tab-nav slot="tab-nav">
             <calcite-tab-title active="">Layers</calcite-tab-title>
             <calcite-tab-title>Legend</calcite-tab-title>

@@ -69,13 +69,13 @@
 }
 
 .cov-tabbed-widget {
-  padding-top: 0.25rem;
+  padding: 0.5rem;
   background-color: var(--calcite-ui-background);
   color: var(--calcite-ui-text-1);
 
   calcite-tab {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.75rem 0.25rem;
   }
 
   &.cov-tabbed-widget--no-padding {
@@ -90,6 +90,37 @@
       overflow: auto;
     }
   }
+}
+
+.cov-widget--title {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+
+  calcite-icon {
+    cursor: pointer;
+    user-select: none;
+    color: var(--calcite-ui-brand);
+    &:hover {
+      color: var(--calcite-ui-brand-hover);
+    }
+  }
+
+  calcite-popover {
+    padding: 0.75rem;
+    max-width: 260px;
+
+    p {
+      margin: 0.75rem;
+    }
+  }
+}
+
+.cov-widget--title--text {
+  font-size: var(--calcite-font-size-0);
+  // font-weight: 500;
 }
 
 /** all apps **/

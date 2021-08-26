@@ -1,7 +1,3 @@
-.cov-tax-maps {
-  width: 200px;
-}
-
 .cov-tax-maps--title {
   display: flex;
   flex-flow: row;
@@ -16,19 +12,6 @@
     &:hover {
       color: var(--calcite-ui-brand-hover);
     }
-  }
-}
-
-.cov-tax-maps--title-text {
-  font-weight: 500;
-}
-
-.cov-tax-maps--popover {
-  background-color: var(--calcite-ui-foreground-1);
-  color: var(--calcite-ui-text-1);
-
-  p {
-    margin: 0.75rem;
   }
 }
 

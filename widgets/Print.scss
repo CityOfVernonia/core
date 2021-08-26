@@ -1,7 +1,3 @@
-.cov-print {
-  min-width: 240px;
-}
-
 .cov-print--print-result {
   display: flex;
   flex-flow: row;
@@ -12,20 +8,6 @@
   }
 }
 
-.cov-print--button-row {
-  display: flex;
-  flex-flow: row;
-
-  calcite-button {
-    margin: 0 0.25rem;
-    &:first-child {
-      margin-left: 0;
-    }
-    &:last-child {
-      margin-right: 0;
-    }
-  }
-}
 .cov-print--snapshot-result {
   margin-top: 0.75rem;
   height: 52px;

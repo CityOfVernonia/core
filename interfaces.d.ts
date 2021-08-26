@@ -388,16 +388,6 @@ declare namespace __cov {
      * Key/value pairs of layouts and text for select.
      */
     layouts?: HashMap<string>;
-    /**
-     * Calcite theme.
-     * @default 'light'
-     */
-    theme?: 'light' | 'dark';
-    /**
-     * Calcite scale.
-     * @default 'm'
-     */
-    scale?: 's' | 'm' | 'l';
   }
   export class Print extends esri.Widget {
     constructor(properties: PrintProperties);
@@ -405,8 +395,6 @@ declare namespace __cov {
     printServiceUrl: string;
     title: string;
     layouts: HashMap<string>;
-    theme: 'light' | 'dark';
-    scale: 's' | 'm' | 'l';
     printer: esri.PrintViewModel;
   }
 
@@ -551,6 +539,21 @@ declare namespace __cov {
   // Viewer
   ////////////////////////////////////////////////////////////////////////////////
 
+  export interface ViewerWidgetProperties extends Object {
+    /**
+     * Calcite action text.
+     */
+    text: string;
+    /**
+     * Calcite action icon.
+     */
+    icon: string;
+    /**
+     * The widget of your choosing.
+     */
+    widget: esri.Widget & { onShow?: () => void | undefined; onHide?: () => void | undefined };
+  }
+
   export interface ViewerProperties extends esri.WidgetProperties {
     /**
      * Map or scene view.
@@ -587,9 +590,13 @@ declare namespace __cov {
      */
     nextBasemap?: esri.Basemap;
     /**
-     * Widgets to add to widget switcher.
+     * Widgets to add to menu.
      */
-    widgets?: SwitcherWidgetProperties[];
+    menuWidgets?: ViewerWidgetProperties[] | esri.Collection<ViewerWidgetProperties>;
+    /**
+     * Widgets to add to ui.
+     */
+    uiWidgets?: ViewerWidgetProperties[] | esri.Collection<ViewerWidgetProperties>;
   }
   export class Viewer extends esri.Widget {
     constructor(properties: ViewerProperties);
@@ -601,7 +608,8 @@ declare namespace __cov {
     markup: Markup;
     oAuthViewModel: OAuthViewModel;
     nextBasemap: esri.Basemap;
-    widgets: SwitcherWidgetProperties[];
+    menuWidgets: esri.Collection<ViewerWidgetProperties>;
+    uiWidgets: esri.Collection<ViewerWidgetProperties>;
   }
 }
 /**

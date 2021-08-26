@@ -18,10 +18,9 @@ import CustomContent from '@arcgis/core/popup/content/CustomContent';
 // styles
 import './TaxMaps.scss';
 const CSS = {
-  base: 'cov-tax-maps cov-widget',
-  title: 'cov-tax-maps--title',
-  titleText: 'cov-tax-maps--title-text',
-  popover: 'cov-tax-maps--popover',
+  base: 'cov-widget',
+  title: 'cov-widget--title',
+  titleText: 'cov-widget--title--text',
   popupContent: 'cov-tax-maps--popup-content',
 };
 
@@ -45,23 +44,29 @@ class TaxMapsPopupContent extends Widget {
     return (
       <div class={CSS.popupContent}>
         <calcite-button
+          width="full"
           appearance="outline"
+          icon-start="view-visible"
           onclick={() => {
             this.emit('show', `${name},${alias},${taxmap},${filename}`);
           }}
         >
-          Show
+          {`Show ${alias}`}
         </calcite-button>
         <calcite-button
+          width="full"
           appearance="outline"
+          icon-start="view-hide"
           onclick={() => {
             this.emit('show', 'none,0,0,0');
           }}
         >
-          Hide Tax Maps
+          Hide
         </calcite-button>
         <calcite-button
+          width="full"
           appearance="outline"
+          icon-start="download"
           onclick={() => {
             window.open(taxMapUrl(taxmap, 'pdf'), '_blank');
           }}
@@ -206,29 +211,33 @@ export default class TaxMaps extends Widget {
 
   render(): tsx.JSX.Element {
     const { id, featureLayer, mapImageLayer, _active, _options } = this;
-    const popoverId = `tax_map_popup_${id}`;
     const active = _active[1].length ? true : false;
 
     return (
       <div class={CSS.base}>
         <div class={CSS.title}>
-          <div class={CSS.titleText}>Vernonia Tax Maps</div>
-          <calcite-popover-manager>
-            <calcite-icon id={popoverId} icon="information" scale="s"></calcite-icon>
+          <div class={CSS.titleText}>Tax Maps</div>
+          <calcite-popover-manager auto-close="">
+            <calcite-icon id={`popover_${id}`} icon="information" scale="s"></calcite-icon>
           </calcite-popover-manager>
-          <calcite-popover reference-element={popoverId} placement="leading-start" dismissible="">
-            <div class={CSS.popover}>
-              <p>Select a tax map to view from the list, or click on a tax map boundary in the map.</p>
-              <p>With a tax map selected, the opacity may be adjusted or downloaded.</p>
-            </div>
+          <calcite-popover
+            reference-element={`popover_${id}`}
+            dismissible=""
+            heading="Tax Maps"
+            overlay-positioning="fixed"
+          >
+            <p>
+              Select a tax map to view from the list, or click on a tax map boundary in the map. With a tax map
+              selected, the opacity may be adjusted or downloaded.
+            </p>
           </calcite-popover>
         </div>
         <calcite-label layout="inline">
           <calcite-checkbox
             checked={featureLayer.visible}
-            afterCreate={(checkbox: HTMLCalciteCheckboxElement) => {
-              checkbox.addEventListener('calciteCheckboxChange', (): void => {
-                featureLayer.visible = checkbox.checked as boolean;
+            afterCreate={(calciteCheckbox: HTMLCalciteCheckboxElement) => {
+              calciteCheckbox.addEventListener('calciteCheckboxChange', (): void => {
+                featureLayer.visible = calciteCheckbox.checked as boolean;
               });
             }}
           ></calcite-checkbox>
@@ -237,9 +246,9 @@ export default class TaxMaps extends Widget {
         <calcite-label>
           Select tax map
           <calcite-select
-            afterCreate={(element: HTMLCalciteSelectElement) => {
-              this._taxMapSelect = element;
-              element.addEventListener('calciteSelectChange', this._selectTaxMap.bind(this));
+            afterCreate={(calciteSelect: HTMLCalciteSelectElement) => {
+              this._taxMapSelect = calciteSelect;
+              calciteSelect.addEventListener('calciteSelectChange', this._selectTaxMap.bind(this));
             }}
           >
             {_options.toArray()}
@@ -256,8 +265,8 @@ export default class TaxMaps extends Widget {
             label-ticks=""
             disabled={!active}
             value={mapImageLayer.opacity}
-            afterCreate={(element: HTMLCalciteSliderElement) => {
-              element.addEventListener('calciteSliderChange', this._setLayerOpacity.bind(this));
+            afterCreate={(calciteSlider: HTMLCalciteSliderElement) => {
+              calciteSlider.addEventListener('calciteSliderChange', this._setLayerOpacity.bind(this));
             }}
           ></calcite-slider>
         </calcite-label>

@@ -8,7 +8,7 @@ import cov = __cov;
 // base imports
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
-import { tsx } from '@arcgis/core/widgets/support/widget';
+import { storeNode, tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
 
 // class imports
@@ -18,9 +18,8 @@ import PrintTemplate from '@arcgis/core/rest/support/PrintTemplate';
 // styles
 import './Print.scss';
 const CSS = {
-  base: 'cov-print cov-tabbed-widget cov-tabbed-widget--scrolling',
+  base: 'cov-tabbed-widget cov-tabbed-widget--scrolling',
   printResult: 'cov-print--print-result',
-  buttonRow: 'cov-print--button-row',
   snapshotResult: 'cov-print--snapshot-result',
   snapshotDownloadButton: 'cov-print--snapshot-download-button',
   snapshotArea: 'cov-print--snapshot-area',
@@ -54,19 +53,13 @@ export default class Print extends Widget {
   };
 
   @property()
-  theme = 'light';
-
-  @property()
-  scale = 'm';
-
-  @property()
   printer = new PrintViewModel();
 
   @property()
-  private _printTitleInput!: tsx.JSX.Element;
+  private _printTitleInput!: HTMLCalciteInputElement;
 
   @property()
-  private _printLayoutSelect!: tsx.JSX.Element;
+  private _printLayoutSelect!: HTMLCalciteSelectElement;
 
   @property()
   private _printResults: Collection<{
@@ -74,10 +67,10 @@ export default class Print extends Widget {
   }> = new Collection();
 
   @property()
-  private _snapshotTitleInput!: tsx.JSX.Element;
+  private _snapshotTitleInput!: HTMLCalciteInputElement;
 
   @property()
-  private _snapshotFormat: 'jpg' | 'png' = 'jpg';
+  private _snapshotFormatRadioGroup!: HTMLCalciteRadioGroupElement;
 
   @property()
   private _snapshotElement = document.createElement('div');
@@ -90,14 +83,7 @@ export default class Print extends Widget {
   }
 
   postInitialize(): void {
-    const { theme, scale, _snapshotElement } = this;
-    this._printTitleInput = (
-      <calcite-input type="text" theme={theme} scale={scale} placeholder="Title (optional)"></calcite-input>
-    );
-    this._renderLayoutSelects();
-    this._snapshotTitleInput = (
-      <calcite-input type="text" theme={theme} scale={scale} placeholder="Title (optional)"></calcite-input>
-    );
+    const { _snapshotElement } = this;
     document.body.append(_snapshotElement);
     _snapshotElement.classList.add(CSS.snapshotArea);
   }
@@ -106,17 +92,14 @@ export default class Print extends Widget {
    * Initiate print task and handle results.
    */
   private _print(): void {
-    const { theme, scale, title, printer, _printTitleInput, _printLayoutSelect, _printResults } = this;
-
-    //@ts-ignore
-    const titleText = (_printTitleInput.domNode as HTMLCalciteInputElement).value || title;
-    //@ts-ignore
-    const layout = (_printLayoutSelect.domNode as HTMLCalciteSelectElement).selectedOption.value as any;
+    const { title, printer, _printTitleInput, _printLayoutSelect, _printResults } = this;
+    const titleText = _printTitleInput.value || title;
+    const layout = _printLayoutSelect.selectedOption.value;
 
     const result = {
       element: (
         <div key={KEY++} class={CSS.printResult}>
-          <calcite-button theme={theme} scale={scale} width="full" appearance="outline" loading="">
+          <calcite-button width="full" appearance="outline" loading="">
             {titleText}
           </calcite-button>
         </div>
@@ -139,8 +122,6 @@ export default class Print extends Widget {
         result.element = (
           <div key={KEY++} class={CSS.printResult}>
             <calcite-button
-              theme={theme}
-              scale={scale}
               width="full"
               appearance="outline"
               icon-start="download"
@@ -158,8 +139,6 @@ export default class Print extends Widget {
         result.element = (
           <div key={KEY++} class={CSS.printResult}>
             <calcite-button
-              theme={theme}
-              scale={scale}
               width="full"
               color="red"
               disabled=""
@@ -178,10 +157,11 @@ export default class Print extends Widget {
    * Initiate full view snapshot.
    */
   private _snapshot(): void {
-    const { view, _snapshotFormat } = this;
+    const { view, _snapshotFormatRadioGroup } = this;
+    const format = _snapshotFormatRadioGroup.selectedItem.value;
     view
       .takeScreenshot({
-        format: _snapshotFormat,
+        format,
       })
       .then(this._snapshotCallback.bind(this));
   }
@@ -190,7 +170,8 @@ export default class Print extends Widget {
    * Initiate area snapshot.
    */
   private _snapshotArea(): void {
-    const { view, _snapshotFormat, _snapshotElement } = this;
+    const { view, _snapshotFormatRadioGroup, _snapshotElement } = this;
+    const format = _snapshotFormatRadioGroup.selectedItem.value;
 
     const clamp = (value: number, from: number, to: number): number => {
       return value < from ? from : value > to ? to : value;
@@ -238,7 +219,7 @@ export default class Print extends Widget {
 
         view
           .takeScreenshot({
-            format: _snapshotFormat,
+            format,
             area: area as esri.MapViewTakeScreenshotOptionsArea,
           })
           .then(this._snapshotCallback.bind(this));
@@ -251,10 +232,9 @@ export default class Print extends Widget {
    * @param screenshotResult
    */
   private _snapshotCallback(screenshotResult: esri.Screenshot): void {
-    const { theme, title, _snapshotTitleInput, _snapshotFormat, _snapshotResults } = this;
-
-    // @ts-ignore
-    const titleText = (_snapshotTitleInput.domNode as HTMLCalciteInputElement).value || title;
+    const { title, _snapshotTitleInput, _snapshotFormatRadioGroup, _snapshotResults } = this;
+    const titleText = _snapshotTitleInput.value || title;
+    const format = _snapshotFormatRadioGroup.selectedItem.value;
 
     const data = screenshotResult.data;
 
@@ -276,7 +256,7 @@ export default class Print extends Widget {
     context.fillText(`${titleText}`, 5, data.height - 5, data.width - 5);
 
     // new image
-    const dataUrl = canvas.toDataURL(_snapshotFormat === 'jpg' ? 'image/jpeg' : 'image/png') as string;
+    const dataUrl = canvas.toDataURL(format === 'jpg' ? 'image/jpeg' : 'image/png') as string;
 
     // add to results
     _snapshotResults.add(
@@ -285,7 +265,6 @@ export default class Print extends Widget {
           class={CSS.snapshotDownloadButton}
           icon="download"
           scale="s"
-          theme={theme}
           onclick={this._download.bind(this, dataUrl, titleText)}
         ></calcite-action>
       </div>,
@@ -308,11 +287,10 @@ export default class Print extends Widget {
   }
 
   render(): tsx.JSX.Element {
-    const { theme, scale, _printTitleInput, _printLayoutSelect, _printResults, _snapshotTitleInput, _snapshotResults } =
-      this;
+    const { _printResults, _snapshotResults } = this;
     return (
       <div class={CSS.base}>
-        <calcite-tabs theme={theme} scale={scale} layout="center">
+        <calcite-tabs layout="center">
           <calcite-tab-nav slot="tab-nav">
             <calcite-tab-title active="">Print</calcite-tab-title>
             <calcite-tab-title>Snapshot</calcite-tab-title>
@@ -320,15 +298,22 @@ export default class Print extends Widget {
 
           {/* print tab */}
           <calcite-tab active="">
-            <calcite-label theme={theme} scale={scale}>
+            <calcite-label>
               Title
-              {_printTitleInput}
+              <calcite-input
+                type="text"
+                bind={this}
+                afterCreate={storeNode}
+                data-node-ref="_printTitleInput"
+              ></calcite-input>
             </calcite-label>
-            <calcite-label theme={theme} scale={scale}>
+            <calcite-label>
               Layout
-              {_printLayoutSelect}
+              <calcite-select bind={this} afterCreate={storeNode} data-node-ref="_printLayoutSelect">
+                {this._renderLayoutSelects()}
+              </calcite-select>
             </calcite-label>
-            <calcite-button theme={theme} scale={scale} width="full" onclick={this._print.bind(this)}>
+            <calcite-button width="full" icon-start="print" onclick={this._print.bind(this)}>
               Print
             </calcite-button>
             {_printResults.toArray().map((result: { element: tsx.JSX.Element }): tsx.JSX.Element => {
@@ -338,40 +323,35 @@ export default class Print extends Widget {
 
           {/* snapshot tab */}
           <calcite-tab>
-            <calcite-label theme={theme} scale={scale}>
+            <calcite-label>
               Title
-              {_snapshotTitleInput}
+              <calcite-input
+                type="text"
+                bind={this}
+                afterCreate={storeNode}
+                data-node-ref="_snapshotTitleInput"
+              ></calcite-input>
             </calcite-label>
-            <calcite-label theme={theme} scale={scale}>
+            <calcite-label>
               Format
-              <calcite-radio-button-group layout="horizontal">
-                <calcite-label theme={theme} scale={scale} layout="inline">
-                  <calcite-radio-button
-                    checked=""
-                    onclick={() => {
-                      this._snapshotFormat = 'jpg';
-                    }}
-                  ></calcite-radio-button>
-                  JPG
-                </calcite-label>
-                <calcite-label theme={theme} scale={scale} layout="inline">
-                  <calcite-radio-button
-                    onclick={() => {
-                      this._snapshotFormat = 'png';
-                    }}
-                  ></calcite-radio-button>
-                  PNG
-                </calcite-label>
-              </calcite-radio-button-group>
+              <calcite-radio-group bind={this} afterCreate={storeNode} data-node-ref="_snapshotFormatRadioGroup">
+                <calcite-radio-group-item value="jpg" checked="">
+                  JPEG
+                </calcite-radio-group-item>
+                <calcite-radio-group-item value="png">PNG</calcite-radio-group-item>
+              </calcite-radio-group>
             </calcite-label>
-            <div class={CSS.buttonRow}>
-              <calcite-button theme={theme} scale={scale} width="full" onclick={this._snapshot.bind(this)}>
-                Full
-              </calcite-button>
-              <calcite-button theme={theme} scale={scale} width="full" onclick={this._snapshotArea.bind(this)}>
-                Area
-              </calcite-button>
-            </div>
+            <calcite-button
+              appearance="outline"
+              width="half"
+              icon-start="image-plus"
+              onclick={this._snapshotArea.bind(this)}
+            >
+              Area
+            </calcite-button>
+            <calcite-button width="half" icon-start="image" onclick={this._snapshot.bind(this)}>
+              Full
+            </calcite-button>
             {_snapshotResults.toArray()}
           </calcite-tab>
         </calcite-tabs>
@@ -382,18 +362,14 @@ export default class Print extends Widget {
   /**
    * Render layout selects.
    */
-  private _renderLayoutSelects(): void {
-    const { theme, scale, layouts } = this;
+  private _renderLayoutSelects(): tsx.JSX.Element[] {
+    const { layouts } = this;
     const options = [];
 
     for (const layout in layouts) {
       options.push(<calcite-option label={layouts[layout]} value={layout}></calcite-option>);
     }
 
-    this._printLayoutSelect = (
-      <calcite-select theme={theme} scale={scale}>
-        {options}
-      </calcite-select>
-    );
+    return options;
   }
 }
