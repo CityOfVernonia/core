@@ -114,22 +114,6 @@ export default class Measure extends Widget {
   });
 
   @property()
-  textSymbol = new TextSymbol({
-    text: '',
-    color: [255, 133, 27, 1],
-    haloColor: 'white',
-    haloSize: 1,
-    verticalAlignment: 'bottom',
-    horizontalAlignment: 'left',
-    yoffset: '6',
-    xoffset: '6',
-    font: {
-      family: 'sans-serif',
-      size: 9,
-    },
-  });
-
-  @property()
   units = new UnitsViewModel();
 
   @property({
@@ -176,7 +160,6 @@ export default class Measure extends Widget {
       pointSymbol,
       polylineSymbol,
       polygonSymbol,
-      textSymbol,
       units,
     } = this;
 

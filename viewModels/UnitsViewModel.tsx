@@ -304,7 +304,7 @@ export default class UnitsViewModel extends Accessor {
         bind={this}
         afterCreate={(calciteSelect: HTMLCalciteSelectElement) => {
           calciteSelect.addEventListener('calciteSelectChange', () => {
-            this.locationUnit = calciteSelect.selectedOption.value;
+            this.elevationUnit = calciteSelect.selectedOption.value;
           });
         }}
       >
