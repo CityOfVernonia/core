@@ -28,7 +28,7 @@ export const rgbColors = {
   // green: '#2ecc40',
   red: [225, 65, 54],
   // maroon: '#85144b',
-  // orange: '#ff851b',
+  orange: [255, 133, 27],
   // purple: '#b10dc9',
   yellow: [255, 220, 0],
   // fuchsia: '#f012be',

@@ -1,56 +1,35 @@
 .cov-measure {
-  width: 290px;
-  padding: 0.25rem;
-  background-color: var(--calcite-ui-background);
-
-  calcite-tab {
-    width: 100%;
-    padding: 0.75rem;
-  }
+  padding-bottom: 0.25rem;
 }
 
 .cov-measure--row {
   display: flex;
   flex-flow: row;
   align-items: center;
-  width: 100%;
   margin-bottom: 0.75rem;
 
-  &.cov-measure--result {
-    display: block;
-    margin-bottom: 0;
-  }
-
-  &:last-child {
-    margin-bottom: 0;
+  calcite-button, calcite-select {
+    width: 100%;
   }
 
   calcite-button {
-    width: 100%;
-    margin-right: 0.375rem;
-  }
-  calcite-select {
-    width: 100%;
-    margin-left: 0.375rem;
+    margin-right: 0.25rem;
   }
 
-  label {
-    cursor: pointer;
-    user-select: none;
-    display: flex;
-    align-items: center;
-  }
-  calcite-switch {
-    margin-right: 0.5rem;
+  calcite-select {
+    margin-left: 0.25rem;
   }
 }
 
-.cov-measure--clear {
+.cov-measure--result {
+  color: var(--calcite-ui-text-1);
+}
+
+.cov-measure--clear-button {
   display: none;
   margin-top: 0.75rem;
 
-  &.cov-measure--clear-visible {
+  &.visible {
     display: block;
   }
 }
-
