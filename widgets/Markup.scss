@@ -1,19 +1,17 @@
 .cov-markup {
-  width: 300px;
+  padding-bottom: 0.25rem;
 }
 
-.cov-markup--title {
-  margin-bottom: 0.5rem;
-  line-height: 1;
-}
-
-.cov-markup--title--padding-top {
-  margin-top: 0.75rem;
-}
-
-.cov-markup--button-row--actions {
+.cov-markup--heading {
   display: flex;
   flex-flow: row;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--calcite-ui-text-1);
+}
+
+.cov-markup--button-row {
   margin-bottom: 0.75rem;
 
   &:last-child {
@@ -33,44 +31,13 @@
   }
 }
 
-.cov-markup--button-row {
-  display: flex;
-  flex-flow: row;
-  margin-bottom: 0.75rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  calcite-button {
-    margin: 0 0.5rem;
-
-    &:first-child {
-      margin-left: 0;
-    }
-
-    &:last-child {
-      margin-right: 0;
-    }
-  }
-}
-
 .cov-markup--input-row {
   display: flex;
   flex-flow: row;
-  margin-bottom: 0.75rem;
 
-  label {
+  calcite-label {
     width: 100%;
-    margin: 0 0.5rem;
-    // font-size: var(--calcite-font-size--1);
-    font-size: 0.8rem;
-    color: var(--calcite-ui-text-1);
-
-    span {
-      display: flex;
-      margin-bottom: 0.25rem;
-    }
+    margin: 0 0.25rem;
 
     &:first-child {
       margin-left: 0;
@@ -81,6 +48,57 @@
     }
   }
 }
+
+
+.cov-markup--popup-content {
+  padding: 1rem;
+  width: 220px;
+}
+
+.cov-markup--popup-heading {
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.cov-markup--project {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--calcite-ui-foreground-1);
+  border-bottom: solid 1px var(--calcite-ui-border-3);
+
+  // &:first-child {
+  //   margin-top: 0.75rem;
+  // }
+}
+
+.cov-markup--project--content {
+  width: 100%;
+  padding: 0.35rem;
+}
+
+.cov-markup--project--title {
+  color: var(--calcite-ui-text-2);
+  font-size: var(--calcite-font-size--2);
+}
+
+.cov-markup--project--description {
+  color: var(--calcite-ui-text-3);
+  font-size: var(--calcite-font-size--3);
+  line-height: var(--calcite-font-size--2);
+}
+
+.cov-markup--project--actions {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  padding-right: 0.25rem;
+}
+
+
+
 
 .cov-markup-symbol-editor--slider-labels {
   display: flex;

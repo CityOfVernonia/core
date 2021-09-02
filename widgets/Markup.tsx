@@ -1,103 +1,72 @@
 /**
- * Simple info widget for displaying text.
+ * Widget for marking up.
  */
 
 // namespaces and types
 import cov = __cov;
 
 // base imports
+import { whenOnce } from '@arcgis/core/core/watchUtils';
+import Collection from '@arcgis/core/core/Collection';
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
-import { tsx } from '@arcgis/core/widgets/support/widget';
-
+import { storeNode, tsx } from '@arcgis/core/widgets/support/widget';
+// view models
 import SketchViewModel from '@arcgis/core/widgets/Sketch/SketchViewModel';
-import FeatureSnappingLayerSource from '@arcgis/core/views/interactive/snapping/FeatureSnappingLayerSource';
-
-import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
+import UnitsViewModel from '../viewModels/UnitsViewModel';
+// graphics, symbols, etc.
 import GroupLayer from '@arcgis/core/layers/GroupLayer';
+import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Graphic from '@arcgis/core/Graphic';
 import PopupTemplate from '@arcgis/core/PopupTemplate';
-import { SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, TextSymbol } from '@arcgis/core/symbols';
-
-import UnitsViewModel from './../viewModels/UnitsViewModel';
+import MarkupSymbolEditor from './../widgets/MarkupSymbolEditor';
+import CustomContent from '@arcgis/core/popup/content/CustomContent';
+import { SpatialReference } from '@arcgis/core/geometry';
+import { SimpleFillSymbol, SimpleLineSymbol, SimpleMarkerSymbol } from '@arcgis/core/symbols';
+import { hexColors, rgbColors } from './../support/colors';
+import FeatureSnappingLayerSource from '@arcgis/core/views/interactive/snapping/FeatureSnappingLayerSource';
+// buffer and offset
 import { geodesicBuffer, offset } from '@arcgis/core/geometry/geometryEngine';
 import * as projection from '@arcgis/core/geometry/projection';
-import { SpatialReference } from '@arcgis/core/geometry';
-
-import MarkupSymbolEditor from './MarkupSymbolEditor';
-import { hexColors, rgbColors } from './../support/colors';
 
 // styles
 import './Markup.scss';
 const CSS = {
-  base: 'cov-markup cov-tabbed-widget',
-  title: 'cov-markup--title',
-  titlePaddingTop: 'cov-markup--title--padding-top',
-  buttonRowActions: 'cov-markup--button-row--actions',
+  base: 'cov-tabbed-widget cov-markup',
+  heading: 'cov-markup--heading',
   buttonRow: 'cov-markup--button-row',
   inputRow: 'cov-markup--input-row',
+  popupContent: 'cov-markup--popup-content',
+  popupHeading: 'cov-markup--popup-heading',
+  project: 'cov-markup--project',
+  projectCurrent: 'cov-markup--project--current',
+  projectContent: 'cov-markup--project--content',
+  projectTitle: 'cov-markup--project--title',
+  projectDescription: 'cov-markup--project--description',
+  projectActions: 'cov-markup--project--actions',
 };
 
-// popup actions
-const UID = new Date().getTime().toString(16);
+let KEY = 0;
 
-const ACTIONS = {
-  delete: `${UID}-delete-action`,
-  update: `${UID}-update-action`,
-  up: `${UID}-up-action`,
-  down: `${UID}-down-action`,
-};
-
-const POPUP_ACTIONS: (esri.ActionButtonProperties & { type: 'button' })[] = [
-  {
-    type: 'button',
-    title: 'Delete',
-    id: ACTIONS.delete,
-    className: 'esri-icon-trash',
-  },
-  {
-    type: 'button',
-    title: 'Edit',
-    id: ACTIONS.update,
-    className: 'esri-icon-edit',
-  },
-  {
-    type: 'button',
-    title: 'Up',
-    id: ACTIONS.up,
-    className: 'esri-icon-up',
-  },
-  {
-    type: 'button',
-    title: 'Down',
-    id: ACTIONS.down,
-    className: 'esri-icon-down',
-  },
-];
+const PROJECTS_DB_NAME = 'markup_widget_projects';
 
 // class export
 @subclass('cov.widgets.Markup')
 export default class Markup extends Widget {
-  /**
-   * Initialize these properties first.
-   */
   @property()
-  protected sketchViewModel = new SketchViewModel();
-
-  @property()
-  protected unitsViewModel = new UnitsViewModel();
-
-  @property()
-  protected symbolEditor = new MarkupSymbolEditor();
-
-  /**
-   * Constructor properties.
-   */
-  @property()
-  view!: esri.MapView;
+  protected sketch = new SketchViewModel({
+    layer: new GraphicsLayer({
+      listMode: 'hide',
+    }),
+  });
 
   @property({
-    aliasOf: 'sketchViewModel.pointSymbol',
+    aliasOf: 'sketch.snappingOptions.enabled',
+  })
+  snappingEnabled = true;
+
+  @property({
+    aliasOf: 'sketch.pointSymbol',
   })
   pointSymbol = new SimpleMarkerSymbol({
     color: hexColors.yellow,
@@ -109,7 +78,7 @@ export default class Markup extends Widget {
   });
 
   @property({
-    aliasOf: 'sketchViewModel.polylineSymbol',
+    aliasOf: 'sketch.polylineSymbol',
   })
   polylineSymbol = new SimpleLineSymbol({
     color: hexColors.red,
@@ -117,7 +86,7 @@ export default class Markup extends Widget {
   });
 
   @property({
-    aliasOf: 'sketchViewModel.polygonSymbol',
+    aliasOf: 'sketch.polygonSymbol',
   })
   polygonSymbol = new SimpleFillSymbol({
     color: [...rgbColors.yellow, 0.2],
@@ -127,66 +96,88 @@ export default class Markup extends Widget {
     },
   });
 
-  @property()
-  textSymbol = new TextSymbol({
-    text: 'New Text',
-    color: [255, 0, 0],
-    haloColor: [255, 255, 0],
-    haloSize: 1,
-    font: {
-      family: 'Arial',
-      size: '10',
-    },
-  });
+  @property({
+    aliasOf: 'sketch.view',
+  })
+  view!: esri.MapView;
 
   @property()
   offsetProjectionWkid = 26910;
 
-  @property()
-  theme = 'light';
-
-  @property()
-  scale = 'm';
-
-  /**
-   * Layers.
-   */
-  @property()
-  protected layer = new GraphicsLayer({
-    listMode: 'hide',
-  });
-
-  @property()
-  protected text = new GraphicsLayer({
-    listMode: 'hide',
-    title: 'Markup Text',
-  });
-
-  @property()
-  protected point = new GraphicsLayer({
-    listMode: 'hide',
-    title: 'Markup Points',
-  });
-
-  @property()
-  protected polyline = new GraphicsLayer({
-    listMode: 'hide',
-    title: 'Markup Polylines',
-  });
-
-  @property()
-  protected polygon = new GraphicsLayer({
-    listMode: 'hide',
-    title: 'Markup Polygons',
-  });
+  @property({
+    aliasOf: 'sketch.layer',
+  })
+  protected layer!: esri.GraphicsLayer;
 
   @property()
   protected layers = new GroupLayer({
     listMode: 'hide',
   });
 
+  @property()
+  protected text = new GraphicsLayer({
+    listMode: 'hide',
+  });
+
+  @property()
+  protected point = new GraphicsLayer({
+    listMode: 'hide',
+  });
+
+  @property()
+  protected polyline = new GraphicsLayer({
+    listMode: 'hide',
+  });
+
+  @property()
+  protected polygon = new GraphicsLayer({
+    listMode: 'hide',
+  });
+
+  @property()
+  protected units = new UnitsViewModel();
+
+  @property()
+  private _bufferDistance!: HTMLCalciteInputElement;
+
+  @property()
+  private _offsetDistance!: HTMLCalciteInputElement;
+
+  @property()
+  private _offsetSides!: HTMLCalciteSelectElement;
+
+  @property()
+  pouchdbVersion = '7.2.1';
+
+  @property()
+  private _projectsDbLoadCount = 0;
+
+  @property()
+  private _projectsDb!: PouchDB.Database;
+
+  @property()
+  private _projects: Collection<cov.MarkupProject> = new Collection();
+
+  @property()
+  private _projectsCurrentId: string | null = null;
+
+  @property()
+  private _projectsCreateTitle!: HTMLCalciteInputElement;
+
+  @property()
+  private _projectsCreateDescription!: HTMLCalciteInputElement;
+
+  @property()
+  private _projectsAlert!: HTMLCalciteAlertElement;
+
+  @property()
+  private _projectsAlertMessage!: string;
+
   constructor(properties: cov.MarkupProperties) {
     super(properties);
+    const script = document.createElement('script');
+    script.src = `https://cdn.jsdelivr.net/npm/pouchdb@${this.pouchdbVersion}/dist/pouchdb.min.js`;
+    document.body.append(script);
   }
 
   async postInitialize(): Promise<void> {
@@ -194,32 +185,36 @@ export default class Markup extends Widget {
       view,
       view: { map },
       layer,
+      layers,
       text,
       point,
       polyline,
       polygon,
-      layers,
-      sketchViewModel,
+      sketch,
     } = this;
 
     // serviceable view
     await view.when();
 
-    // setup sketch view model and snapping
-    sketchViewModel.view = view;
-    sketchViewModel.layer = layer;
+    // add layers
+    map.add(layer);
+    layers.addMany([polygon, polyline, point, text]);
+    map.add(layers);
 
-    sketchViewModel.on('create', this._markupCreateEvent.bind(this));
-    sketchViewModel.on('update', this._markupUpdateEvent.bind(this));
-
-    sketchViewModel.snappingOptions.enabled = true;
-    sketchViewModel.snappingOptions.featureEnabled = true;
-    sketchViewModel.snappingOptions.selfEnabled = true;
-
+    // setup sketch
+    sketch.on('create', this._markupCreateEvent.bind(this));
+    sketch.on('update', this._markupUpdateEvent.bind(this));
+    sketch.snappingOptions.featureEnabled = true;
+    sketch.snappingOptions.selfEnabled = false;
     map.allLayers.forEach((_layer: esri.Layer) => {
       const { type } = _layer;
-      if (type === 'feature' || type === 'graphics' || type === 'geojson' || type === 'csv') {
-        sketchViewModel.snappingOptions.featureSources.add(
+      if (
+        type === 'feature' ||
+        type === 'graphics' ||
+        type === 'geojson' ||
+        (type === 'csv' && _layer.listMode !== 'hide' && _layer.title)
+      ) {
+        sketch.snappingOptions.featureSources.add(
           new FeatureSnappingLayerSource({
             //@ts-ignore
             layer: _layer,
@@ -227,33 +222,21 @@ export default class Markup extends Widget {
         );
       }
     });
-
-    // add layers
-    layers.addMany([polygon, polyline, point, text, layer]);
-    map.add(layers);
-
-    // popup action events
-    view.popup.on('trigger-action', (triggerActionEvent: esri.PopupTriggerActionEvent) => {
-      switch (triggerActionEvent.action.id) {
-        case ACTIONS.delete:
-          this._deleteMarkupGraphic();
-          break;
-        case ACTIONS.update:
-          this._editMarkupGraphic();
-          break;
-        case ACTIONS.up:
-          this._moveMarkupGraphicUp();
-          break;
-        case ACTIONS.down:
-          this._moveMarkupGraphicDown();
-          break;
-        default:
-          break;
-      }
+    layers.layers.forEach((_layer: esri.Layer) => {
+      sketch.snappingOptions.featureSources.add(
+        new FeatureSnappingLayerSource({
+          //@ts-ignore
+          layer: _layer,
+        }),
+      );
     });
 
     // load projection
     projection.load();
+
+    // load projects
+    whenOnce(this, '_projectsDb', this._initProjects.bind(this));
+    this._initProjectsDB();
   }
 
   /**
@@ -261,9 +244,38 @@ export default class Markup extends Widget {
    * @param tool geometry type to create (no multi-point support)
    */
   markup(tool: 'point' | 'polyline' | 'polygon' | 'rectangle' | 'circle'): void {
-    const { view, sketchViewModel } = this;
-    view.popup.close();
-    sketchViewModel.create(tool);
+    const {
+      view: { popup },
+      sketch,
+    } = this;
+    popup.close();
+    sketch.create(tool);
+  }
+
+  /**
+   * Add a feature to markup.
+   * @param graphic
+   */
+  addFeature(graphic: esri.Graphic): void {
+    const { view } = this;
+    const { geometry, attributes, layer } = graphic;
+
+    if (geometry) {
+      this._addGraphic(graphic);
+      return;
+    }
+
+    if (!geometry && layer && layer.type === 'feature') {
+      (layer as esri.FeatureLayer)
+        .queryFeatures({
+          returnGeometry: true,
+          outSpatialReference: view.spatialReference,
+          objectIds: [attributes[(layer as esri.FeatureLayer).objectIdField]],
+        })
+        .then((result: esri.FeatureSet) => {
+          this._addGraphic(result.features[0]);
+        });
+    }
   }
 
   /**
@@ -281,25 +293,34 @@ export default class Markup extends Widget {
    */
   private _markupCreateEvent(createEvent: esri.SketchViewModelCreateEvent): void {
     const { state, graphic } = createEvent;
-
     if (state === 'cancel' || !graphic) return;
     if (state !== 'complete') return;
-
     this._addGraphic(graphic);
   }
 
+  /**
+   * Adds any point, polyline or polygon to corresponding layer.
+   * @param graphic
+   */
   private _addGraphic(graphic: esri.Graphic): void {
-    const { sketchViewModel } = this;
+    const { sketch } = this;
     const type = graphic.geometry.type as 'point' | 'polyline' | 'polygon';
 
-    graphic.symbol = sketchViewModel[
-      `${type}Symbol` as 'pointSymbol' | 'polylineSymbol' | 'polygonSymbol'
-    ] as esri.Symbol;
+    if (!graphic.symbol) {
+      graphic.symbol = sketch[`${type}Symbol` as 'pointSymbol' | 'polylineSymbol' | 'polygonSymbol'] as esri.Symbol;
+    }
 
     graphic.popupTemplate = new PopupTemplate({
       title: `Markup ${type}`,
-      content: 'Move edit actions here?',
-      actions: POPUP_ACTIONS,
+      content: [
+        new CustomContent({
+          creator: (): esri.Widget => {
+            return new MarkupSymbolEditor({
+              graphic,
+            });
+          },
+        }),
+      ],
     });
 
     this[type].add(graphic);
@@ -310,7 +331,9 @@ export default class Markup extends Widget {
    */
   private _markupUpdateEvent(updateEvent: esri.SketchViewModelUpdateEvent): void {
     const { state, graphics } = updateEvent;
-    const { layer } = this;
+    const {
+      sketch: { layer },
+    } = this;
     const graphic = graphics[0];
     const type = graphic.geometry.type as 'point' | 'polyline' | 'polygon';
     if (state !== 'complete') return;
@@ -337,15 +360,15 @@ export default class Markup extends Widget {
   private _editMarkupGraphic(graphic?: esri.Graphic): void {
     const {
       view: { popup },
-      layer,
-      sketchViewModel,
+      sketch,
+      sketch: { layer },
     } = this;
     graphic = graphic || popup.selectedFeature;
     if (!graphic || !this._isMarkup(graphic)) return;
     popup.close();
     (graphic.layer as GraphicsLayer).remove(graphic);
     layer.add(graphic);
-    sketchViewModel.update(graphic);
+    sketch.update(graphic);
   }
 
   /**
@@ -381,28 +404,22 @@ export default class Markup extends Widget {
   }
 
   /**
-   * Until select is native form compliant.
-   */
-  private _bufferUnitSelect = this.unitsViewModel.calciteLengthSelect('UNIT', 'Buffer unit');
-
-  /**
    * Buffer a feature and add to markup.
-   * @param feature
-   * @param event
+   * @param graphic
    */
-  private _buffer(feature: esri.Graphic, event: Event): void {
-    event.preventDefault();
-
-    const { geometry, attributes, layer } = feature;
-    const { view, _bufferUnitSelect } = this;
-    const distance = parseInt((event.target as HTMLFormElement).DISTANCE.value);
-    // @ts-ignore
-    const unit = (_bufferUnitSelect.domNode as HTMLCalciteSelectElement).selectedOption.value;
+  private _buffer(graphic: esri.Graphic): void {
+    const { geometry, attributes, layer } = graphic;
+    const {
+      view,
+      units: { lengthUnit },
+      _bufferDistance,
+    } = this;
+    const distance = parseInt(_bufferDistance.value as string);
 
     if (geometry && geometry.spatialReference.wkid === view.spatialReference.wkid) {
       this._addGraphic(
         new Graphic({
-          geometry: geodesicBuffer(feature.geometry, distance, unit) as esri.Geometry,
+          geometry: geodesicBuffer(geometry, distance, lengthUnit) as esri.Geometry,
         }),
       );
       return;
@@ -418,33 +435,30 @@ export default class Markup extends Widget {
         .then((results: esri.FeatureSet) => {
           this._addGraphic(
             new Graphic({
-              geometry: geodesicBuffer(results.features[0].geometry, distance, unit) as esri.Geometry,
+              geometry: geodesicBuffer(results.features[0].geometry, distance, lengthUnit) as esri.Geometry,
             }),
           );
         });
-      return;
     }
-
-    console.log(feature);
   }
-
-  /**
-   * Until select is native form compliant.
-   */
-  private _offsetUnitSelect = this.unitsViewModel.calciteLengthSelect('UNIT', 'Buffer unit');
 
   /**
    * Offset a polyline
    * @param feature
    * @param event
    */
-  private _offset(feature: esri.Graphic, event: Event): void {
-    event.preventDefault();
-    const { geometry, attributes, layer } = feature;
-    const { view, offsetProjectionWkid, _offsetUnitSelect } = this;
-    const distance = parseInt((event.target as HTMLFormElement).DISTANCE.value);
-    // @ts-ignore
-    const unit = (_offsetUnitSelect.domNode as HTMLCalciteSelectElement).selectedOption.value;
+  private _offset(graphic: esri.Graphic): void {
+    const { geometry, attributes, layer } = graphic;
+    const {
+      view,
+      units: { lengthUnit },
+      offsetProjectionWkid,
+      _offsetDistance,
+      _offsetSides,
+    } = this;
+    const distance = parseInt(_offsetDistance.value as string);
+
+    const sides = _offsetSides.selectedOption.value;
 
     if (geometry && geometry.spatialReference.wkid === view.spatialReference.wkid) {
       const projected = projection.project(
@@ -454,50 +468,282 @@ export default class Markup extends Widget {
         }),
       );
 
-      this._addGraphic(
-        new Graphic({
-          geometry: projection.project(
-            offset(projected, distance, unit, 'miter') as esri.Geometry,
-            view.spatialReference,
-          ) as esri.Geometry,
-        }),
-      );
-      this._addGraphic(
-        new Graphic({
-          geometry: projection.project(
-            offset(projected, distance * -1, unit, 'miter') as esri.Geometry,
-            view.spatialReference,
-          ) as esri.Geometry,
-        }),
-      );
-      return;
-    }
-
-    if (!geometry && layer && layer.type === 'feature') {
-      (layer as esri.FeatureLayer)
-        .queryFeatures({
-          returnGeometry: true,
-          outSpatialReference: new SpatialReference({
-            wkid: offsetProjectionWkid,
+      if (sides === 'both' || sides === 'right') {
+        this._addGraphic(
+          new Graphic({
+            geometry: projection.project(
+              offset(projected, distance, lengthUnit, 'miter') as esri.Geometry,
+              view.spatialReference,
+            ) as esri.Geometry,
           }),
-          objectIds: [attributes[(layer as esri.FeatureLayer).objectIdField]],
-        })
-        .then((results: esri.FeatureSet) => {
-          this._addGraphic(
-            new Graphic({
-              geometry: projection.project(results.features[0].geometry, view.spatialReference) as esri.Geometry,
-            }),
-          );
-          this._addGraphic(
-            new Graphic({
-              geometry: projection.project(results.features[0].geometry, view.spatialReference) as esri.Geometry,
-            }),
-          );
-        });
+        );
+      }
+
+      if (sides === 'both' || sides === 'left') {
+        this._addGraphic(
+          new Graphic({
+            geometry: projection.project(
+              offset(projected, distance * -1, lengthUnit, 'miter') as esri.Geometry,
+              view.spatialReference,
+            ) as esri.Geometry,
+          }),
+        );
+      }
       return;
     }
 
-    console.log(feature);
+    // needs work
+    // if (!geometry && layer && layer.type === 'feature') {
+    //   (layer as esri.FeatureLayer)
+    //     .queryFeatures({
+    //       returnGeometry: true,
+    //       outSpatialReference: new SpatialReference({
+    //         wkid: offsetProjectionWkid,
+    //       }),
+    //       objectIds: [attributes[(layer as esri.FeatureLayer).objectIdField]],
+    //     })
+    //     .then((results: esri.FeatureSet) => {
+    //       this._addGraphic(
+    //         new Graphic({
+    //           geometry: projection.project(results.features[0].geometry, view.spatialReference) as esri.Geometry,
+    //         }),
+    //       );
+    //       this._addGraphic(
+    //         new Graphic({
+    //           geometry: projection.project(results.features[0].geometry, view.spatialReference) as esri.Geometry,
+    //         }),
+    //       );
+    //     });
+    // }
+  }
+
+  /**
+   * Show projects alert.
+   * @param color
+   * @param message
+   */
+  private _projectsAlertShow(color: 'blue' | 'green' | 'yellow' | 'red', message: string) {
+    const { _projectsAlert } = this;
+    this._projectsAlertMessage = message;
+    _projectsAlert.color = color;
+    _projectsAlert.active = true;
+    setTimeout(() => (_projectsAlert.active = false), 3000);
+  }
+
+  /**
+   * Initialize projects database.
+   * @returns
+   */
+  private _initProjectsDB(): void {
+    const { _projectsDb, _projectsDbLoadCount } = this;
+    if (_projectsDb || _projectsDbLoadCount > 10) return;
+    if (window.PouchDB) {
+      this._projectsDb = new PouchDB(PROJECTS_DB_NAME);
+    } else {
+      this._projectsDbLoadCount++;
+      setTimeout(this._initProjectsDB.bind(this), 500);
+    }
+  }
+
+  /**
+   * Initialize projects.
+   */
+  private _initProjects(): void {
+    const { _projectsDb, _projects } = this;
+
+    _projectsDb
+      .allDocs({
+        include_docs: true,
+      })
+      .then((results: PouchDB.Core.AllDocsResponse<any>) => {
+        const projects: cov.MarkupProject[] = results.rows.map((row: any) => {
+          return this._createProject(row.doc);
+        });
+
+        _projects.addMany(projects);
+
+        _projects.sort((a: cov.MarkupProject, b: cov.MarkupProject): number => {
+          return a.doc.updated > b.doc.updated ? -1 : 1;
+        });
+      });
+  }
+
+  /**
+   * Create project collection item.
+   * @param doc
+   * @returns
+   */
+  private _createProject(doc: cov.MarkupProject['doc']): cov.MarkupProject {
+    const { _id: id, title, description } = doc;
+
+    const project: cov.MarkupProject = {
+      id,
+      doc,
+    };
+
+    const listItem = (
+      <div
+        key={KEY++}
+        class={this.classes(CSS.project, this._projectsCurrentId === id ? CSS.projectCurrent : '')}
+        afterCreate={(div: HTMLDivElement) => {
+          project.listItemNode = div;
+        }}
+      >
+        <div class={CSS.projectContent}>
+          <div class={CSS.projectTitle}>{title}</div>
+          <div class={CSS.projectDescription}>{description}</div>
+        </div>
+        <div class={CSS.projectActions}>
+          <calcite-action scale="s" icon="folder-open" onclick={this._loadProject.bind(this, id)}></calcite-action>
+          <calcite-action scale="s" icon="trash" onclick={this._deleteProject.bind(this, id)}></calcite-action>
+        </div>
+      </div>
+    );
+
+    project.listItem = listItem;
+
+    return project;
+  }
+
+  /**
+   * Create a new project.
+   */
+  private _newProject(): void {
+    const { _projectsDb, _projects, _projectsCreateTitle, _projectsCreateDescription } = this;
+    const time = new Date().getTime();
+
+    _projectsDb
+      .put({
+        _id: time.toString(),
+        created: time,
+        updated: time,
+        title: _projectsCreateTitle.value,
+        description: _projectsCreateDescription.value || 'No description',
+        ...this._getProjectGraphics(),
+      })
+      .then((result: PouchDB.Core.Response) => {
+        if (result.ok) {
+          _projectsDb.get(result.id).then((doc: PouchDB.Core.IdMeta & PouchDB.Core.GetMeta) => {
+            _projects.add(this._createProject(doc as cov.MarkupProject['doc']));
+            this._projectsCurrentId = doc._id;
+            this._projectsAlertShow('green', 'Project created.');
+          });
+        }
+      });
+  }
+
+  /**
+   * Update a project.
+   * @param id
+   */
+  private _updateProject(id: string): void {
+    const { _projectsDb, _projects } = this;
+
+    const project = _projects.find((item: cov.MarkupProject): boolean => {
+      return item.id === id;
+    });
+
+    if (!project) return;
+
+    const doc: cov.MarkupProject['doc'] = {
+      ...project.doc,
+      updated: new Date().getTime(),
+      ...this._getProjectGraphics(),
+    };
+
+    _projectsDb.put(doc).then((result: PouchDB.Core.Response) => {
+      if (result.ok) {
+        _projectsDb.get(result.id).then((doc: PouchDB.Core.IdMeta & PouchDB.Core.GetMeta) => {
+          project.doc = doc as cov.MarkupProject['doc'];
+          this._projectsAlertShow('green', 'Project saved.');
+        });
+      }
+    });
+  }
+
+  /**
+   * Delete a project
+   * @param id
+   */
+  private _deleteProject(id: string): void {
+    const { _projectsDb, _projects } = this;
+    const project = _projects.find((item: cov.MarkupProject): boolean => {
+      return id === item.id;
+    });
+
+    _projectsDb.remove(project.doc).then((result: PouchDB.Core.Response) => {
+      if (result.ok) {
+        _projects.remove(project);
+      }
+    });
+  }
+
+  /**
+   * Load a project.
+   * @param id
+   */
+  private _loadProject(id: string): void {
+    const { _projects } = this;
+
+    const project = _projects.find((item: cov.MarkupProject): boolean => {
+      return item.id === id;
+    });
+
+    if (!project) return;
+
+    this._clearProjectGraphics();
+
+    project.doc.text.forEach((graphic: esri.GraphicProperties): void => {
+      this._addGraphic(Graphic.fromJSON(graphic));
+    });
+
+    project.doc.point.forEach((graphic: esri.GraphicProperties): void => {
+      this._addGraphic(Graphic.fromJSON(graphic));
+    });
+
+    project.doc.polyline.forEach((graphic: esri.GraphicProperties): void => {
+      this._addGraphic(Graphic.fromJSON(graphic));
+    });
+
+    project.doc.polygon.forEach((graphic: esri.GraphicProperties): void => {
+      this._addGraphic(Graphic.fromJSON(graphic));
+    });
+
+    this._projectsCurrentId = id;
+  }
+
+  /**
+   * Get all markup graphics.
+   * @returns
+   */
+  _getProjectGraphics(): any {
+    const { text, point, polyline, polygon } = this;
+    return {
+      text: text.graphics.toArray().map((graphic: esri.Graphic) => {
+        return graphic.toJSON();
+      }),
+      point: point.graphics.toArray().map((graphic: esri.Graphic) => {
+        return graphic.toJSON();
+      }),
+      polyline: polyline.graphics.toArray().map((graphic: esri.Graphic) => {
+        return graphic.toJSON();
+      }),
+      polygon: polygon.graphics.toArray().map((graphic: esri.Graphic) => {
+        return graphic.toJSON();
+      }),
+    };
+  }
+
+  /**
+   * Clear all project graphics.
+   */
+  private _clearProjectGraphics(): void {
+    const { text, point, polyline, polygon } = this;
+
+    text.removeAll();
+    point.removeAll();
+    polyline.removeAll();
+    polygon.removeAll();
   }
 
   render(): tsx.JSX.Element {
@@ -506,16 +752,18 @@ export default class Markup extends Widget {
       view: {
         popup: { visible, selectedFeature },
       },
-      theme,
-      scale,
-      symbolEditor,
-      _bufferUnitSelect,
-      _offsetUnitSelect,
+      snappingEnabled,
+      units,
+      _projects,
+      _projectsAlertMessage,
+      _projectsCurrentId,
     } = this;
 
     const isMarkup = visible && this._isMarkup(selectedFeature);
 
-    const isFeature = visible && selectedFeature;
+    const isFeature = visible && selectedFeature && !this._isMarkup(selectedFeature);
+
+    const isMarkupOrFeature = visible && selectedFeature;
 
     const isPolyline =
       (visible && selectedFeature?.geometry?.type === 'polyline') ||
@@ -523,25 +771,29 @@ export default class Markup extends Widget {
         selectedFeature.layer.type === 'feature' &&
         (selectedFeature.layer as esri.FeatureLayer).geometryType === 'polyline');
 
-    if (isMarkup) {
-      symbolEditor.graphic = selectedFeature;
-    } else {
-      symbolEditor.graphic = null;
-    }
+    const project = _projects.find((item: cov.MarkupProject): boolean => {
+      return item.id === _projectsCurrentId;
+    });
 
     return (
       <div class={CSS.base}>
-        <calcite-tabs theme={theme} scale={scale} layout="center">
+        <calcite-tabs layout="center">
           <calcite-tab-nav slot="tab-nav">
-            <calcite-tab-title active="">Markup</calcite-tab-title>
-            <calcite-tab-title>Symbol</calcite-tab-title>
-            <calcite-tab-title>Tools</calcite-tab-title>
+            <calcite-tab-title active="">
+              <calcite-icon scale="s" icon="pencil"></calcite-icon>
+            </calcite-tab-title>
+            <calcite-tab-title>
+              <calcite-icon scale="s" icon="wrench"></calcite-icon>
+            </calcite-tab-title>
+            <calcite-tab-title>
+              <calcite-icon scale="s" icon="save"></calcite-icon>
+            </calcite-tab-title>
           </calcite-tab-nav>
 
-          {/* symbol tab */}
+          {/* markup tab */}
           <calcite-tab active="">
-            <div class={CSS.title}>Create</div>
-            <div class={CSS.buttonRowActions}>
+            <div class={CSS.heading}>Create</div>
+            <div class={CSS.buttonRow}>
               <calcite-button
                 icon-start="point"
                 title="Draw point"
@@ -553,7 +805,7 @@ export default class Markup extends Widget {
                 onclick={this.markup.bind(this, 'polyline')}
               ></calcite-button>
               <calcite-button
-                icon-start="polygon"
+                icon-start="polygon-vertices"
                 title="Draw polygon"
                 onclick={this.markup.bind(this, 'polygon')}
               ></calcite-button>
@@ -568,8 +820,21 @@ export default class Markup extends Widget {
                 onclick={this.markup.bind(this, 'circle')}
               ></calcite-button>
             </div>
-            <div class={CSS.title}>Edit</div>
-            <div class={CSS.buttonRowActions}>
+            <calcite-label layout="inline" alignment="end">
+              <calcite-checkbox
+                checked={snappingEnabled}
+                onclick={() => (this.snappingEnabled = !this.snappingEnabled)}
+              ></calcite-checkbox>
+              Enable snapping
+            </calcite-label>
+            <div class={CSS.heading}>Edit</div>
+            <div class={CSS.buttonRow}>
+              <calcite-button
+                icon-start="add-layer"
+                title="Add selected"
+                disabled={!isFeature}
+                onclick={this.addFeature.bind(this, selectedFeature)}
+              ></calcite-button>
               <calcite-button
                 icon-start="pencil"
                 title="Edit selected"
@@ -595,110 +860,163 @@ export default class Markup extends Widget {
                 onclick={this._moveMarkupGraphicDown.bind(this, selectedFeature)}
               ></calcite-button>
             </div>
+            {project ? (
+              <div>
+                <div class={CSS.heading}>{project.doc.title}</div>
+                <calcite-button
+                  width="half"
+                  appearance="outline"
+                  onclick={() => {
+                    this._clearProjectGraphics();
+                    this._projectsCurrentId = null;
+                  }}
+                >
+                  Close
+                </calcite-button>
+                <calcite-button width="half" onclick={this._updateProject.bind(this, project.id)}>
+                  Update
+                </calcite-button>
+              </div>
+            ) : null}
           </calcite-tab>
 
           {/* tools tab */}
           <calcite-tab>
-            {/* <div style={`display:${!isFeature && !isPolyline ? 'block' : 'none'};`}>
-              Select a markup graphic in the map to edit symbol.
-            </div> */}
-            <div
-              afterCreate={(div: HTMLDivElement) => {
-                symbolEditor.container = div;
-              }}
-            ></div>
-          </calcite-tab>
-
-          {/* tools tab */}
-          <calcite-tab>
-            {/* no graphic or feature selected */}
-            <div style={`display:${!isFeature && !isPolyline ? 'block' : 'none'};`}>
+            <div style={`display: ${!isMarkupOrFeature ? 'block' : 'none'};`}>
               Select a markup graphic or feature in the map.
             </div>
 
-            {/* any graphic or feature selected */}
-            <div style={`display:${isFeature ? 'block' : 'none'};`}>
-              <div class={CSS.title}>Buffer</div>
-              <form onsubmit={this._buffer.bind(this, selectedFeature)}>
-                <div class={CSS.inputRow}>
-                  <label>
-                    Distance
-                    <calcite-input
-                      type="number"
-                      name="DISTANCE"
-                      title="Buffer distance"
-                      min="10"
-                      max="2000"
-                      step="1"
-                      value="250"
-                    ></calcite-input>
-                  </label>
-                  <label>
-                    Unit
-                    {_bufferUnitSelect}
-                    {/* Until select is native form compliant. */}
-                    {/* {unitsViewModel.calciteLengthSelect('UNIT', 'Buffer unit')} */}
-                  </label>
-                </div>
-                <calcite-button
-                  type="button"
-                  width="full"
-                  onclick={() => {
-                    (document.getElementById(`markup_buffer_submit_button_${id}`) as HTMLButtonElement).click();
-                  }}
-                >
-                  Buffer
-                </calcite-button>
-                <button
-                  id={`markup_buffer_submit_button_${id}`}
-                  type="submit"
-                  style="display: none !important;"
-                ></button>
-              </form>
+            <div style={`display: ${isMarkupOrFeature ? 'block' : 'none'};`}>
+              <div class={CSS.heading}>Buffer</div>
+              <div class={CSS.inputRow}>
+                <calcite-label>
+                  Distance
+                  <calcite-input
+                    type="number"
+                    min="5"
+                    step="1"
+                    value="250"
+                    afterCreate={storeNode.bind(this)}
+                    data-node-ref="_bufferDistance"
+                  ></calcite-input>
+                </calcite-label>
+                <calcite-label>
+                  Unit
+                  {units.calciteLengthSelect()}
+                </calcite-label>
+              </div>
+              <calcite-button width="full" icon-start="rings" onclick={this._buffer.bind(this, selectedFeature)}>
+                Buffer
+              </calcite-button>
             </div>
 
-            {/* polyline graphic or feature selected */}
-            <div style={`display:${isPolyline ? 'block' : 'none'};`}>
-              <div class={this.classes(CSS.title, CSS.titlePaddingTop)}>Offset</div>
-              <form onsubmit={this._offset.bind(this, selectedFeature)}>
-                <div class={CSS.inputRow}>
-                  <label>
-                    Distance
-                    <calcite-input
-                      type="number"
-                      name="DISTANCE"
-                      title="Buffer distance"
-                      min="5"
-                      max="500"
-                      step="1"
-                      value="30"
-                    ></calcite-input>
-                  </label>
-                  <label>
-                    Unit
-                    {_offsetUnitSelect}
-                    {/* Until select is native form compliant. */}
-                    {/* {unitsViewModel.calciteLengthSelect('UNIT', 'Buffer unit')} */}
-                  </label>
-                </div>
-                <calcite-button
-                  type="button"
-                  width="full"
-                  onclick={() => {
-                    (document.getElementById(`markup_offset_submit_button_${this.id}`) as HTMLButtonElement).click();
-                  }}
-                >
-                  Offset
-                </calcite-button>
-                <button
-                  id={`markup_offset_submit_button_${this.id}`}
-                  type="submit"
-                  style="display: none !important;"
-                ></button>
-              </form>
+            <div style={`display: ${isMarkupOrFeature && isPolyline ? 'block' : 'none'}; margin-top: 0.75rem;`}>
+              <div class={CSS.heading}>Offset</div>
+              <div class={CSS.inputRow}>
+                <calcite-label>
+                  Distance
+                  <calcite-input
+                    type="number"
+                    min="5"
+                    step="1"
+                    value="30"
+                    afterCreate={storeNode.bind(this)}
+                    data-node-ref="_offsetDistance"
+                  ></calcite-input>
+                </calcite-label>
+                <calcite-label>
+                  Unit
+                  {units.calciteLengthSelect()}
+                </calcite-label>
+              </div>
+              <div class={CSS.inputRow}>
+                <calcite-label>
+                  Sides
+                  <calcite-select afterCreate={storeNode.bind(this)} data-node-ref="_offsetSides">
+                    <calcite-option value="both">Both</calcite-option>
+                    <calcite-option value="right">Right</calcite-option>
+                    <calcite-option value="left">Left</calcite-option>
+                  </calcite-select>
+                </calcite-label>
+                <calcite-label></calcite-label>
+              </div>
+              <calcite-button width="full" icon-start="hamburger" onclick={this._offset.bind(this, selectedFeature)}>
+                Offset
+              </calcite-button>
             </div>
           </calcite-tab>
+
+          {/* projects tab */}
+          <calcite-tab>
+            <div class={CSS.heading}>
+              <div>Projects</div>
+              <calcite-popover-manager>
+                <calcite-popover
+                  id={`markup_new_project_popover_${id}`}
+                  reference-element={`markup_new_project_${id}`}
+                  overlay-positioning="fixed"
+                  placement="leading-start"
+                >
+                  <div class={CSS.popupContent}>
+                    <div class={CSS.popupHeading}>New Project</div>
+                    <calcite-label>
+                      Title
+                      <calcite-input
+                        type="text"
+                        required=""
+                        value="My project"
+                        afterCreate={storeNode.bind(this)}
+                        data-node-ref="_projectsCreateTitle"
+                      ></calcite-input>
+                    </calcite-label>
+                    <calcite-label>
+                      Description
+                      <calcite-input
+                        type="textarea"
+                        placeholder="optional"
+                        afterCreate={storeNode.bind(this)}
+                        data-node-ref="_projectsCreateDescription"
+                      ></calcite-input>
+                    </calcite-label>
+                    <calcite-button
+                      width="half"
+                      appearance="outline"
+                      onclick={() => {
+                        (
+                          document.getElementById(`markup_new_project_popover_${id}`) as HTMLCalcitePopoverElement
+                        ).toggle();
+                      }}
+                    >
+                      Cancel
+                    </calcite-button>
+                    <calcite-button
+                      width="half"
+                      icon-start="save"
+                      onclick={() => {
+                        this._newProject();
+                        (
+                          document.getElementById(`markup_new_project_popover_${id}`) as HTMLCalcitePopoverElement
+                        ).toggle();
+                      }}
+                    >
+                      Save
+                    </calcite-button>
+                  </div>
+                </calcite-popover>
+                <calcite-button id={`markup_new_project_${id}`} scale="s" width="auto" icon-start="plus">
+                  New
+                </calcite-button>
+              </calcite-popover-manager>
+            </div>
+            {_projects.toArray().map((project: cov.MarkupProject): tsx.JSX.Element | null | undefined => {
+              return project.id !== this._projectsCurrentId ? project.listItem : null;
+            })}
+          </calcite-tab>
         </calcite-tabs>
+
+        <calcite-alert afterCreate={storeNode.bind(this)} data-node-ref="_projectsAlert">
+          <div slot="message">{_projectsAlertMessage}</div>
+        </calcite-alert>
       </div>
     );
   }

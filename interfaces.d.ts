@@ -203,61 +203,41 @@ declare namespace __cov {
     end(): void;
   }
 
+  export interface MarkupProject extends Object {
+    id: string;
+    doc: {
+      _id: string;
+      readonly _rev: string;
+      created: number;
+      updated: number;
+      title: string;
+      description: string;
+      text: esri.GraphicProperties[];
+      point: esri.GraphicProperties[];
+      polyline: esri.GraphicProperties[];
+      polygon: esri.GraphicProperties[];
+    };
+    listItemNode?: HTMLDivElement;
+    listItem?: esri.widget.tsx.JSX.Element;
+  }
+
   export interface MarkupProperties extends esri.WidgetProperties {
     /**
      * Map view.
      */
     view: esri.MapView;
-    /**
-     * Default point symbol.
-     */
-    pointSymbol?: esri.SimpleMarkerSymbol;
-    /**
-     * Default polyline symbol.
-     */
-    polylineSymbol?: esri.SimpleLineSymbol;
-    /**
-     * Default polygon symbol.
-     */
-    polygonSymbol?: esri.SimpleFillSymbol;
-    /**
-     * Spatial reference for offsetting polylines.
-     */
     offsetProjectionWkid?: number;
-    /**
-     * Calcite theme.
-     * @default 'light'
-     */
-    theme?: 'light' | 'dark';
-    /**
-     * Calcite scale.
-     * @default 'm'
-     */
-    scale?: 's' | 'm' | 'l';
   }
 
   export class Markup extends esri.Widget {
     constructor(properties: MarkupProperties);
     view: esri.MapView;
-    pointSymbol: esri.SimpleMarkerSymbol;
-    polylineSymbol: esri.SimpleLineSymbol;
-    polygonSymbol: esri.SimpleFillSymbol;
     offsetProjectionWkid: number;
-    theme: 'light' | 'dark';
-    scale: 's' | 'm' | 'l';
-    protected sketchViewModel: esri.SketchViewModel;
-    protected unitsViewModel: UnitsViewModel;
-    protected symbolEditor: MarkupSymbolEditor;
-    protected layer: esri.GraphicsLayer;
-    protected text: esri.GraphicsLayer;
-    protected point: esri.GraphicsLayer;
-    protected polyline: esri.GraphicsLayer;
-    protected polygon: esri.GraphicsLayer;
-    protected layers: esri.GroupLayer;
     markup(tool: 'point' | 'polyline' | 'polygon' | 'rectangle' | 'circle'): void;
+    addFeature(graphic: esri.Graphic): void;
   }
 
-  export interface MarkupSymbolEditorProperties extends esri.Widget {
+  export interface MarkupSymbolEditorProperties extends esri.WidgetProperties {
     /**
      * Graphic to edit
      */
