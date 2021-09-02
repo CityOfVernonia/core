@@ -149,6 +149,26 @@ declare namespace __cov {
   // Widgets
   ////////////////////////////////////////////////////////////////////////////////
 
+  export interface ColorPickerProperties extends esri.WidgetProperties {
+    /**
+     * Hex value of selected color.
+     */
+    value?: string;
+    /**
+     * Array of two arrays of hex colors to display as color chips.
+     */
+    colors?: [
+      [string, string, string, string, string, string, string, string],
+      [string, string, string, string, string, string, string, string],
+    ];
+  }
+
+  export class ColorPicker extends esri.Widget {
+    constructor(properties?: ColorPickerProperties);
+    value: string;
+    on(name: 'color-change', listener: EventListener): IHandle;
+  }
+
   export interface DisclaimerModalProperties extends esri.WidgetProperties {
     /**
      * Modal title.
@@ -237,18 +257,6 @@ declare namespace __cov {
     addFeature(graphic: esri.Graphic): void;
   }
 
-  export interface MarkupSymbolEditorProperties extends esri.WidgetProperties {
-    /**
-     * Graphic to edit
-     */
-    graphic?: esri.Graphic;
-  }
-
-  export class MarkupSymbolEditor extends esri.Widget {
-    graphic: esri.Graphic | null;
-    symbol: esri.Symbol2D3D;
-  }
-
   export interface MeasureState {
     action:
       | 'ready'
@@ -334,6 +342,17 @@ declare namespace __cov {
     paragraphs: string[];
   }
 
+  export interface SimpleSymbolEditorProperties extends esri.WidgetProperties {
+    /**
+     * Graphic to edit
+     */
+    graphic?: esri.Graphic;
+  }
+  export class SimpleSymbolEditor extends esri.Widget {
+    graphic: esri.Graphic | null;
+    symbol: esri.Symbol2D3D;
+  }
+
   export interface TaxLotSurveysProperties extends esri.WidgetProperties {
     view: esri.MapView;
     taxLotLayer: esri.FeatureLayer;
@@ -416,41 +435,6 @@ declare namespace __cov {
     view: esri.MapView;
     waterMeters: esri.FeatureLayer;
     printServiceUrl: string;
-  }
-
-  export interface SwitcherWidgetProperties extends Object {
-    /**
-     * Calcite action text/title.
-     */
-    text: string;
-    /**
-     * Calcite action icon.
-     */
-    icon: string;
-    /**
-     * The widget of your choosing.
-     */
-    widget: esri.Widget & { onShow?: () => void | undefined; onHide?: () => void | undefined };
-  }
-  export interface WidgetSwitcherProperties extends esri.WidgetProperties {
-    /**
-     * Array of SwitcherWidgetProperties to switch between.
-     */
-    widgets: SwitcherWidgetProperties[];
-    /**
-     * Calcite theme.
-     */
-    theme?: 'light' | 'dark';
-    /**
-     * Calcite scale.
-     */
-    scale?: 's' | 'm' | 'l';
-  }
-  export class WidgetSwitcher extends esri.Widget {
-    constructor(properties: WidgetSwitcherProperties);
-    widgets: SwitcherWidgetProperties[];
-    theme: 'light' | 'dark';
-    scale: 's' | 'm' | 'l';
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -581,6 +565,11 @@ declare module '@vernonia/core/viewModels/UnitsViewModel' {
 ////////////////////////////////////////////////////////////////////////////////
 // Widgets
 ////////////////////////////////////////////////////////////////////////////////
+declare module '@vernonia/core/widgets/ColorPicker' {
+  import ColorPicker = __cov.ColorPicker;
+  export = ColorPicker;
+}
+
 declare module '@vernonia/core/widgets/DisclaimerModal' {
   import DisclaimerModal = __cov.DisclaimerModal;
   export = DisclaimerModal;
@@ -601,9 +590,9 @@ declare module '@vernonia/core/widgets/Markup' {
   export = Markup;
 }
 
-declare module '@vernonia/core/widgets/MarkupSymbolEditor' {
-  import MarkupSymbolEditor = __cov.MarkupSymbolEditor;
-  export = MarkupSymbolEditor;
+declare module '@vernonia/core/widgets/SimpleSymbolEditor' {
+  import SimpleSymbolEditor = __cov.SimpleSymbolEditor;
+  export = SimpleSymbolEditor;
 }
 
 declare module '@vernonia/core/widgets/Measure' {
@@ -643,11 +632,6 @@ declare module '@vernonia/core/widgets/ViewControl' {
 declare module '@vernonia/core/widgets/WaterMeters' {
   import WaterMeters = __cov.WaterMeters;
   export = WaterMeters;
-}
-
-declare module '@vernonia/core/widgets/WidgetSwitcher' {
-  import WidgetSwitcher = __cov.WidgetSwitcher;
-  export = WidgetSwitcher;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

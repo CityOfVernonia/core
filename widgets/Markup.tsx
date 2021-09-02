@@ -19,7 +19,7 @@ import GroupLayer from '@arcgis/core/layers/GroupLayer';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Graphic from '@arcgis/core/Graphic';
 import PopupTemplate from '@arcgis/core/PopupTemplate';
-import MarkupSymbolEditor from './../widgets/MarkupSymbolEditor';
+import SimpleSymbolEditor from './SimpleSymbolEditor';
 import CustomContent from '@arcgis/core/popup/content/CustomContent';
 import { SpatialReference } from '@arcgis/core/geometry';
 import { SimpleFillSymbol, SimpleLineSymbol, SimpleMarkerSymbol } from '@arcgis/core/symbols';
@@ -315,7 +315,7 @@ export default class Markup extends Widget {
       content: [
         new CustomContent({
           creator: (): esri.Widget => {
-            return new MarkupSymbolEditor({
+            return new SimpleSymbolEditor({
               graphic,
             });
           },
