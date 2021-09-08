@@ -149,6 +149,40 @@ declare namespace __cov {
   // Widgets
   ////////////////////////////////////////////////////////////////////////////////
 
+  export interface PortalItemToAddProperties extends Object {
+    /**
+     * Portal item id.
+     */
+    id: string;
+    /**
+     * Override portal item title.
+     */
+    title?: string;
+    /**
+     * Override portal item snippet.
+     */
+    snippet?: string;
+    /**
+     * Called when layer added.
+     */
+    add?: (layer: esri.Layer) => void;
+  }
+  export interface AddLayersProperties extends esri.WidgetProperties {
+    /**
+     * Map view.
+     */
+    view: esri.MapView;
+    /**
+     * Layers available to add.
+     */
+    layers?: PortalItemToAddProperties[];
+  }
+  export class AddLayers extends esri.Widget {
+    constructor(properties: AddLayersProperties);
+    view: esri.MapView;
+    layers: esri.Collection<PortalItemToAddProperties>;
+  }
+
   export interface ColorPickerProperties extends esri.WidgetProperties {
     /**
      * Hex value of selected color.
@@ -565,6 +599,11 @@ declare module '@vernonia/core/viewModels/UnitsViewModel' {
 ////////////////////////////////////////////////////////////////////////////////
 // Widgets
 ////////////////////////////////////////////////////////////////////////////////
+declare module '@vernonia/core/widgets/AddLayers' {
+  import AddLayers = __cov.AddLayers;
+  export = AddLayers;
+}
+
 declare module '@vernonia/core/widgets/ColorPicker' {
   import ColorPicker = __cov.ColorPicker;
   export = ColorPicker;
