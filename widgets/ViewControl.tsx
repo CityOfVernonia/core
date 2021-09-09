@@ -212,14 +212,6 @@ export default class ViewControl extends Widget {
                   scale={scale}
                   onclick={() => markup.markup('circle')}
                 ></calcite-action>
-                {/* <calcite-action
-                   text="Snapping Options"
-                   title="Snapping Options"
-                   text-enabled=""
-                   icon="gear"
-                   scale={scale}
-                   onclick={() => markup.showSnappingOptionsModal()}
-                 ></calcite-action> */}
               </calcite-action-menu>
             </calcite-action-group>
           ) : null}

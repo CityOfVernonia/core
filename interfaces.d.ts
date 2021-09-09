@@ -163,6 +163,14 @@ declare namespace __cov {
      */
     snippet?: string;
     /**
+     * Layer index.
+     */
+    index?: number;
+    /**
+     * Additional layer properties.
+     */
+    layerProperties?: esri.LayerProperties | any;
+    /**
      * Called when layer added.
      */
     add?: (layer: esri.Layer) => void;

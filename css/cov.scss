@@ -60,6 +60,12 @@
   border-radius: var(--calcite-border-radius);
 }
 
+// view focus fix
+.esri-view .esri-view-surface--inset-outline:focus::after {
+  outline: 2px auto rgba(57, 89, 51, 0.5);
+  outline-offset: -1px;
+}
+
 /** widgets **/
 
 .cov-widget {

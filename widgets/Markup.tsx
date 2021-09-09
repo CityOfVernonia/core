@@ -21,7 +21,7 @@ import Graphic from '@arcgis/core/Graphic';
 import PopupTemplate from '@arcgis/core/PopupTemplate';
 import SimpleSymbolEditor from './SimpleSymbolEditor';
 import CustomContent from '@arcgis/core/popup/content/CustomContent';
-import { SpatialReference } from '@arcgis/core/geometry';
+import { Point, SpatialReference } from '@arcgis/core/geometry';
 import { SimpleFillSymbol, SimpleLineSymbol, SimpleMarkerSymbol } from '@arcgis/core/symbols';
 import { hexColors, rgbColors } from './../support/colors';
 import FeatureSnappingLayerSource from '@arcgis/core/views/interactive/snapping/FeatureSnappingLayerSource';
@@ -518,6 +518,80 @@ export default class Markup extends Widget {
   }
 
   /**
+   * Add vertices to polyline or polygon.
+   * @param feature
+   */
+  private _addVertices(feature: esri.Graphic): void {
+    const { view } = this;
+    const { layer, geometry, attributes } = feature;
+
+    if (
+      geometry &&
+      (geometry.type === 'polyline' || geometry.type === 'polygon') &&
+      geometry.spatialReference.wkid === view.spatialReference.wkid
+    ) {
+      this._addVerticesGetVertices(geometry as esri.Polyline | esri.Polygon);
+    }
+
+    if (
+      !geometry &&
+      layer &&
+      layer.type === 'feature' &&
+      ((layer as esri.FeatureLayer).geometryType === 'polyline' ||
+        (layer as esri.FeatureLayer).geometryType === 'polygon')
+    ) {
+      (layer as esri.FeatureLayer)
+        .queryFeatures({
+          returnGeometry: true,
+          outSpatialReference: view.spatialReference,
+          objectIds: [attributes[(layer as esri.FeatureLayer).objectIdField]],
+        })
+        .then((results: esri.FeatureSet) => {
+          this._addVerticesGetVertices(results.features[0].geometry as esri.Polyline | esri.Polygon);
+        });
+    }
+  }
+
+  /**
+   * Paths and rings to each vertex.
+   * @param geometry
+   */
+  private _addVerticesGetVertices(geometry: esri.Polyline | esri.Polygon): void {
+    if (geometry.type === 'polyline') {
+      (geometry as esri.Polyline).paths.forEach((path: number[][]) => {
+        path.forEach(this._addVerticesGraphics.bind(this));
+      });
+    }
+    if (geometry.type === 'polygon') {
+      (geometry as esri.Polygon).rings.forEach((ring: number[][]) => {
+        ring.forEach((vertex: number[], index: number) => {
+          if (index + 1 < ring.length) {
+            this._addVerticesGraphics(vertex);
+          }
+        });
+      });
+    }
+  }
+
+  /**
+   * Add vertex graphic.
+   * @param vertex
+   */
+  private _addVerticesGraphics(vertex: number[]): void {
+    const { view } = this;
+    const [x, y] = vertex;
+    this._addGraphic(
+      new Graphic({
+        geometry: new Point({
+          x,
+          y,
+          spatialReference: view.spatialReference,
+        }),
+      }),
+    );
+  }
+
+  /**
    * Show projects alert.
    * @param color
    * @param message
@@ -683,7 +757,8 @@ export default class Markup extends Widget {
    * @param id
    */
   private _loadProject(id: string): void {
-    const { _projects } = this;
+    const { view, _projects } = this;
+    const graphics: esri.Graphic[] = [];
 
     const project = _projects.find((item: cov.MarkupProject): boolean => {
       return item.id === id;
@@ -694,22 +769,32 @@ export default class Markup extends Widget {
     this._clearProjectGraphics();
 
     project.doc.text.forEach((graphic: esri.GraphicProperties): void => {
-      this._addGraphic(Graphic.fromJSON(graphic));
+      const _graphic = Graphic.fromJSON(graphic);
+      graphics.push(_graphic);
+      this._addGraphic(_graphic);
     });
 
     project.doc.point.forEach((graphic: esri.GraphicProperties): void => {
-      this._addGraphic(Graphic.fromJSON(graphic));
+      const _graphic = Graphic.fromJSON(graphic);
+      graphics.push(_graphic);
+      this._addGraphic(_graphic);
     });
 
     project.doc.polyline.forEach((graphic: esri.GraphicProperties): void => {
-      this._addGraphic(Graphic.fromJSON(graphic));
+      const _graphic = Graphic.fromJSON(graphic);
+      graphics.push(_graphic);
+      this._addGraphic(_graphic);
     });
 
     project.doc.polygon.forEach((graphic: esri.GraphicProperties): void => {
-      this._addGraphic(Graphic.fromJSON(graphic));
+      const _graphic = Graphic.fromJSON(graphic);
+      graphics.push(_graphic);
+      this._addGraphic(_graphic);
     });
 
     this._projectsCurrentId = id;
+
+    view.goTo(graphics);
   }
 
   /**
@@ -770,6 +855,12 @@ export default class Markup extends Widget {
       (selectedFeature?.layer &&
         selectedFeature.layer.type === 'feature' &&
         (selectedFeature.layer as esri.FeatureLayer).geometryType === 'polyline');
+
+    const isPoint =
+      (visible && selectedFeature?.geometry?.type === 'point') ||
+      (selectedFeature?.layer &&
+        selectedFeature.layer.type === 'feature' &&
+        (selectedFeature.layer as esri.FeatureLayer).geometryType === 'point');
 
     const project = _projects.find((item: cov.MarkupProject): boolean => {
       return item.id === _projectsCurrentId;
@@ -884,6 +975,17 @@ export default class Markup extends Widget {
           <calcite-tab>
             <div style={`display: ${!isMarkupOrFeature ? 'block' : 'none'};`}>
               Select a markup graphic or feature in the map.
+            </div>
+
+            <div style={`display: ${isMarkupOrFeature && !isPoint ? 'block' : 'none'}; margin-bottom: 0.75rem;`}>
+              <div class={CSS.heading}>Vertices</div>
+              <calcite-button
+                width="full"
+                icon-start="vertex-plus"
+                onclick={this._addVertices.bind(this, selectedFeature)}
+              >
+                Add Points to Vertices
+              </calcite-button>
             </div>
 
             <div style={`display: ${isMarkupOrFeature ? 'block' : 'none'};`}>

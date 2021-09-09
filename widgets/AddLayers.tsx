@@ -45,9 +45,7 @@ export default class AddLayers extends Widget {
   }
 
   postInitialize() {
-    const {
-      layers,
-    } = this;
+    const { layers } = this;
 
     layers.forEach(this._createListItems.bind(this));
   }
@@ -58,7 +56,7 @@ export default class AddLayers extends Widget {
       _listItems,
     } = this;
 
-    const { id, title, snippet, add } = itemToAdd;
+    const { id, title, snippet, index, layerProperties, add } = itemToAdd;
 
     const listItem = {
       element: <calcite-list-item key={KEY++}></calcite-list-item>,
@@ -68,31 +66,42 @@ export default class AddLayers extends Widget {
       id,
     });
 
-    portalItem.load().then(() => {
-      listItem.element = (
-        <calcite-pick-list-item key={KEY++} label={title || portalItem.title} description={snippet || portalItem.snippet}>
-          <calcite-action
-            slot="actions-end"
-            icon="add-layer"
-            onclick={(event: Event) => {
-              const target = event.target as HTMLCalciteActionElement;
-              target.disabled = true;
-              Layer.fromPortalItem({
-                portalItem,
-              }).then((layer: esri.Layer) => {
-                map.add(layer);
-                if (add && typeof add === 'function') {
-                  add(layer);
-                }
-                _listItems.remove(listItem);
-              });
-            }}
-          ></calcite-action>
-        </calcite-pick-list-item>
-      );
-    }).catch(() => {
-      _listItems.remove(listItem);
-    });
+    portalItem
+      .load()
+      .then(() => {
+        listItem.element = (
+          <calcite-pick-list-item
+            key={KEY++}
+            label={title || portalItem.title}
+            description={snippet || portalItem.snippet}
+          >
+            <calcite-action
+              slot="actions-end"
+              icon="add-layer"
+              onclick={(event: Event) => {
+                const target = event.target as HTMLCalciteActionElement;
+                target.disabled = true;
+                Layer.fromPortalItem({
+                  portalItem,
+                }).then((layer: esri.Layer) => {
+                  for (const layerProperty in layerProperties) {
+                    //@ts-ignore
+                    layer[layerProperty] = layerProperties[layerProperty];
+                  }
+                  map.add(layer, index);
+                  if (add && typeof add === 'function') {
+                    add(layer);
+                  }
+                  _listItems.remove(listItem);
+                });
+              }}
+            ></calcite-action>
+          </calcite-pick-list-item>
+        );
+      })
+      .catch(() => {
+        _listItems.remove(listItem);
+      });
 
     _listItems.add(listItem);
   }
