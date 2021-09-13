@@ -55,11 +55,7 @@ export default class SimpleSymbolEditor extends Widget {
   }
 
   render(): tsx.JSX.Element {
-    const { graphic, symbol } = this;
-
-    if (!graphic) {
-      return <div>Select a markup graphic in the map to edit symbol.</div>;
-    }
+    const { symbol } = this;
 
     switch (symbol.type) {
       case 'simple-marker':
@@ -68,6 +64,8 @@ export default class SimpleSymbolEditor extends Widget {
         return this._simpleLineSymbol(symbol);
       case 'simple-fill':
         return this._simpleFillSymbol(symbol);
+      case 'text':
+        return this._textSymbol(symbol);
       default:
         return <div></div>;
     }
@@ -346,6 +344,78 @@ export default class SimpleSymbolEditor extends Widget {
               <span>100%</span>
             </div>
           </calcite-label>
+          <calcite-label></calcite-label>
+        </div>
+      </div>
+    );
+  }
+
+  private _textSymbol(symbol: esri.TextSymbol): tsx.JSX.Element {
+    return (
+      <div class={CSS.base}>
+        <div class={CSS.row}>
+          <calcite-label>
+            Text
+            <calcite-input
+              type="text"
+              value={symbol.text}
+              afterCreate={(calciteInput: HTMLCalciteInputElement) => {
+                calciteInput.addEventListener('calciteInputInput', () => {
+                  this.setSymbolProperty('text', undefined, calciteInput.value || 'New Text');
+                });
+              }}
+            ></calcite-input>
+          </calcite-label>
+          <calcite-label>
+            Line width
+            <calcite-slider
+              afterCreate={(calciteSlider: HTMLCalciteSliderElement) => {
+                calciteSlider.addEventListener('calciteSliderChange', () => {
+                  this.setSymbolProperty('font.size', undefined, calciteSlider.value as number);
+                });
+              }}
+              min="10"
+              max="18"
+              value={symbol.font.size}
+              step="1"
+              snap=""
+            ></calcite-slider>
+            <div class={CSS.sliderLabels}>
+              <span>Small</span>
+              <span>Large</span>
+            </div>
+          </calcite-label>
+          <calcite-label>
+            Color
+            <div
+              afterCreate={(div: HTMLDivElement) => {
+                const colorPicker = new ColorPicker({
+                  value: symbol.color.toHex(),
+                  container: div,
+                });
+                colorPicker.on('color-change', (color: string) => {
+                  this.setSymbolProperty('color', undefined, color);
+                });
+              }}
+            ></div>
+          </calcite-label>
+        </div>
+        <div class={CSS.row}>
+          <calcite-label>
+            Halo color
+            <div
+              afterCreate={(div: HTMLDivElement) => {
+                const colorPicker = new ColorPicker({
+                  value: symbol.haloColor.toHex(),
+                  container: div,
+                });
+                colorPicker.on('color-change', (color: string) => {
+                  this.setSymbolProperty('haloColor', undefined, color);
+                });
+              }}
+            ></div>
+          </calcite-label>
+          <calcite-label></calcite-label>
           <calcite-label></calcite-label>
         </div>
       </div>

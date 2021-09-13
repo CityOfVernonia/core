@@ -17,7 +17,7 @@ import UnitsViewModel from './../viewModels/UnitsViewModel';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Graphic from '@arcgis/core/Graphic';
 import { Point } from '@arcgis/core/geometry';
-import { CIMSymbol, SimpleFillSymbol, SimpleMarkerSymbol, TextSymbol } from '@arcgis/core/symbols';
+import { CIMSymbol, SimpleFillSymbol, SimpleMarkerSymbol } from '@arcgis/core/symbols';
 import FeatureSnappingLayerSource from '@arcgis/core/views/interactive/snapping/FeatureSnappingLayerSource';
 // measure modules
 import { geodesicArea, geodesicLength, simplify } from '@arcgis/core/geometry/geometryEngine';

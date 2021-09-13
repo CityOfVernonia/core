@@ -22,7 +22,7 @@ import PopupTemplate from '@arcgis/core/PopupTemplate';
 import SimpleSymbolEditor from './SimpleSymbolEditor';
 import CustomContent from '@arcgis/core/popup/content/CustomContent';
 import { Point, SpatialReference } from '@arcgis/core/geometry';
-import { SimpleFillSymbol, SimpleLineSymbol, SimpleMarkerSymbol } from '@arcgis/core/symbols';
+import { SimpleFillSymbol, SimpleLineSymbol, SimpleMarkerSymbol, TextSymbol } from '@arcgis/core/symbols';
 import { hexColors, rgbColors } from './../support/colors';
 import FeatureSnappingLayerSource from '@arcgis/core/views/interactive/snapping/FeatureSnappingLayerSource';
 // buffer and offset
@@ -38,12 +38,6 @@ const CSS = {
   inputRow: 'cov-markup--input-row',
   popupContent: 'cov-markup--popup-content',
   popupHeading: 'cov-markup--popup-heading',
-  project: 'cov-markup--project',
-  projectCurrent: 'cov-markup--project--current',
-  projectContent: 'cov-markup--project--content',
-  projectTitle: 'cov-markup--project--title',
-  projectDescription: 'cov-markup--project--description',
-  projectActions: 'cov-markup--project--actions',
 };
 
 let KEY = 0;
@@ -96,6 +90,20 @@ export default class Markup extends Widget {
     },
   });
 
+  @property()
+  textSymbol = new TextSymbol({
+    text: 'New Text',
+    color: [0, 0, 0, 1],
+    haloColor: [255, 255, 255, 1],
+    haloSize: 1,
+    horizontalAlignment: 'left',
+    verticalAlignment: 'middle',
+    font: {
+      family: 'sans-serif',
+      size: 10,
+    },
+  });
+
   @property({
     aliasOf: 'sketch.view',
   })
@@ -133,6 +141,9 @@ export default class Markup extends Widget {
   protected polygon = new GraphicsLayer({
     listMode: 'hide',
   });
+
+  @property()
+  private _isText = false;
 
   @property()
   protected units = new UnitsViewModel();
@@ -243,12 +254,15 @@ export default class Markup extends Widget {
    * Begin marking up.
    * @param tool geometry type to create (no multi-point support)
    */
-  markup(tool: 'point' | 'polyline' | 'polygon' | 'rectangle' | 'circle'): void {
+  markup(tool: 'point' | 'polyline' | 'polygon' | 'rectangle' | 'circle', text?: boolean): void {
     const {
       view: { popup },
       sketch,
     } = this;
     popup.close();
+
+    this._isText = text === true;
+
     sketch.create(tool);
   }
 
@@ -293,7 +307,10 @@ export default class Markup extends Widget {
    */
   private _markupCreateEvent(createEvent: esri.SketchViewModelCreateEvent): void {
     const { state, graphic } = createEvent;
-    if (state === 'cancel' || !graphic) return;
+    if (state === 'cancel' || !graphic) {
+      this._isText = false;
+      return;
+    }
     if (state !== 'complete') return;
     this._addGraphic(graphic);
   }
@@ -303,15 +320,19 @@ export default class Markup extends Widget {
    * @param graphic
    */
   private _addGraphic(graphic: esri.Graphic): void {
-    const { sketch } = this;
+    const { sketch, text, textSymbol, _isText } = this;
     const type = graphic.geometry.type as 'point' | 'polyline' | 'polygon';
+
+    if (_isText) {
+      graphic.symbol = textSymbol.clone();
+    }
 
     if (!graphic.symbol) {
       graphic.symbol = sketch[`${type}Symbol` as 'pointSymbol' | 'polylineSymbol' | 'polygonSymbol'] as esri.Symbol;
     }
 
     graphic.popupTemplate = new PopupTemplate({
-      title: `Markup ${type}`,
+      title: `Markup ${graphic.symbol.type === 'text' ? 'text' : type}`,
       content: [
         new CustomContent({
           creator: (): esri.Widget => {
@@ -323,7 +344,13 @@ export default class Markup extends Widget {
       ],
     });
 
-    this[type].add(graphic);
+    if (_isText) {
+      text.add(graphic);
+    } else {
+      this[type].add(graphic);
+    }
+
+    this._isText = false;
   }
 
   /**
@@ -401,6 +428,28 @@ export default class Markup extends Widget {
     if (idx > 0) {
       collection.reorder(graphic, idx - 1);
     }
+  }
+
+  /**
+   * Convert point symbol to text symbol.
+   * @param graphic
+   */
+  private _pointToText(graphic: esri.Graphic): void {
+    const {
+      view: { popup },
+      textSymbol,
+    } = this;
+    const {
+      geometry: { type },
+    } = graphic;
+    const collection = graphic.get('layer.graphics') as esri.Collection<esri.Graphic>;
+
+    if (type !== 'point') return;
+
+    popup.close();
+
+    graphic.symbol = textSymbol.clone();
+    collection.reorder(graphic, collection.length - 1);
   }
 
   /**
@@ -649,34 +698,33 @@ export default class Markup extends Widget {
    */
   private _createProject(doc: cov.MarkupProject['doc']): cov.MarkupProject {
     const { _id: id, title, description } = doc;
-
-    const project: cov.MarkupProject = {
+    return {
       id,
       doc,
-    };
-
-    const listItem = (
-      <div
-        key={KEY++}
-        class={this.classes(CSS.project, this._projectsCurrentId === id ? CSS.projectCurrent : '')}
-        afterCreate={(div: HTMLDivElement) => {
-          project.listItemNode = div;
-        }}
-      >
-        <div class={CSS.projectContent}>
-          <div class={CSS.projectTitle}>{title}</div>
-          <div class={CSS.projectDescription}>{description}</div>
-        </div>
-        <div class={CSS.projectActions}>
-          <calcite-action scale="s" icon="folder-open" onclick={this._loadProject.bind(this, id)}></calcite-action>
-          <calcite-action scale="s" icon="trash" onclick={this._deleteProject.bind(this, id)}></calcite-action>
-        </div>
-      </div>
-    );
-
-    project.listItem = listItem;
-
-    return project;
+      listItem: (
+        <calcite-pick-list-item key={KEY++} label={title} description={description}>
+          <calcite-action
+            slot="actions-end"
+            icon="folder-open"
+            onclick={this._loadProject.bind(this, id)}
+          ></calcite-action>
+          <calcite-action slot="actions-end" icon="trash" onclick={this._deleteProject.bind(this, id)}></calcite-action>
+        </calcite-pick-list-item>
+      ),
+      activeListItem: (
+        <calcite-pick-list-item key={KEY++} label={title} description={description}>
+          <calcite-action slot="actions-end" icon="save" onclick={this._updateProject.bind(this, id)}></calcite-action>
+          <calcite-action
+            slot="actions-end"
+            icon="x-circle"
+            onclick={() => {
+              this._clearProjectGraphics();
+              this._projectsCurrentId = null;
+            }}
+          ></calcite-action>
+        </calcite-pick-list-item>
+      ),
+    } as cov.MarkupProject;
   }
 
   /**
@@ -841,7 +889,6 @@ export default class Markup extends Widget {
       units,
       _projects,
       _projectsAlertMessage,
-      _projectsCurrentId,
     } = this;
 
     const isMarkup = visible && this._isMarkup(selectedFeature);
@@ -850,21 +897,23 @@ export default class Markup extends Widget {
 
     const isMarkupOrFeature = visible && selectedFeature;
 
-    const isPolyline =
-      (visible && selectedFeature?.geometry?.type === 'polyline') ||
-      (selectedFeature?.layer &&
-        selectedFeature.layer.type === 'feature' &&
-        (selectedFeature.layer as esri.FeatureLayer).geometryType === 'polyline');
-
     const isPoint =
       (visible && selectedFeature?.geometry?.type === 'point') ||
       (selectedFeature?.layer &&
         selectedFeature.layer.type === 'feature' &&
         (selectedFeature.layer as esri.FeatureLayer).geometryType === 'point');
 
-    const project = _projects.find((item: cov.MarkupProject): boolean => {
-      return item.id === _projectsCurrentId;
-    });
+    const isPolyline =
+      (visible && selectedFeature?.geometry?.type === 'polyline') ||
+      (selectedFeature?.layer &&
+        selectedFeature.layer.type === 'feature' &&
+        (selectedFeature.layer as esri.FeatureLayer).geometryType === 'polyline');
+
+    // const isPolygon =
+    //   (visible && selectedFeature?.geometry?.type === 'polygon') ||
+    //   (selectedFeature?.layer &&
+    //     selectedFeature.layer.type === 'feature' &&
+    //     (selectedFeature.layer as esri.FeatureLayer).geometryType === 'polygon');
 
     return (
       <div class={CSS.base}>
@@ -910,6 +959,11 @@ export default class Markup extends Widget {
                 title="Draw circle"
                 onclick={this.markup.bind(this, 'circle')}
               ></calcite-button>
+              <calcite-button
+                icon-start="text-large"
+                title="Draw text"
+                onclick={this.markup.bind(this, 'point', true)}
+              ></calcite-button>
             </div>
             <calcite-label layout="inline" alignment="end">
               <calcite-checkbox
@@ -920,12 +974,6 @@ export default class Markup extends Widget {
             </calcite-label>
             <div class={CSS.heading}>Edit</div>
             <div class={CSS.buttonRow}>
-              <calcite-button
-                icon-start="add-layer"
-                title="Add selected"
-                disabled={!isFeature}
-                onclick={this.addFeature.bind(this, selectedFeature)}
-              ></calcite-button>
               <calcite-button
                 icon-start="pencil"
                 title="Edit selected"
@@ -951,41 +999,33 @@ export default class Markup extends Widget {
                 onclick={this._moveMarkupGraphicDown.bind(this, selectedFeature)}
               ></calcite-button>
             </div>
-            {project ? (
-              <div>
-                <div class={CSS.heading}>{project.doc.title}</div>
-                <calcite-button
-                  width="half"
-                  appearance="outline"
-                  onclick={() => {
-                    this._clearProjectGraphics();
-                    this._projectsCurrentId = null;
-                  }}
-                >
-                  Close
-                </calcite-button>
-                <calcite-button width="half" onclick={this._updateProject.bind(this, project.id)}>
-                  Update
-                </calcite-button>
-              </div>
-            ) : null}
+            <div class={CSS.heading}>Tools</div>
+            <div class={CSS.buttonRow}>
+              <calcite-button
+                icon-start="add-layer"
+                title="Add selected"
+                disabled={!isFeature}
+                onclick={this.addFeature.bind(this, selectedFeature)}
+              ></calcite-button>
+              <calcite-button
+                icon-start="add-text"
+                title="Convert selected to text"
+                disabled={!(isMarkup && isPoint)}
+                onclick={this._pointToText.bind(this, selectedFeature)}
+              ></calcite-button>
+              <calcite-button
+                icon-start="vertex-plus"
+                title="Add vertices points to selected"
+                disabled={!(isMarkupOrFeature && !isPoint)}
+                onclick={this._addVertices.bind(this, selectedFeature)}
+              ></calcite-button>
+            </div>
           </calcite-tab>
 
           {/* tools tab */}
           <calcite-tab>
             <div style={`display: ${!isMarkupOrFeature ? 'block' : 'none'};`}>
               Select a markup graphic or feature in the map.
-            </div>
-
-            <div style={`display: ${isMarkupOrFeature && !isPoint ? 'block' : 'none'}; margin-bottom: 0.75rem;`}>
-              <div class={CSS.heading}>Vertices</div>
-              <calcite-button
-                width="full"
-                icon-start="vertex-plus"
-                onclick={this._addVertices.bind(this, selectedFeature)}
-              >
-                Add Points to Vertices
-              </calcite-button>
             </div>
 
             <div style={`display: ${isMarkupOrFeature ? 'block' : 'none'};`}>
@@ -1110,8 +1150,8 @@ export default class Markup extends Widget {
                 </calcite-button>
               </calcite-popover-manager>
             </div>
-            {_projects.toArray().map((project: cov.MarkupProject): tsx.JSX.Element | null | undefined => {
-              return project.id !== this._projectsCurrentId ? project.listItem : null;
+            {_projects.toArray().map((project: cov.MarkupProject): tsx.JSX.Element | undefined => {
+              return project.id !== this._projectsCurrentId ? project.listItem : project.activeListItem;
             })}
           </calcite-tab>
         </calcite-tabs>

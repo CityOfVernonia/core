@@ -279,8 +279,8 @@ declare namespace __cov {
       polyline: esri.GraphicProperties[];
       polygon: esri.GraphicProperties[];
     };
-    listItemNode?: HTMLDivElement;
     listItem?: esri.widget.tsx.JSX.Element;
+    activeListItem?: esri.widget.tsx.JSX.Element;
   }
 
   export interface MarkupProperties extends esri.WidgetProperties {

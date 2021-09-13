@@ -8,6 +8,7 @@
   justify-content: space-between;
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
+  font-weight: 500;
   color: var(--calcite-ui-text-1);
 }
 
@@ -59,40 +60,4 @@
   margin-bottom: 1rem;
   font-size: 0.95rem;
   font-weight: 500;
-}
-
-.cov-markup--project {
-  display: flex;
-  flex-flow: row;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--calcite-ui-foreground-1);
-  border-bottom: solid 1px var(--calcite-ui-border-3);
-
-  // &:first-child {
-  //   margin-top: 0.75rem;
-  // }
-}
-
-.cov-markup--project--content {
-  width: 100%;
-  padding: 0.35rem;
-}
-
-.cov-markup--project--title {
-  color: var(--calcite-ui-text-2);
-  font-size: var(--calcite-font-size--2);
-}
-
-.cov-markup--project--description {
-  color: var(--calcite-ui-text-3);
-  font-size: var(--calcite-font-size--3);
-  line-height: var(--calcite-font-size--2);
-}
-
-.cov-markup--project--actions {
-  display: flex;
-  flex-flow: row;
-  align-items: center;
-  padding-right: 0.25rem;
 }

@@ -44,7 +44,7 @@ export default class AddLayers extends Widget {
     super(properties);
   }
 
-  postInitialize() {
+  postInitialize(): void {
     const { layers } = this;
 
     layers.forEach(this._createListItems.bind(this));
