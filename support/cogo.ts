@@ -1,5 +1,8 @@
-import esri = __esri;
+/**
+ * Coordinate geometry helpers.
+ */
 
+import esri = __esri;
 import { Point } from '@arcgis/core/geometry';
 
 /**

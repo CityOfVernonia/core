@@ -1,30 +1,27 @@
-import esri = __esri;
+/**
+ * Standard popup for tax lots in COV apps.
+ */
 
+// namespaces and types
+import cov = __cov;
+
+// imports
 import { whenOnce } from '@arcgis/core/core/watchUtils';
-
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
-
 import { tsx } from '@arcgis/core/widgets/support/widget';
-
 import Widget from '@arcgis/core/widgets/Widget';
-
 import PopupTemplate from '@arcgis/core/PopupTemplate';
-
 import CustomContent from '@arcgis/core/popup/content/CustomContent';
-
 import { propertyInfoUrl, taxMapUrl } from '@vernonia/assessor-urls/src/AssessorURLs';
 
-interface ContentProperties extends esri.WidgetProperties {
-  graphic: esri.Graphic;
-}
-
-let KEY = 0;
-
+// styles
 const CSS = {
   table: 'esri-widget__table',
   th: 'esri-feature__field-header',
   td: 'esri-feature__field-data',
 };
+
+let KEY = 0;
 
 @subclass('cov.popups.TaxLotPopup.Content')
 class Content extends Widget {
@@ -34,7 +31,7 @@ class Content extends Widget {
   @property()
   accessorValues: tsx.JSX.Element[] = [];
 
-  constructor(properties: ContentProperties) {
+  constructor(properties: cov.ContentProperties) {
     super(properties);
   }
 

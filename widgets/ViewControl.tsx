@@ -1,14 +1,16 @@
 /**
- * A view control widget to replace default zoom widget including home, locate,
+ * A view control widget to replace default zoom widget with home, locate, fullscreen, compass and markup create actions.
  */
-import cov = __cov;
-import '@esri/calcite-components';
 
+// namespaces and types
+import cov = __cov;
+import '@esri/calcite-components'; // why in this module only?
+
+// imports
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import { whenOnce } from '@arcgis/core/core/watchUtils';
-
 import ZoomViewModel from '@arcgis/core/widgets/Zoom/ZoomViewModel';
 import HomeViewModel from '@arcgis/core/widgets/Home/HomeViewModel';
 import LocateViewModel from '@arcgis/core/widgets/Locate/LocateViewModel';
@@ -18,12 +20,6 @@ import FullscreenViewModel from '@arcgis/core/widgets/Fullscreen/FullscreenViewM
 export default class ViewControl extends Widget {
   @property()
   view!: esri.MapView;
-
-  @property()
-  theme = 'light';
-
-  @property()
-  scale: 's' | 'm' | 'l' = 's';
 
   @property()
   includeHome = true;
@@ -83,7 +79,7 @@ export default class ViewControl extends Widget {
   }
 
   render(): tsx.JSX.Element {
-    const { view, theme, scale, zoom, home, includeCompass, locate, fullscreen, markup } = this;
+    const { view, zoom, home, includeCompass, locate, fullscreen, markup } = this;
 
     const locateIcon =
       locate.state === 'ready'
@@ -100,14 +96,14 @@ export default class ViewControl extends Widget {
 
     return (
       <div>
-        <calcite-action-pad theme={theme} expand-disabled="">
+        <calcite-action-pad expand-disabled="">
           {/* zoom and home group */}
           <calcite-action-group>
             <calcite-action
               text="Zoom In"
               title="Zoom In"
               icon="plus"
-              scale={scale}
+              scale="s"
               disabled={!zoom.canZoomIn}
               onclick={zoom.zoomIn.bind(zoom)}
             ></calcite-action>
@@ -117,7 +113,7 @@ export default class ViewControl extends Widget {
                 text="Default Extent"
                 title="Default Extent"
                 icon="home"
-                scale={scale}
+                scale="s"
                 onclick={home.go.bind(home)}
               ></calcite-action>
             ) : null}
@@ -126,7 +122,7 @@ export default class ViewControl extends Widget {
               text="Zoom Out"
               title="Zoom Out"
               icon="minus"
-              scale={scale}
+              scale="s"
               disabled={!zoom.canZoomOut}
               onclick={zoom.zoomOut.bind(zoom)}
             ></calcite-action>
@@ -140,7 +136,7 @@ export default class ViewControl extends Widget {
                   text="Reset Orientation"
                   title="Reset Orientation"
                   icon="compass-needle"
-                  scale={scale}
+                  scale="s"
                   afterCreate={this._compassRotation.bind(this)}
                   onclick={() => ((view as esri.MapView).rotation = 0)}
                 ></calcite-action>
@@ -151,7 +147,7 @@ export default class ViewControl extends Widget {
                   text="Zoom To Location"
                   title="Zoom To Location"
                   icon={locateIcon}
-                  scale={scale}
+                  scale="s"
                   disabled={locate.state === 'disabled'}
                   onclick={locate.locate.bind(locate)}
                 ></calcite-action>
@@ -162,7 +158,7 @@ export default class ViewControl extends Widget {
                   title={fullscreenText}
                   text={fullscreenText}
                   disabled={fullscreen.state === 'disabled'}
-                  scale={scale}
+                  scale="s"
                   icon={fullscreenActive ? 'full-screen-exit' : 'extent'}
                   onclick={fullscreen.toggle.bind(fullscreen)}
                 ></calcite-action>
@@ -177,31 +173,31 @@ export default class ViewControl extends Widget {
                 text="Draw Point"
                 title="Draw Point"
                 icon="point"
-                scale={scale}
+                scale="s"
                 onclick={() => markup.markup('point')}
               ></calcite-action>
               <calcite-action
                 text="Draw Polyline"
                 title="Draw Polyline"
                 icon="line"
-                scale={scale}
+                scale="s"
                 onclick={() => markup.markup('polyline')}
               ></calcite-action>
               <calcite-action
                 text="Draw Polygon"
                 title="Draw Polygon"
                 icon="polygon-vertices"
-                scale={scale}
+                scale="s"
                 onclick={() => markup.markup('polygon')}
               ></calcite-action>
               <calcite-action-menu>
-                <calcite-action slot="trigger" style="margin: 0;" icon="ellipsis" scale={scale}></calcite-action>
+                <calcite-action slot="trigger" style="margin: 0;" icon="ellipsis" scale="s"></calcite-action>
                 <calcite-action
                   text="Draw Rectangle"
                   title="Draw Rectangle"
                   text-enabled=""
                   icon="rectangle"
-                  scale={scale}
+                  scale="s"
                   onclick={() => markup.markup('rectangle')}
                 ></calcite-action>
                 <calcite-action
@@ -209,7 +205,7 @@ export default class ViewControl extends Widget {
                   title="Draw Circle"
                   text-enabled=""
                   icon="circle"
-                  scale={scale}
+                  scale="s"
                   onclick={() => markup.markup('circle')}
                 ></calcite-action>
               </calcite-action-menu>

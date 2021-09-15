@@ -8,23 +8,46 @@ declare namespace __cov {
   // Popups
   ////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Properties for custom content widgets in popups.
+   */
+  export interface ContentProperties extends esri.WidgetProperties {
+    graphic: esri.Graphic;
+  }
+
+  /**
+   * cov/popups/TaxLotPopup
+   * Standard popup for tax lots in COV apps.
+   */
   export class TaxLotPopup extends esri.PopupTemplate {}
 
   ////////////////////////////////////////////////////////////////////////////////
   // Support
   ////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * cov/support/cogo
+   * Coordinate geometry helpers.
+   */
   export interface cogo {
     distance(point1: esri.Point | { x: number; y: number }, point2: esri.Point | { x: number; y: number }): number;
     linearInterpolation(point1: esri.Point, point2: esri.Point, linearDistance: number): esri.Point;
     midpoint(polyline: esri.Polyline): esri.Point;
   }
 
+  /**
+   * cov/support/colors
+   * City of Vernonia colors in hex and rgb.
+   */
   export interface colors {
     hexColors: HashMap<string>;
     rgbColors: HashMap<[number, number, number]>;
   }
 
+  /**
+   * cov/support/linearReferencing
+   * Linear referencing helpers.
+   */
   export interface linearReferencing {
     addMValues(polyline: esri.Polyline, startM?: number): { polyline: esri.Polyline; distance: number };
     addZValues(
@@ -39,18 +62,10 @@ declare namespace __cov {
   // View models
   ////////////////////////////////////////////////////////////////////////////////
 
-  export class MarkupViewModel extends esri.SketchViewModel {
-    constructor(properties?: esri.SketchViewModelProperties);
-    point: esri.GraphicsLayer;
-    polyline: esri.GraphicsLayer;
-    polygon: esri.GraphicsLayer;
-    layers: esri.GroupLayer;
-    // TODO
-    // snappingOptionsModal = new SnappingOptionsModal();
-    showSnappingOptionsModal(): void;
-    markup(tool: 'point' | 'polyline' | 'polygon' | 'rectangle' | 'circle'): void;
-  }
-
+  /**
+   * cov/viewModels/OAuthViewModel
+   * A view model for handling OAuth and signing in and out of applications.
+   */
   export interface OAuthViewModelProperties extends Object {
     /**
      * Portal instance to sign into.
@@ -82,6 +97,10 @@ declare namespace __cov {
     signOut(): void;
   }
 
+  /**
+   * cov/viewModels/UnitsViewModel
+   * A view model for managing location, length, area and elevation units and providing utility methods for returning unit <select>s.
+   */
   export interface UnitsViewModelProperties extends Object {
     /**
      * CSS class string for <select>s.
@@ -134,6 +153,12 @@ declare namespace __cov {
     elevationUnit: string;
     elevationUnits: HashMap<string>;
     locationSelect(name?: null | string, title?: null | string): esri.widget.tsx.JSX.Element;
+    calciteLocationSelect(
+      name?: null | string,
+      title?: null | string,
+      theme?: null | 'light' | 'dark',
+      scale?: 's' | 'm' | 'l',
+    ): esri.widget.tsx.JSX.Element;
     lengthSelect(name?: null | string, title?: null | string): esri.widget.tsx.JSX.Element;
     calciteLengthSelect(
       name?: null | string,
@@ -142,7 +167,19 @@ declare namespace __cov {
       scale?: 's' | 'm' | 'l',
     ): esri.widget.tsx.JSX.Element;
     areaSelect(name?: null | string, title?: null | string): esri.widget.tsx.JSX.Element;
+    calciteAreaSelect(
+      name?: null | string,
+      title?: null | string,
+      theme?: null | 'light' | 'dark',
+      scale?: 's' | 'm' | 'l',
+    ): esri.widget.tsx.JSX.Element;
     elevationSelect(name?: null | string, title?: null | string): esri.widget.tsx.JSX.Element;
+    calciteElevationSelect(
+      name?: null | string,
+      title?: null | string,
+      theme?: null | 'light' | 'dark',
+      scale?: 's' | 'm' | 'l',
+    ): esri.widget.tsx.JSX.Element;
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -228,6 +265,18 @@ declare namespace __cov {
     title: string;
     text: string;
     static isAccepted(): boolean;
+  }
+
+  /**
+   * cov/widgets/HeaderAccountControl
+   * A widget to display sign in button or user account control in the header of layouts.
+   */
+  export interface HeaderAccountControlProperties extends esri.WidgetProperties {
+    oAuthViewModel: OAuthViewModel;
+  }
+  export class HeaderAccountControl extends esri.Widget {
+    constructor(properties: HeaderAccountControlProperties);
+    oAuthViewModel: OAuthViewModel;
   }
 
   export interface LayerListLegendProperties extends esri.WidgetProperties {
@@ -366,7 +415,31 @@ declare namespace __cov {
     printer: esri.PrintViewModel;
   }
 
+  /**
+   * cov/widgets/Share
+   * A widget to display sign in button when auth is required.
+   */
   export class Share extends esri.Widget {}
+
+  /**
+   * cov/widgets/SignInScreen
+   * A widget to share an app via facebook and twitter.
+   */
+  export interface SignInScreenProperties extends esri.WidgetProperties {
+    /**
+     * OAuthViewModel instance.
+     */
+    oAuthViewModel: OAuthViewModel;
+    /**
+     * Message to display.
+     */
+    message?: string;
+  }
+  export class SignInScreen extends esri.Widget {
+    constructor(properties: SignInScreenProperties);
+    oAuthViewModel: OAuthViewModel;
+    message: string;
+  }
 
   export interface SimpleInfoProperties extends esri.WidgetProperties {
     /**
@@ -424,30 +497,44 @@ declare namespace __cov {
     mapImageLayer: esri.MapImageLayer;
   }
 
+  /**
+   * cov/widgets/ViewControl
+   * A view control widget to replace default zoom widget with home, locate, fullscreen, compass and markup create actions.
+   */
   export interface ViewControlProperties extends esri.WidgetProperties {
-    view?: esri.MapView;
-
-    theme?: 'light' | 'dark';
-
-    scale?: 's' | 'm' | 'l';
-
+    /**
+     * Map view.
+     */
+    view: esri.MapView;
+    /**
+     * Include home action.
+     */
     includeHome?: boolean;
-
+    /**
+     * Include compass action.
+     * Defaults true if view rotation enabled.
+     */
     includeCompass?: boolean;
-
+    /**
+     * Include locate action.
+     */
     includeLocate?: boolean;
-
+    /**
+     * Include fullscreen toggle action.
+     */
     includeFullscreen?: boolean;
-
+    /**
+     * Fullscreen element.
+     */
     fullscreenElement?: HTMLElement;
-
+    /**
+     * Markup instance to use for markup actions.
+     */
     markup?: Markup;
   }
   export class ViewControl extends esri.Widget {
-    constructor(properties?: ViewControlProperties);
+    constructor(properties: ViewControlProperties);
     view: esri.MapView;
-    theme: 'light' | 'dark';
-    scale: 's' | 'm' | 'l';
     includeHome: boolean;
     includeCompass: boolean;
     includeLocate: boolean;
@@ -480,7 +567,7 @@ declare namespace __cov {
   }
 
   ////////////////////////////////////////////////////////////////////////////////
-  // Viewer
+  // Layouts
   ////////////////////////////////////////////////////////////////////////////////
 
   export interface ViewerWidgetProperties extends Object {
@@ -555,6 +642,69 @@ declare namespace __cov {
     menuWidgets: esri.Collection<ViewerWidgetProperties>;
     uiWidgets: esri.Collection<ViewerWidgetProperties>;
   }
+
+  /**
+   * cov/layouts/ShellApp
+   * A calcite shell layout.
+   */
+  export interface ShellAppProperties extends esri.WidgetProperties {
+    /**
+     * Map or scene view.
+     */
+    view: esri.MapView | esri.SceneView;
+    /**
+     * Application title.
+     */
+    title?: string;
+    /**
+     * Include search in header.
+     * @default true
+     */
+    includeSearch?: boolean;
+    /**
+     * Optional search view model to back search.
+     */
+    searchViewModel?: esri.SearchViewModel;
+    /**
+     * Panel collapsed on load.
+     * @default false
+     */
+    panelCollapsed?: boolean;
+    /**
+     * Place panel at start or end of shell.
+     * @default 'start'
+     */
+    panelPosition?: 'start' | 'end';
+    /**
+     * Width scale of shell panel.
+     */
+    widthScale?: 's' | 'm' | 'l';
+    /**
+     * Action widgets.
+     */
+    actionWidgets?: ViewerWidgetProperties[];
+    /**
+     * Include markup actions in view control.
+     */
+    markup?: Markup;
+    /**
+     * OAuth view model.
+     */
+    oAuthViewModel?: OAuthViewModel;
+  }
+  export class ShellApp extends esri.Widget {
+    constructor(properties: ShellAppProperties);
+    view: esri.MapView | esri.SceneView;
+    title: string;
+    includeSearch: boolean;
+    searchViewModel: esri.SearchViewModel;
+    panelCollapsed: boolean;
+    panelPosition: 'start' | 'end';
+    widthScale: 's' | 'm' | 'l';
+    actionWidgets: ViewerWidgetProperties[];
+    markup: Markup;
+    oAuthViewModel: OAuthViewModel;
+  }
 }
 /**
  * End namespace.
@@ -589,11 +739,6 @@ declare module '@vernonia/core/support/linearReferencing' {
 ////////////////////////////////////////////////////////////////////////////////
 // View models
 ////////////////////////////////////////////////////////////////////////////////
-declare module '@vernonia/core/viewModels/MarkupViewModel' {
-  import MarkupViewModel = __cov.MarkupViewModel;
-  export = MarkupViewModel;
-}
-
 declare module '@vernonia/core/viewModels/OAuthViewModel' {
   import OAuthViewModel = __cov.OAuthViewModel;
   export = OAuthViewModel;
@@ -620,6 +765,11 @@ declare module '@vernonia/core/widgets/ColorPicker' {
 declare module '@vernonia/core/widgets/DisclaimerModal' {
   import DisclaimerModal = __cov.DisclaimerModal;
   export = DisclaimerModal;
+}
+
+declare module '@vernonia/core/widgets/HeaderAccountControl' {
+  import HeaderAccountControl = __cov.HeaderAccountControl;
+  export = HeaderAccountControl;
 }
 
 declare module '@vernonia/core/widgets/LayerListLegend' {
@@ -657,6 +807,11 @@ declare module '@vernonia/core/widgets/Share' {
   export = Share;
 }
 
+declare module '@vernonia/core/widgets/SignInScreen' {
+  import SignInScreen = __cov.SignInScreen;
+  export = SignInScreen;
+}
+
 declare module '@vernonia/core/widgets/SimpleInfo' {
   import SimpleInfo = __cov.SimpleInfo;
   export = SimpleInfo;
@@ -682,10 +837,14 @@ declare module '@vernonia/core/widgets/WaterMeters' {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Viewer
+// Layouts
 ////////////////////////////////////////////////////////////////////////////////
-
 declare module '@vernonia/core/layouts/Viewer' {
   import Viewer = __cov.Viewer;
   export = Viewer;
+}
+
+declare module '@vernonia/core/layouts/ShellApp' {
+  import ShellApp = __cov.ShellApp;
+  export = ShellApp;
 }

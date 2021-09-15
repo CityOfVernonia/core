@@ -1,4 +1,13 @@
+/**
+ * City of Vernonia colors in hex and rgb.
+ */
+
 export const hexColors = {
+  // City colors
+  vernoniaGreen: '#6b9560',
+  vernoniaDarkGreen: '#44693d',
+  vernoniaOffWhite: '#fcfaf1',
+  // City web site colors
   aqua: '#7fdbff',
   blue: '#0074d9',
   lime: '#01ff70',
@@ -19,6 +28,11 @@ export const hexColors = {
 };
 
 export const rgbColors = {
+  // City colors
+  vernoniaGreen: [107, 149, 96],
+  vernoniaDarkGreen: [68, 105, 61],
+  vernoniaOffWhite: [252, 250, 241],
+  // City web site colors
   // aqua: '#7fdbff',
   // blue: '#0074d9',
   // lime: '#01ff70',

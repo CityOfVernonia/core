@@ -1,5 +1,5 @@
 /**
- * Share an app via facebook and twitter.
+ * A widget to share an app via facebook and twitter.
  */
 
 // base imports

@@ -1,7 +1,9 @@
+/**
+ * Linear referencing helpers.
+ */
+
 import esri = __esri;
-
 import esriRequest from '@arcgis/core/request';
-
 import { distance as point2PointDistance } from './cogo';
 
 /**
