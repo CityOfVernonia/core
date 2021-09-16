@@ -21,6 +21,12 @@ declare namespace __cov {
    */
   export class TaxLotPopup extends esri.PopupTemplate {}
 
+  /**
+   * cov/popups/CenterlinesPopup
+   * Standard popup for centerline feature service in COV apps.
+   */
+  export class CenterlinesPopup extends esri.PopupTemplate {}
+
   ////////////////////////////////////////////////////////////////////////////////
   // Support
   ////////////////////////////////////////////////////////////////////////////////
@@ -498,6 +504,25 @@ declare namespace __cov {
   }
 
   /**
+   * cov/widgets/TransportationLayers
+   * A widget for controlling the display of transportation network layers.
+   */
+  export interface TransportationLayersProperties extends esri.WidgetProperties {
+    /**
+     * Map view.
+     */
+    view: esri.MapView;
+    /**
+     * Transportation map image layer.
+     */
+    layer: esri.MapImageLayer;
+  }
+  export class TransportationLayers extends esri.Widget {
+    constructor(properties: TransportationLayersProperties);
+    layer: esri.MapImageLayer;
+  }
+
+  /**
    * cov/widgets/ViewControl
    * A view control widget to replace default zoom widget with home, locate, fullscreen, compass and markup create actions.
    */
@@ -718,6 +743,11 @@ declare module '@vernonia/core/popups/TaxLotPopup' {
   export = TaxLotPopup;
 }
 
+declare module '@vernonia/core/popups/CenterlinesPopup' {
+  import CenterlinesPopup = __cov.CenterlinesPopup;
+  export = CenterlinesPopup;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Support
 ////////////////////////////////////////////////////////////////////////////////
@@ -826,6 +856,12 @@ declare module '@vernonia/core/widgets/TaxMaps' {
   import TaxMaps = __cov.TaxMaps;
   export = TaxMaps;
 }
+
+declare module '@vernonia/core/widgets/TransportationLayers' {
+  import TransportationLayers = __cov.TransportationLayers;
+  export = TransportationLayers;
+}
+
 declare module '@vernonia/core/widgets/ViewControl' {
   import ViewControl = __cov.ViewControl;
   export = ViewControl;
