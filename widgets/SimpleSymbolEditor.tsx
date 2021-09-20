@@ -367,7 +367,7 @@ export default class SimpleSymbolEditor extends Widget {
             ></calcite-input>
           </calcite-label>
           <calcite-label>
-            Line width
+            Size
             <calcite-slider
               afterCreate={(calciteSlider: HTMLCalciteSliderElement) => {
                 calciteSlider.addEventListener('calciteSliderChange', () => {

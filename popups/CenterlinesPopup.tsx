@@ -206,7 +206,7 @@ class Content extends Widget {
 @subclass('cov.popups.CenterlinesPopup')
 export default class CenterlinesPopup extends PopupTemplate {
   @property()
-  title = (feature: { graphic: esri.Graphic }) => {
+  title = (feature: { graphic: esri.Graphic }): string => {
     const {
       graphic: { attributes },
     } = feature;

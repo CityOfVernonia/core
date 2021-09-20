@@ -146,6 +146,9 @@ export default class Markup extends Widget {
   private _isText = false;
 
   @property()
+  private _textInput!: HTMLCalciteInputElement;
+
+  @property()
   protected units = new UnitsViewModel();
 
   @property()
@@ -320,15 +323,27 @@ export default class Markup extends Widget {
    * @param graphic
    */
   private _addGraphic(graphic: esri.Graphic): void {
-    const { sketch, text, textSymbol, _isText } = this;
+    const {
+      sketch,
+      text,
+      textSymbol,
+      _isText,
+      _textInput: { value },
+    } = this;
     const type = graphic.geometry.type as 'point' | 'polyline' | 'polygon';
 
     if (_isText) {
       graphic.symbol = textSymbol.clone();
+      (graphic.symbol as esri.TextSymbol).text = value || 'New Text';
     }
 
     if (!graphic.symbol) {
-      graphic.symbol = sketch[`${type}Symbol` as 'pointSymbol' | 'polylineSymbol' | 'polygonSymbol'] as esri.Symbol;
+      graphic.symbol = (
+        sketch[`${type}Symbol` as 'pointSymbol' | 'polylineSymbol' | 'polygonSymbol'] as
+          | esri.SimpleMarkerSymbol
+          | esri.SimpleLineSymbol
+          | esri.SimpleFillSymbol
+      ).clone();
     }
 
     graphic.popupTemplate = new PopupTemplate({
@@ -351,6 +366,7 @@ export default class Markup extends Widget {
     }
 
     this._isText = false;
+    this._textInput.value = 'New Text';
   }
 
   /**
@@ -438,18 +454,25 @@ export default class Markup extends Widget {
     const {
       view: { popup },
       textSymbol,
+      text,
     } = this;
     const {
       geometry: { type },
     } = graphic;
-    const collection = graphic.get('layer.graphics') as esri.Collection<esri.Graphic>;
-
     if (type !== 'point') return;
 
     popup.close();
 
+    (graphic.layer as esri.GraphicsLayer).remove(graphic);
+
     graphic.symbol = textSymbol.clone();
-    collection.reorder(graphic, collection.length - 1);
+
+    text.add(graphic);
+
+    popup.clear();
+    popup.open({
+      features: [graphic],
+    });
   }
 
   /**
@@ -915,6 +938,8 @@ export default class Markup extends Widget {
     //     selectedFeature.layer.type === 'feature' &&
     //     (selectedFeature.layer as esri.FeatureLayer).geometryType === 'polygon');
 
+    const isText = selectedFeature?.symbol?.type === 'text';
+
     return (
       <div class={CSS.base}>
         <calcite-tabs layout="center">
@@ -959,11 +984,22 @@ export default class Markup extends Widget {
                 title="Draw circle"
                 onclick={this.markup.bind(this, 'circle')}
               ></calcite-button>
-              <calcite-button
-                icon-start="text-large"
-                title="Draw text"
-                onclick={this.markup.bind(this, 'point', true)}
-              ></calcite-button>
+            </div>
+            <div class={CSS.buttonRow}>
+              <calcite-input
+                type="text"
+                placeholder="Text to add"
+                value="New Text"
+                afterCreate={storeNode.bind(this)}
+                data-node-ref="_textInput"
+              >
+                <calcite-button
+                  slot="action"
+                  icon-start="text-large"
+                  title="Draw text"
+                  onclick={this.markup.bind(this, 'point', true)}
+                ></calcite-button>
+              </calcite-input>
             </div>
             <calcite-label layout="inline" alignment="end">
               <calcite-checkbox
@@ -1010,7 +1046,7 @@ export default class Markup extends Widget {
               <calcite-button
                 icon-start="add-text"
                 title="Convert selected to text"
-                disabled={!(isMarkup && isPoint)}
+                disabled={!(isMarkup && isPoint && !isText)}
                 onclick={this._pointToText.bind(this, selectedFeature)}
               ></calcite-button>
               <calcite-button

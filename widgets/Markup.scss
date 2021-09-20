@@ -13,6 +13,7 @@
 }
 
 .cov-markup--button-row {
+  display: flex;
   margin-bottom: 0.75rem;
 
   &:last-child {
@@ -29,6 +30,10 @@
     &:last-child {
       margin-right: 0;
     }
+  }
+
+  calcite-input {
+    width: 12rem;
   }
 }
 

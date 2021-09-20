@@ -474,6 +474,26 @@ declare namespace __cov {
     symbol: esri.Symbol2D3D;
   }
 
+  /**
+   * cov/widgets/TaxLotBuffer
+   * Widget for buffering tax lots.
+   */
+  export interface TaxLotBufferProperties extends esri.WidgetProperties {
+    /**
+     * Map view.
+     */
+    view: esri.MapView;
+    /**
+     * Tax lot feature layer.
+     */
+    layer: esri.FeatureLayer;
+  }
+  export class TaxLotBuffer extends esri.Widget {
+    constructor(properties: TaxLotBufferProperties);
+    view: esri.MapView;
+    layer: esri.FeatureLayer;
+  }
+
   export interface TaxLotSurveysProperties extends esri.WidgetProperties {
     view: esri.MapView;
     taxLotLayer: esri.FeatureLayer;
@@ -845,6 +865,11 @@ declare module '@vernonia/core/widgets/SignInScreen' {
 declare module '@vernonia/core/widgets/SimpleInfo' {
   import SimpleInfo = __cov.SimpleInfo;
   export = SimpleInfo;
+}
+
+declare module '@vernonia/core/widgets/TaxLotBuffer' {
+  import TaxLotBuffer = __cov.TaxLotBuffer;
+  export = TaxLotBuffer;
 }
 
 declare module '@vernonia/core/widgets/TaxLotSurveys' {

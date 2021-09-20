@@ -43,6 +43,8 @@ const CSS = {
   // ui widgets
   uiWidgetsPanelContainer: 'cov-viewer-ui-widgets--panel-container',
   uiWidgetsPanel: 'cov-viewer-ui-widgets--panel',
+  // menu
+  menuWidgetsPanel: 'cov-viewer-menu-widgets--panel',
 };
 
 let KEY = 0;
@@ -94,7 +96,7 @@ class Menu extends Widget {
 
       _panels.push(
         <calcite-panel
-          class={CSS.uiWidgetsPanel}
+          class={CSS.menuWidgetsPanel}
           hidden={index !== 0}
           afterCreate={(calcitePanel: HTMLCalcitePanelElement) => {
             watch(this, '_active', () => {
@@ -257,8 +259,6 @@ export default class Viewer extends Widget {
     super(properties);
     // add directly to <body>
     document.body.append(this.container);
-
-    console.log(this);
   }
 
   async postInitialize(): Promise<void> {
