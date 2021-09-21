@@ -6,7 +6,7 @@
 import cov = __cov;
 
 // base imports
-import { whenOnce } from '@arcgis/core/core/watchUtils';
+import { watch, whenOnce } from '@arcgis/core/core/watchUtils';
 import Collection from '@arcgis/core/core/Collection';
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
@@ -243,6 +243,36 @@ export default class Markup extends Widget {
           layer: _layer,
         }),
       );
+    });
+
+    watch(map, 'allLayers.length', () => {
+      // add new layers as snapping sources
+      map.allLayers.forEach((_layer: esri.Layer) => {
+        const { type } = _layer;
+        const isSource = sketch.snappingOptions.featureSources.find((source: esri.FeatureSnappingLayerSource): boolean => {
+          return source.layer === _layer;
+        });
+
+        if (isSource) return;
+
+        if (
+          type === 'feature' ||
+          type === 'graphics' ||
+          type === 'geojson' ||
+          (type === 'csv' && _layer.listMode !== 'hide' && _layer.title)
+        ) {
+          sketch.snappingOptions.featureSources.add(
+            new FeatureSnappingLayerSource({
+              //@ts-ignore
+              layer: _layer,
+            }),
+          );
+        }
+      });
+
+      // always on top
+      map.layers.reorder(layers, map.layers.length - 1);
+
     });
 
     // load projection
