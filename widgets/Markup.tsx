@@ -249,9 +249,11 @@ export default class Markup extends Widget {
       // add new layers as snapping sources
       map.allLayers.forEach((_layer: esri.Layer) => {
         const { type } = _layer;
-        const isSource = sketch.snappingOptions.featureSources.find((source: esri.FeatureSnappingLayerSource): boolean => {
-          return source.layer === _layer;
-        });
+        const isSource = sketch.snappingOptions.featureSources.find(
+          (source: esri.FeatureSnappingLayerSource): boolean => {
+            return source.layer === _layer;
+          },
+        );
 
         if (isSource) return;
 
@@ -272,7 +274,6 @@ export default class Markup extends Widget {
 
       // always on top
       map.layers.reorder(layers, map.layers.length - 1);
-
     });
 
     // load projection
