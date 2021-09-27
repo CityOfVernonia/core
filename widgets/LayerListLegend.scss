@@ -49,3 +49,29 @@
     }
   }
 }
+
+.cov-layer-list-legend--title {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.cov-layer-list-legend--add-layers {
+  display: flex;
+  flex-flow: column;
+  color: var(--calcite-ui-text-1);
+
+  calcite-list-item {
+    border-bottom: solid 1px var(--calcite-ui-border-1);
+  }
+}
+
+.cov-layer-list-legend--add-button {
+  padding: 0.75rem 0.75rem 0.25rem;
+}
+
+.cov-layer-list-legend--imagery-tab {
+  display: flex;
+  flex-flow: column;
+  padding: 0 0.75rem;
+  color: var(--calcite-ui-text-1);
+}

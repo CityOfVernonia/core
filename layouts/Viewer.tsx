@@ -13,9 +13,10 @@ import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 
 // class imports
+import Search from '@arcgis/core/widgets/Search';
+import HeaderAccountControl from './../widgets/HeaderAccountControl';
 import ViewControl from './../widgets/ViewControl';
 import ScaleBar from '@arcgis/core/widgets/ScaleBar';
-import Search from '@arcgis/core/widgets/Search';
 import BasemapToggle from '@arcgis/core/widgets/BasemapToggle';
 
 // styles
@@ -32,11 +33,6 @@ const CSS = {
   headerTitleText: 'cov-viewer--header-title--title-text',
   // header search
   headerSearch: 'cov-viewer--header-search',
-  // header user
-  headerUser: 'cov-viewer--header-user',
-  headerUserMenu: 'cov-viewer--header-user_menu',
-  headerUserMenuClose: 'cov-viewer--header-user_menu--close',
-  headerUserMenuVisible: 'cov-viewer--header-user_menu--visible',
   // center and view
   center: 'cov-viewer--center',
   view: 'cov-viewer--view',
@@ -262,8 +258,7 @@ export default class Viewer extends Widget {
   }
 
   async postInitialize(): Promise<void> {
-    const { view, includeHeader, title, includeSearch, searchViewModel, uiWidgets, nextBasemap, markup, container } =
-      this;
+    const { view, includeHeader, title, uiWidgets, nextBasemap, markup, container } = this;
 
     // assure no view or dom race conditions
     await setTimeout(() => {
@@ -307,18 +302,6 @@ export default class Viewer extends Widget {
       );
     }
 
-    // search
-    if (includeHeader && includeSearch) {
-      const search = new Search();
-      if (searchViewModel) {
-        searchViewModel.view = view;
-        search.viewModel = searchViewModel;
-      } else {
-        search.view = view;
-      }
-      search.container = document.querySelector('div[data-viewer-search-container]') as HTMLDivElement;
-    }
-
     // add ui widgets
     if (uiWidgets.length) {
       view.ui.add(
@@ -331,7 +314,7 @@ export default class Viewer extends Widget {
   }
 
   render(): tsx.JSX.Element {
-    const { includeHeader, title, oAuthViewModel, menuWidgets, _menuCollapsed } = this;
+    const { includeHeader, title, menuWidgets, _menuCollapsed } = this;
     return (
       <div class={CSS.base}>
         {/* header */}
@@ -351,9 +334,9 @@ export default class Viewer extends Widget {
               <div class={CSS.headerTitleText}>{title}</div>
             </div>
             {/* header search */}
-            <div class={CSS.headerSearch} data-viewer-search-container=""></div>
+            <div afterCreate={this._renderHeaderSearch.bind(this)}></div>
             {/* user */}
-            <div class={CSS.headerUser}>{oAuthViewModel ? this._renderUser() : null}</div>
+            <div afterCreate={this._renderHeaderAccountControl.bind(this)}></div>
           </div>
         ) : null}
         {/* center content (menu and view) */}
@@ -377,74 +360,37 @@ export default class Viewer extends Widget {
   }
 
   /**
-   * Render sign in button; or avatar and user menu.
-   * @returns VNode
+   * Create header search.
+   * @param container
    */
-  private _renderUser(): tsx.JSX.Element {
-    const { oAuthViewModel, _userMenuVisible } = this;
+  private _renderHeaderSearch(container: HTMLDivElement): void {
+    const { view, includeSearch, searchViewModel } = this;
 
-    return oAuthViewModel.signedIn ? (
-      <div>
-        <calcite-avatar
-          scale="s"
-          username={oAuthViewModel.username}
-          full-name={oAuthViewModel.name}
-          thumbnail={oAuthViewModel.user && oAuthViewModel.user.thumbnailUrl ? oAuthViewModel.user.thumbnailUrl : ''}
-          title={`Signed in as ${oAuthViewModel.name}`}
-          onclick={(): void => {
-            this._userMenuVisible = !this._userMenuVisible;
-          }}
-        ></calcite-avatar>
+    if (includeSearch) {
+      const search = new Search({
+        container,
+      });
+      if (searchViewModel) {
+        searchViewModel.view = view;
+        search.viewModel = searchViewModel;
+      } else {
+        search.view = view;
+      }
+    }
+  }
 
-        {/* user menu */}
-        <div class={this.classes(CSS.headerUserMenu, _userMenuVisible ? CSS.headerUserMenuVisible : '')}>
-          <div>
-            <calcite-avatar
-              scale="l"
-              username={oAuthViewModel.username}
-              full-name={oAuthViewModel.name}
-              thumbnail={
-                oAuthViewModel.user && oAuthViewModel.user.thumbnailUrl ? oAuthViewModel.user.thumbnailUrl : ''
-              }
-            ></calcite-avatar>
-          </div>
-          <div>{oAuthViewModel.name}</div>
-          <div>{oAuthViewModel.username}</div>
-          <div>
-            <calcite-link href={`${oAuthViewModel.portal.url}/home/content.html`} target="_blank">
-              My Content
-            </calcite-link>
-          </div>
-          <div>
-            <calcite-link href={`${oAuthViewModel.portal.url}/home/user.html`} target="_blank">
-              My Profile
-            </calcite-link>
-          </div>
-          <calcite-button width="full" onclick={oAuthViewModel.signOut.bind(oAuthViewModel)}>
-            Sign Out
-          </calcite-button>
-          {/* close button */}
-          <calcite-action
-            class={CSS.headerUserMenuClose}
-            appearance="clear"
-            icon="x"
-            onclick={(): void => {
-              this._userMenuVisible = false;
-            }}
-          ></calcite-action>
-        </div>
-      </div>
-    ) : (
-      <calcite-button
-        scale="s"
-        round=""
-        appearance="transparent"
-        color="inverse"
-        title="Sign In"
-        onclick={oAuthViewModel.signIn.bind(oAuthViewModel)}
-      >
-        Sign In
-      </calcite-button>
-    );
+  /**
+   * Create header account control.
+   * @param container
+   */
+  private _renderHeaderAccountControl(container: HTMLDivElement) {
+    const { oAuthViewModel } = this;
+
+    if (oAuthViewModel) {
+      new HeaderAccountControl({
+        oAuthViewModel,
+        container,
+      });
+    }
   }
 }

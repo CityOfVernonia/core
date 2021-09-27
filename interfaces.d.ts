@@ -50,6 +50,25 @@ declare namespace __cov {
     rgbColors: HashMap<[number, number, number]>;
   }
 
+  export interface featureLabeling {
+    labelSegmentLengths(
+      geometry: esri.Polyline | esri.Polygon,
+      unit: esri.LinearUnits,
+      includeUnit: boolean,
+      textSymbol: esri.TextSymbol,
+      layer: esri.GraphicsLayer,
+      popupTemplate?: esri.PopupTemplate,
+    ): void;
+    labelPolygonArea(
+      polygon: esri.Polygon,
+      unit: esri.ArealUnits,
+      includeUnit: boolean,
+      textSymbol: esri.TextSymbol,
+      layer: esri.GraphicsLayer,
+      popupTemplate?: esri.PopupTemplate,
+    ): void;
+  }
+
   /**
    * cov/support/linearReferencing
    * Linear referencing helpers.
@@ -285,15 +304,49 @@ declare namespace __cov {
     oAuthViewModel: OAuthViewModel;
   }
 
+  /**
+   * cov/widgets/LayerListLegend
+   * LayerList, Legend, and add layers widgets tabbed.
+   */
+  export interface LayerListLegendImageryLayer extends Object {
+    title: string;
+    layer: esri.TileLayer | esri.ImageryLayer | esri.ImageryTileLayer | esri.BingMapsLayer;
+  }
   export interface LayerListLegendProperties extends esri.WidgetProperties {
     /**
      * Map or scene view.
      */
     view: esri.MapView | esri.SceneView;
+    /**
+     * Add layers.
+     */
+    addLayers?: PortalItemToAddProperties[] | esri.Collection<PortalItemToAddProperties>;
+    /**
+     * Include add from web button.
+     * @default true
+     */
+    addFromWeb?: boolean;
+    /**
+     * Portals to add layers from.
+     * Defaults to single option of app's portal.
+     */
+    addFromPortals?: esri.Portal[];
+    /**
+     * Basemap to select select imagery from.
+     */
+    imageryBasemap?: esri.Basemap;
+    /**
+     * Imagery layers to select from.
+     */
+    imageryLayers?: LayerListLegendImageryLayer[] | esri.Collection<LayerListLegendImageryLayer>;
   }
   export class LayerListLegend extends esri.Widget {
     constructor(properties: LayerListLegendProperties);
     view: esri.MapView | esri.SceneView;
+    addLayers: esri.Collection<PortalItemToAddProperties>;
+    addFromWeb: boolean;
+    basemap: esri.Basemap;
+    imageryLayers: esri.Collection<LayerListLegendImageryLayer>;
   }
 
   export interface LoadingScreenProperties extends esri.WidgetProperties {

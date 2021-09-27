@@ -49,53 +49,6 @@
   font-weight: 100;
 }
 
-.cov-viewer--header-user {
-  margin-right: var(--calcite-font-size--1);
-
-  calcite-avatar {
-    display: flex;
-    cursor: pointer;
-  }
-}
-
-.cov-viewer--header-user_menu {
-  display: flex;
-  flex-flow: column;
-  position: absolute;
-  right: 1rem;
-  padding: 1rem;
-  z-index: 1;
-  visibility: hidden;
-  opacity: 0.25;
-  transition: opacity 0.25s ease-in-out;
-  font-size: var(--calcite-font-size--1);
-  color: var(--calcite-ui-text-1);
-  background-color: var(--calcite-ui-background);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
-  border-radius: var(--calcite-border-radius);
-
-  calcite-avatar {
-    margin: 0 auto;
-    cursor: default;
-  }
-
-  div {
-    margin-bottom: 0.5rem;
-    text-align: center;
-  }
-
-  .cov-viewer--header-user_menu--close {
-    position: absolute;
-    top: 0;
-    right: 0;
-  }
-
-  &.cov-viewer--header-user_menu--visible {
-    visibility: visible;
-    opacity: 1;
-  }
-}
-
 .cov-viewer--header .esri-search {
   .esri-widget--button {
     width: 40px;
