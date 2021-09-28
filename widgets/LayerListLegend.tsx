@@ -268,26 +268,22 @@ export default class LayerListLegend extends Widget {
    * Create radio buttons for imagery.
    */
   private _createImageryRadioButtons(): void {
-    const {
-      view: { map },
-      imageryBasemap,
-      imageryLayers,
-      _imageryRadioButtons,
-    } = this;
+    const { id, imageryBasemap, imageryLayers, _imageryRadioButtons } = this;
 
     imageryLayers.forEach((imageryLayer: cov.LayerListLegendImageryLayer) => {
       const checked = imageryBasemap.baseLayers.getItemAt(0).id === imageryLayer.layer.id;
-
+      const _id = `imagery_radio_button_${id}_${KEY++}`;
       _imageryRadioButtons.add({
         element: (
           <calcite-label
+            for={_id}
             layout="inline"
             onclick={() => {
               imageryBasemap.baseLayers.removeAt(0);
               imageryBasemap.baseLayers.add(imageryLayer.layer, 0);
             }}
           >
-            <calcite-radio-button key={KEY++} checked={checked}></calcite-radio-button>
+            <calcite-radio-button key={KEY++} id={_id} checked={checked}></calcite-radio-button>
             {imageryLayer.title}
           </calcite-label>
         ),
