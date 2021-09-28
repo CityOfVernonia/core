@@ -355,6 +355,7 @@ export default class Markup extends Widget {
    */
   private _addGraphic(graphic: esri.Graphic): void {
     const {
+      layer,
       sketch,
       text,
       textSymbol,
@@ -362,6 +363,12 @@ export default class Markup extends Widget {
       _textInput: { value },
     } = this;
     const type = graphic.geometry.type as 'point' | 'polyline' | 'polygon';
+
+    if (graphic.layer && graphic.layer === layer) layer.remove(graphic);
+
+    graphic = new Graphic({
+      geometry: graphic.geometry,
+    });
 
     if (_isText) {
       graphic.symbol = textSymbol.clone();
