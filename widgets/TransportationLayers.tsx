@@ -215,7 +215,6 @@ export default class TransportationLayers extends Widget {
               layerInfos: [
                 {
                   layer: this.layer,
-                  hideLayers: [],
                 },
               ],
             });

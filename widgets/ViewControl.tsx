@@ -4,7 +4,6 @@
 
 // namespaces and types
 import cov = __cov;
-import '@esri/calcite-components'; // why in this module only?
 
 // imports
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';

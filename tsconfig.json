@@ -7,11 +7,28 @@
     "strict": true,
     "esModuleInterop": true,
     "importHelpers": true,
+    "skipLibCheck": true,
     "paths": {
       "tslib": ["./node_modules/tslib/tslib.d.ts"]
     },
     "experimentalDecorators": true,
     "jsx": "react",
-    "jsxFactory": "tsx"
-  }
+    "jsxFactory": "tsx",
+    "outDir": "dist/",
+    "types": [
+      "@esri/calcite-components",
+      "pouchdb",
+    ]
+  },
+  "exclude": [
+    "node_modules/"
+  ],
+  "include": [
+    "layouts/",
+    "popups/",
+    "support/",
+    "viewModels/",
+    "widgets/",
+    "interfaces.d.ts"
+  ]
 }
