@@ -5,6 +5,13 @@ import esri = __esri;
  */
 declare namespace __cov {
   ////////////////////////////////////////////////////////////////////////////////
+  // Generic interfaces
+  ////////////////////////////////////////////////////////////////////////////////
+  export interface CollectionElement extends Object {
+    element: esri.widget.tsx.JSX.Element;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
   // Popups
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -332,13 +339,17 @@ declare namespace __cov {
      */
     addFromPortals?: esri.Portal[];
     /**
-     * Basemap to select select imagery from.
+     * Basemap to select select imagery for.
      */
     imageryBasemap?: esri.Basemap;
     /**
      * Imagery layers to select from.
      */
     imageryLayers?: LayerListLegendImageryLayer[] | esri.Collection<LayerListLegendImageryLayer>;
+    /**
+     * BasemapToggle to toggle basemap.
+     */
+    basemapToggle?: esri.BasemapToggle;
   }
   export class LayerListLegend extends esri.Widget {
     constructor(properties: LayerListLegendProperties);
@@ -446,6 +457,10 @@ declare namespace __cov {
     clear(): void;
   }
 
+  /**
+   * cov/widgets/Print
+   * Simple print and snapshot widget.
+   */
   export interface PrintProperties extends esri.WidgetProperties {
     /**
      * Map or scene view.

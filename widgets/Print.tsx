@@ -1,5 +1,5 @@
 /**
- * Print and snapshot widget.
+ * Simple print and snapshot widget.
  */
 
 // namespaces and types
@@ -70,7 +70,7 @@ export default class Print extends Widget {
   private _snapshotTitleInput!: HTMLCalciteInputElement;
 
   @property()
-  private _snapshotFormatRadioGroup!: HTMLCalciteRadioGroupElement;
+  private _snapshotFormatSelect!: HTMLCalciteSelectElement;
 
   @property()
   private _snapshotElement = document.createElement('div');
@@ -157,8 +157,8 @@ export default class Print extends Widget {
    * Initiate full view snapshot.
    */
   private _snapshot(): void {
-    const { view, _snapshotFormatRadioGroup } = this;
-    const format = _snapshotFormatRadioGroup.selectedItem.value;
+    const { view, _snapshotFormatSelect } = this;
+    const format = _snapshotFormatSelect.selectedOption.value;
     view
       .takeScreenshot({
         format,
@@ -170,8 +170,8 @@ export default class Print extends Widget {
    * Initiate area snapshot.
    */
   private _snapshotArea(): void {
-    const { view, _snapshotFormatRadioGroup, _snapshotElement } = this;
-    const format = _snapshotFormatRadioGroup.selectedItem.value;
+    const { view, _snapshotFormatSelect, _snapshotElement } = this;
+    const format = _snapshotFormatSelect.selectedOption.value;
 
     const clamp = (value: number, from: number, to: number): number => {
       return value < from ? from : value > to ? to : value;
@@ -232,9 +232,9 @@ export default class Print extends Widget {
    * @param screenshotResult
    */
   private _snapshotCallback(screenshotResult: esri.Screenshot): void {
-    const { title, _snapshotTitleInput, _snapshotFormatRadioGroup, _snapshotResults } = this;
+    const { title, _snapshotTitleInput, _snapshotFormatSelect, _snapshotResults } = this;
     const titleText = _snapshotTitleInput.value || title;
-    const format = _snapshotFormatRadioGroup.selectedItem.value;
+    const format = _snapshotFormatSelect.selectedOption.value;
 
     const data = screenshotResult.data;
 
@@ -287,21 +287,26 @@ export default class Print extends Widget {
   }
 
   render(): tsx.JSX.Element {
-    const { _printResults, _snapshotResults } = this;
+    const { title, _printResults, _snapshotResults } = this;
     return (
       <div class={CSS.base}>
         <calcite-tabs layout="center">
           <calcite-tab-nav slot="tab-nav">
-            <calcite-tab-title active="">Print</calcite-tab-title>
-            <calcite-tab-title>Snapshot</calcite-tab-title>
+            <calcite-tab-title active="">
+              <calcite-icon scale="s" icon="print" title="Print"></calcite-icon>
+            </calcite-tab-title>
+            <calcite-tab-title>
+              <calcite-icon scale="s" icon="image" title="Snapshot"></calcite-icon>
+            </calcite-tab-title>
           </calcite-tab-nav>
-
           {/* print tab */}
           <calcite-tab active="">
             <calcite-label>
               Title
               <calcite-input
                 type="text"
+                value={title}
+                placeholder="Print title"
                 bind={this}
                 afterCreate={storeNode}
                 data-node-ref="_printTitleInput"
@@ -320,13 +325,14 @@ export default class Print extends Widget {
               return result.element;
             })}
           </calcite-tab>
-
           {/* snapshot tab */}
           <calcite-tab>
             <calcite-label>
               Title
               <calcite-input
                 type="text"
+                value={title}
+                placeholder="Snapshot title"
                 bind={this}
                 afterCreate={storeNode}
                 data-node-ref="_snapshotTitleInput"
@@ -334,23 +340,26 @@ export default class Print extends Widget {
             </calcite-label>
             <calcite-label>
               Format
-              <calcite-radio-group bind={this} afterCreate={storeNode} data-node-ref="_snapshotFormatRadioGroup">
-                <calcite-radio-group-item value="jpg" checked="">
-                  JPEG
-                </calcite-radio-group-item>
-                <calcite-radio-group-item value="png">PNG</calcite-radio-group-item>
-              </calcite-radio-group>
+              <calcite-select bind={this} afterCreate={storeNode} data-node-ref="_snapshotFormatSelect">
+                <calcite-option label="JPG" value="jpg" selected=""></calcite-option>
+                <calcite-option label="PNG" value="png"></calcite-option>
+              </calcite-select>
             </calcite-label>
-            <calcite-button
-              appearance="outline"
-              width="half"
-              icon-start="image-plus"
-              onclick={this._snapshotArea.bind(this)}
-            >
-              Area
-            </calcite-button>
+
+            {/* if and when split button has fixed positioning */}
+            {/* <calcite-split-button width="full" primary-icon-start="image" primary-text="Snapshot" afterCreate={(splitButton: HTMLCalciteSplitButtonElement) => {
+              splitButton.addEventListener('calciteSplitButtonPrimaryClick', this._snapshot.bind(this));
+            }}>
+              <calcite-dropdown-group selection-mode="none">
+                <calcite-dropdown-item icon-start="image-plus" onclick={this._snapshotArea.bind(this)}>Area Snapshot</calcite-dropdown-item>
+              </calcite-dropdown-group>
+            </calcite-split-button> */}
+
             <calcite-button width="half" icon-start="image" onclick={this._snapshot.bind(this)}>
               Full
+            </calcite-button>
+            <calcite-button width="half" icon-start="image-plus" onclick={this._snapshotArea.bind(this)}>
+              Area
             </calcite-button>
             {_snapshotResults.toArray()}
           </calcite-tab>

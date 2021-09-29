@@ -555,10 +555,32 @@ export default class Markup extends Widget {
   /**
    * Offset a polyline
    * @param feature
-   * @param event
    */
   private _offset(graphic: esri.Graphic): void {
     const { geometry, attributes, layer } = graphic;
+    const { view, offsetProjectionWkid } = this;
+    if (geometry && geometry.spatialReference.wkid === view.spatialReference.wkid) {
+      this.__offset(geometry as esri.Polyline);
+    } else if (!geometry && layer && layer.type === 'feature') {
+      (layer as esri.FeatureLayer)
+        .queryFeatures({
+          returnGeometry: true,
+          outSpatialReference: new SpatialReference({
+            wkid: offsetProjectionWkid,
+          }),
+          objectIds: [attributes[(layer as esri.FeatureLayer).objectIdField]],
+        })
+        .then((results: esri.FeatureSet) => {
+          this.__offset(results.features[0].geometry as esri.Polyline);
+        });
+    }
+  }
+
+  /**
+   * Offset a polyline
+   * @param geometry
+   */
+  private __offset(geometry: esri.Polyline): void {
     const {
       view,
       units: { lengthUnit },
@@ -567,64 +589,33 @@ export default class Markup extends Widget {
       _offsetSides,
     } = this;
     const distance = parseInt(_offsetDistance.value as string);
-
     const sides = _offsetSides.selectedOption.value;
-
-    if (geometry && geometry.spatialReference.wkid === view.spatialReference.wkid) {
-      const projected = projection.project(
-        geometry,
-        new SpatialReference({
-          wkid: offsetProjectionWkid,
+    const projected = projection.project(
+      geometry,
+      new SpatialReference({
+        wkid: offsetProjectionWkid,
+      }),
+    );
+    if (sides === 'both' || sides === 'right') {
+      this._addGraphic(
+        new Graphic({
+          geometry: projection.project(
+            offset(projected, distance, lengthUnit, 'miter') as esri.Geometry,
+            view.spatialReference,
+          ) as esri.Geometry,
         }),
       );
-
-      if (sides === 'both' || sides === 'right') {
-        this._addGraphic(
-          new Graphic({
-            geometry: projection.project(
-              offset(projected, distance, lengthUnit, 'miter') as esri.Geometry,
-              view.spatialReference,
-            ) as esri.Geometry,
-          }),
-        );
-      }
-
-      if (sides === 'both' || sides === 'left') {
-        this._addGraphic(
-          new Graphic({
-            geometry: projection.project(
-              offset(projected, distance * -1, lengthUnit, 'miter') as esri.Geometry,
-              view.spatialReference,
-            ) as esri.Geometry,
-          }),
-        );
-      }
-      return;
     }
-
-    // needs work
-    // if (!geometry && layer && layer.type === 'feature') {
-    //   (layer as esri.FeatureLayer)
-    //     .queryFeatures({
-    //       returnGeometry: true,
-    //       outSpatialReference: new SpatialReference({
-    //         wkid: offsetProjectionWkid,
-    //       }),
-    //       objectIds: [attributes[(layer as esri.FeatureLayer).objectIdField]],
-    //     })
-    //     .then((results: esri.FeatureSet) => {
-    //       this._addGraphic(
-    //         new Graphic({
-    //           geometry: projection.project(results.features[0].geometry, view.spatialReference) as esri.Geometry,
-    //         }),
-    //       );
-    //       this._addGraphic(
-    //         new Graphic({
-    //           geometry: projection.project(results.features[0].geometry, view.spatialReference) as esri.Geometry,
-    //         }),
-    //       );
-    //     });
-    // }
+    if (sides === 'both' || sides === 'left') {
+      this._addGraphic(
+        new Graphic({
+          geometry: projection.project(
+            offset(projected, distance * -1, lengthUnit, 'miter') as esri.Geometry,
+            view.spatialReference,
+          ) as esri.Geometry,
+        }),
+      );
+    }
   }
 
   /**
@@ -983,13 +974,13 @@ export default class Markup extends Widget {
         <calcite-tabs layout="center">
           <calcite-tab-nav slot="tab-nav">
             <calcite-tab-title active="">
-              <calcite-icon scale="s" icon="pencil"></calcite-icon>
+              <calcite-icon scale="s" icon="pencil" title="Markup"></calcite-icon>
             </calcite-tab-title>
             <calcite-tab-title>
-              <calcite-icon scale="s" icon="wrench"></calcite-icon>
+              <calcite-icon scale="s" icon="wrench" title="Tools"></calcite-icon>
             </calcite-tab-title>
             <calcite-tab-title>
-              <calcite-icon scale="s" icon="save"></calcite-icon>
+              <calcite-icon scale="s" icon="save" title="Projects"></calcite-icon>
             </calcite-tab-title>
           </calcite-tab-nav>
 

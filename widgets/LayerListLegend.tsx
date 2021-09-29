@@ -5,13 +5,8 @@
 // namespaces and types
 import cov = __cov;
 
-interface CollectionElement extends Object {
-  element: esri.widget.tsx.JSX.Element;
-}
-
-interface AddPortalItemOption extends Object {
+interface AddPortalItemOption extends cov.CollectionElement {
   portal: esri.Portal;
-  element: tsx.JSX.Element;
 }
 
 // base imports
@@ -63,7 +58,10 @@ export default class LayerListLegend extends Widget {
   imageryLayers!: cov.LayerListLegendImageryLayer[] | esri.Collection<cov.LayerListLegendImageryLayer>;
 
   @property()
-  private _listItems: esri.Collection<CollectionElement> = new Collection();
+  basemapToggle!: esri.BasemapToggle;
+
+  @property()
+  private _listItems: esri.Collection<cov.CollectionElement> = new Collection();
 
   @property()
   private _addFromWebModal!: HTMLCalciteModalElement;
@@ -87,17 +85,17 @@ export default class LayerListLegend extends Widget {
   private _invalidPortalItemInputMessage!: HTMLCalciteInputMessageElement;
 
   @property()
-  private _imageryRadioButtons: esri.Collection<CollectionElement> = new Collection();
+  private _imageryRadioButtons: esri.Collection<cov.CollectionElement> = new Collection();
 
   constructor(properties: cov.LayerListLegendProperties) {
     super(properties);
   }
 
   postInitialize(): void {
-    const { addLayers, addFromPortals, _addPortalItemOptions, imageryBasemap, imageryLayers } = this;
+    const { addLayers, addFromPortals, imageryBasemap, imageryLayers } = this;
     if (addLayers) addLayers.forEach(this._createListItems.bind(this));
 
-    if (_addPortalItemOptions.length) {
+    if (addFromPortals && addFromPortals.length) {
       addFromPortals.forEach(this._createPortalOptions.bind(this));
     } else {
       this._createPortalOptions(new Portal(), 0);
@@ -175,6 +173,7 @@ export default class LayerListLegend extends Widget {
    */
   private _createPortalOptions(portal: esri.Portal, index: number): void {
     const { _addPortalItemOptions } = this;
+    const name = portal.name;
     const option = {
       portal,
       element: <calcite-option key={KEY++}></calcite-option>,
@@ -185,7 +184,7 @@ export default class LayerListLegend extends Widget {
     portal.load().then(() => {
       option.element = (
         <calcite-option key={KEY++} value={index}>
-          {portal.name}
+          {name || portal.name}
         </calcite-option>
       );
     });
@@ -268,7 +267,7 @@ export default class LayerListLegend extends Widget {
    * Create radio buttons for imagery.
    */
   private _createImageryRadioButtons(): void {
-    const { id, imageryBasemap, imageryLayers, _imageryRadioButtons } = this;
+    const { id, imageryBasemap, imageryLayers, basemapToggle, _imageryRadioButtons } = this;
 
     imageryLayers.forEach((imageryLayer: cov.LayerListLegendImageryLayer) => {
       const checked = imageryBasemap.baseLayers.getItemAt(0).id === imageryLayer.layer.id;
@@ -281,6 +280,7 @@ export default class LayerListLegend extends Widget {
             onclick={() => {
               imageryBasemap.baseLayers.removeAt(0);
               imageryBasemap.baseLayers.add(imageryLayer.layer, 0);
+              if (basemapToggle && basemapToggle.activeBasemap !== imageryBasemap) basemapToggle.toggle();
             }}
           >
             <calcite-radio-button key={KEY++} id={_id} checked={checked}></calcite-radio-button>
@@ -344,7 +344,7 @@ export default class LayerListLegend extends Widget {
             <calcite-tab>
               <div class={CSS.addLayers}>
                 {_listItems.length ? (
-                  _listItems.toArray().map((listItem: CollectionElement) => {
+                  _listItems.toArray().map((listItem: cov.CollectionElement) => {
                     return listItem.element;
                   })
                 ) : (
@@ -371,7 +371,7 @@ export default class LayerListLegend extends Widget {
               <div class={CSS.imageryTab}>
                 <p>Select basemap imagery:</p>
                 <calcite-radio-button-group layout="vertical">
-                  {_imageryRadioButtons.toArray().map((radioButton: CollectionElement): tsx.JSX.Element => {
+                  {_imageryRadioButtons.toArray().map((radioButton: cov.CollectionElement): tsx.JSX.Element => {
                     return radioButton.element;
                   })}
                 </calcite-radio-button-group>
