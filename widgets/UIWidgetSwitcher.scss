@@ -1,0 +1,29 @@
+.cov-ui-widget-switcher--panel-container {
+  position: absolute;
+  border-radius: var(--calcite-border-radius);
+}
+
+.cov-ui-widget-switcher--panel {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
+  border-radius: var(--calcite-border-radius);
+}
+
+.cov-ui-widget-switcher--vertical-left {
+  top: 0;
+  left: calc(100% + 8px);
+}
+
+.cov-ui-widget-switcher--horizontal-left {
+  top: 40px;
+  left: 0;
+}
+
+.cov-ui-widget-switcher--vertical-right {
+  top: 0;
+  right: calc(100% + 8px);
+}
+
+.cov-ui-widget-switcher--horizontal-right {
+  top: 40px;
+  right: 0;
+}

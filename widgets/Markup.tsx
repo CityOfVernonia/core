@@ -350,7 +350,7 @@ export default class Markup extends Widget {
   }
 
   /**
-   * Adds any point, polyline or polygon to corresponding layer.
+   * Adds any text, point, polyline or polygon to corresponding layer.
    * @param graphic
    */
   private _addGraphic(graphic: esri.Graphic): void {
@@ -364,11 +364,15 @@ export default class Markup extends Widget {
     } = this;
     const type = graphic.geometry.type as 'point' | 'polyline' | 'polygon';
 
+    ////////////////////////////////////////////////////////////////
+    // this had to be added at 4.21 to prevent errors on both
+    // the SMV layer and the layer graphic was added to
     if (graphic.layer && graphic.layer === layer) layer.remove(graphic);
 
     graphic = new Graphic({
       geometry: graphic.geometry,
     });
+    ///////////////////////////////////////////////////////////////
 
     if (_isText) {
       graphic.symbol = textSymbol.clone();

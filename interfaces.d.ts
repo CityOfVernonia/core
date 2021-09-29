@@ -11,6 +11,24 @@ declare namespace __cov {
     element: esri.widget.tsx.JSX.Element;
   }
 
+  /**
+   * Common widget info for adding widgets to UIWidgetSwitcher and Calcite shell panels.
+   */
+  export interface WidgetInfo extends Object {
+    /**
+     * Calcite action text.
+     */
+    text: string;
+    /**
+     * Calcite action icon.
+     */
+    icon: string;
+    /**
+     * The widget of your choosing.
+     */
+    widget: esri.Widget & { onShow?: () => void | undefined; onHide?: () => void | undefined };
+  }
+
   ////////////////////////////////////////////////////////////////////////////////
   // Popups
   ////////////////////////////////////////////////////////////////////////////////
@@ -611,6 +629,47 @@ declare namespace __cov {
   }
 
   /**
+   * cov/widgets/UIWidgetSwitcher
+   * A widget switcher for use in the view's UI.
+   */
+  export interface UIWidgetSwitcherProperties extends esri.WidgetProperties {
+    /**
+     * Widgets to add to switcher.
+     */
+    widgetInfos: WidgetInfo[] | esri.Collection<WidgetInfo>;
+    /**
+     * Layout orientation of action pad.
+     * @default 'vertical'
+     */
+    layout?: 'vertical' | 'horizontal';
+    /**
+     * Position of the panels in relation to the action pad.
+     * If the widget position is 'top-left' in the UI the panel position should be 'right'.
+     * @default 'right'
+     */
+    panelPosition?: 'right' | 'left';
+    /**
+     * Width scale applied to panels.
+     * @default 'm'
+     */
+    panelWidthScale?: 's' | 'm' | 'l';
+    /**
+     * Height scale applied to panels.
+     * @default 'l'
+     */
+    panelHeightScale?: 's' | 'm' | 'l';
+  }
+  export class UIWidgetSwitcher extends esri.Widget {
+    constructor(properties: UIWidgetSwitcherProperties);
+    widgetInfos: esri.Collection<WidgetInfo>;
+    layout: 'vertical' | 'horizontal';
+    panelPosition: 'right' | 'left';
+    panelWidthScale: 's' | 'm' | 'l';
+    panelHeightScale: 's' | 'm' | 'l';
+    add(widgetInfo: WidgetInfo): void;
+  }
+
+  /**
    * cov/widgets/ViewControl
    * A view control widget to replace default zoom widget with home, locate, fullscreen, compass and markup create actions.
    */
@@ -953,6 +1012,11 @@ declare module '@vernonia/core/widgets/TaxMaps' {
 declare module '@vernonia/core/widgets/TransportationLayers' {
   import TransportationLayers = __cov.TransportationLayers;
   export = TransportationLayers;
+}
+
+declare module '@vernonia/core/widgets/UIWidgetSwitcher' {
+  import UIWidgetSwitcher = __cov.UIWidgetSwitcher;
+  export = UIWidgetSwitcher;
 }
 
 declare module '@vernonia/core/widgets/ViewControl' {
