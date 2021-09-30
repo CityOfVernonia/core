@@ -56,7 +56,7 @@ export default class ShellApp extends Widget {
   widthScale: 's' | 'm' | 'l' = 'm';
 
   @property()
-  actionWidgets: cov.ViewerWidgetProperties[] = [];
+  actionWidgets: cov.WidgetInfo[] = [];
 
   @property()
   markup!: cov.Markup;
@@ -110,7 +110,7 @@ export default class ShellApp extends Widget {
    * Add action and widget to end shell panel.
    * @param actionWidget
    */
-  addActionWidget(actionWidget: cov.ViewerWidgetProperties, index: number): void {
+  addActionWidget(actionWidget: cov.WidgetInfo, index: number): void {
     const { id, _actions, _panels, panelCollapsed } = this;
     const { icon, text, widget } = actionWidget;
 

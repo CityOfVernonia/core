@@ -742,31 +742,15 @@ declare namespace __cov {
   // Layouts
   ////////////////////////////////////////////////////////////////////////////////
 
-  export interface ViewerWidgetProperties extends Object {
-    /**
-     * Calcite action text.
-     */
-    text: string;
-    /**
-     * Calcite action icon.
-     */
-    icon: string;
-    /**
-     * The widget of your choosing.
-     */
-    widget: esri.Widget & { onShow?: () => void | undefined; onHide?: () => void | undefined };
-  }
-
+  /**
+   * cov/layouts/Viewer
+   * Web map application layout with header and optional menu for most applications.
+   */
   export interface ViewerProperties extends esri.WidgetProperties {
     /**
      * Map or scene view.
      */
     view: esri.MapView | esri.SceneView;
-    /**
-     * Include header.
-     * @default true
-     */
-    includeHeader?: boolean;
     /**
      * Application title.
      */
@@ -777,42 +761,26 @@ declare namespace __cov {
      */
     includeSearch?: boolean;
     /**
-     * Optional search view model to back search.
+     * Optional search view model to back header search.
      */
     searchViewModel?: esri.SearchViewModel;
     /**
-     * Include markup actions in view control.
-     */
-    markup?: Markup;
-    /**
-     * OAuth view model.
+     * OAuth view model to back header account control.
      */
     oAuthViewModel?: OAuthViewModel;
     /**
-     * Optional basemap toggle `nextBasemap` to include basemap toggle.
-     */
-    nextBasemap?: esri.Basemap;
-    /**
      * Widgets to add to menu.
      */
-    menuWidgets?: ViewerWidgetProperties[] | esri.Collection<ViewerWidgetProperties>;
-    /**
-     * Widgets to add to ui.
-     */
-    uiWidgets?: ViewerWidgetProperties[] | esri.Collection<ViewerWidgetProperties>;
+    menuWidgets?: WidgetInfo[] | esri.Collection<WidgetInfo>;
   }
   export class Viewer extends esri.Widget {
     constructor(properties: ViewerProperties);
     view: esri.MapView | esri.SceneView;
-    includeHeader: boolean;
     title: string;
     includeSearch: boolean;
     searchViewModel: esri.SearchViewModel;
-    markup: Markup;
     oAuthViewModel: OAuthViewModel;
-    nextBasemap: esri.Basemap;
-    menuWidgets: esri.Collection<ViewerWidgetProperties>;
-    uiWidgets: esri.Collection<ViewerWidgetProperties>;
+    menuWidgets: esri.Collection<WidgetInfo>;
   }
 
   /**
@@ -854,7 +822,7 @@ declare namespace __cov {
     /**
      * Action widgets.
      */
-    actionWidgets?: ViewerWidgetProperties[];
+    actionWidgets?: WidgetInfo[];
     /**
      * Include markup actions in view control.
      */
@@ -873,7 +841,7 @@ declare namespace __cov {
     panelCollapsed: boolean;
     panelPosition: 'start' | 'end';
     widthScale: 's' | 'm' | 'l';
-    actionWidgets: ViewerWidgetProperties[];
+    actionWidgets: WidgetInfo[];
     markup: Markup;
     oAuthViewModel: OAuthViewModel;
   }
