@@ -245,7 +245,7 @@ export default class Viewer extends Widget {
     const { oAuthViewModel } = this;
 
     if (oAuthViewModel) {
-      import('./../widgets/HeaderAccountControl').then((module: any) => {
+      import('@vernonia/core/widgets/HeaderAccountControl').then((module: any) => {
         const { default: HeaderAccountControl } = module;
         new HeaderAccountControl({
           oAuthViewModel,
