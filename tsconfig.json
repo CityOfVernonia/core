@@ -18,7 +18,9 @@
     "declaration": true,
     "types": [
       "@esri/calcite-components",
-      "pouchdb",
+      "cov",
+      "papaparse",
+      "pouchdb"
     ]
   },
   "exclude": [
