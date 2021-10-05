@@ -18,7 +18,6 @@
     "declaration": true,
     "types": [
       "@esri/calcite-components",
-      "cov",
       "papaparse",
       "pouchdb"
     ]
