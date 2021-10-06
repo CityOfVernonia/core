@@ -78,20 +78,20 @@ export default class ViewControl extends Widget {
   }
 
   render(): tsx.JSX.Element {
-    const { view, zoom, home, includeCompass, locate, fullscreen, markup } = this;
+    const { view, zoom, home, includeCompass, includeLocate, locate, includeFullscreen, fullscreen, markup } = this;
 
     const locateIcon =
-      locate.state === 'ready'
+      includeLocate && locate.state === 'ready'
         ? 'gps-on'
-        : locate.state === 'locating'
+        : includeLocate && locate.state === 'locating'
         ? 'gps-on-f'
-        : locate.state === 'disabled'
+        : includeLocate && locate.state === 'disabled'
         ? 'gps-off'
         : '';
 
-    const fullscreenActive = fullscreen.state === 'active';
+    const fullscreenActive = includeFullscreen && fullscreen.state === 'active';
 
-    const fullscreenText = fullscreenActive ? 'Exit Fullscreen' : 'Enter Fullscreen';
+    const fullscreenText = includeFullscreen && fullscreenActive ? 'Exit Fullscreen' : 'Enter Fullscreen';
 
     return (
       <div>
