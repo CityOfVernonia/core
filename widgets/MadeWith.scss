@@ -1,0 +1,19 @@
+.cov-made-with {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: none !important;
+  user-select: none;
+  padding: 0.125rem 0.25rem;
+  svg {
+    padding: 0 0.25rem;
+  }
+  .fa-heart {
+    color: #d9534f;
+  }
+  .fa-coffee {
+    color: #be9969;
+  }
+}

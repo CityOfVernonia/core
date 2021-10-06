@@ -418,6 +418,28 @@ declare namespace __cov {
     end(): void;
   }
 
+  /**
+   * cov/widgets/MadeWith
+   * A widget to explain with what this is made with.
+   */
+  export interface MadeWithProperties extends esri.WidgetProperties {
+    /**
+     * Font size including `px`
+     * @default '14px'
+     */
+    size?: string;
+    /**
+     * Hex font color.
+     * @default '#000000'
+     */
+    color?: string;
+  }
+  export class MadeWith extends esri.Widget {
+    constructor(properties?: MadeWithProperties);
+    size: string;
+    color: string;
+  }
+
   export interface MarkupProject extends Object {
     id: string;
     doc: {
@@ -966,6 +988,11 @@ declare module '@vernonia/core/widgets/LayerListLegend' {
 declare module '@vernonia/core/widgets/LoadingScreen' {
   import LoadingScreen = __cov.LoadingScreen;
   export = LoadingScreen;
+}
+
+declare module '@vernonia/core/widgets/MadeWith' {
+  import MadeWith = __cov.MadeWith;
+  export = MadeWith;
 }
 
 declare module '@vernonia/core/widgets/Markup' {
