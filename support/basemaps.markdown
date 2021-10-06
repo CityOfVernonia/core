@@ -5,12 +5,9 @@ Methods to return Vernonia hillshade and hybrid basemaps.
 ### Usage
 
 ```typescript
-import FullMap from '@vernonia/core/layouts/FullMap';
+import { hybridBasemap } from '@vernonia/core/support/basemaps';
 
-new FullMap({
-  view,
-  title: 'My App',
-});
+const basemap = hybridBasemap('my_key');
 ```
 
 ```typescript
