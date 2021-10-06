@@ -57,6 +57,22 @@ declare namespace __cov {
   ////////////////////////////////////////////////////////////////////////////////
 
   /**
+   * cov/support/basemaps
+   * Methods to return Vernonia hillshade and hybrid basemaps.
+   */
+  export interface basemaps {
+    /**
+     * Return hillshade basemap.
+     */
+    hillshadeBasemap(): esri.Basemap;
+    /**
+     * Return hybrid basemap.
+     * @param key bingMapsKey
+     */
+    hybridBasemap(key: string): esri.Basemap;
+  }
+
+  /**
    * cov/support/cogo
    * Coordinate geometry helpers.
    */
@@ -743,6 +759,26 @@ declare namespace __cov {
   ////////////////////////////////////////////////////////////////////////////////
 
   /**
+   * cov/layouts/FullMap
+   * Full page map application layout.
+   */
+  export interface FullMapProperties extends esri.WidgetProperties {
+    /**
+     * Map or scene view.
+     */
+    view: esri.MapView | esri.SceneView;
+    /**
+     * Application title.
+     */
+    title?: string;
+  }
+  export class FullMap extends esri.Widget {
+    constructor(properties: FullMapProperties);
+    view: esri.MapView | esri.SceneView;
+    title: string;
+  }
+
+  /**
    * cov/layouts/Viewer
    * Web map application layout with header and optional menu for most applications.
    */
@@ -866,6 +902,11 @@ declare module '@vernonia/core/popups/CenterlinesPopup' {
 ////////////////////////////////////////////////////////////////////////////////
 // Support
 ////////////////////////////////////////////////////////////////////////////////
+declare module '@vernonia/core/support/basemaps' {
+  import basemaps = __cov.basemaps;
+  export = basemaps;
+}
+
 declare module '@vernonia/core/support/cogo' {
   import cogo = __cov.cogo;
   export = cogo;
@@ -1000,12 +1041,17 @@ declare module '@vernonia/core/widgets/WaterMeters' {
 ////////////////////////////////////////////////////////////////////////////////
 // Layouts
 ////////////////////////////////////////////////////////////////////////////////
-declare module '@vernonia/core/layouts/Viewer' {
-  import Viewer = __cov.Viewer;
-  export = Viewer;
+declare module '@vernonia/core/layouts/FullMap' {
+  import FullMap = __cov.FullMap;
+  export = FullMap;
 }
 
 declare module '@vernonia/core/layouts/ShellApp' {
   import ShellApp = __cov.ShellApp;
   export = ShellApp;
+}
+
+declare module '@vernonia/core/layouts/Viewer' {
+  import Viewer = __cov.Viewer;
+  export = Viewer;
 }

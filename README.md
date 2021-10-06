@@ -16,13 +16,23 @@ This package has no built/compiled code. Modules can be used directly with build
 
 ## Layouts
 
-### [cov/layouts/Viewer](./layouts/Viewer.markdown)
+[cov/layouts/FullMap](./layouts/FullMap.markdown)
+
+Full page map application layout.
+
+[cov/layouts/Viewer](./layouts/Viewer.markdown)
 
 Web map application layout with header and optional menu for most applications.
 
+## Support
+
+[cov/support/basemaps](./support/basemaps.markdown)
+
+Methods to return Vernonia hillshade and hybrid basemaps.
+
 ## View Models
 
-### [cov/viewModels/OAuthViewModel](./viewModels/OAuthViewModel.markdown)
+[cov/viewModels/OAuthViewModel](./viewModels/OAuthViewModel.markdown)
 
 A view model for handling OAuth and signing in and out of applications.
 
