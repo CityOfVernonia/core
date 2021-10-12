@@ -118,7 +118,7 @@ export default class SimpleSymbolEditor extends Widget {
             Size
             <calcite-slider
               afterCreate={(calciteSlider: HTMLCalciteSliderElement) => {
-                calciteSlider.addEventListener('calciteSliderChange', () => {
+                calciteSlider.addEventListener('calciteSliderInput', () => {
                   this.setSymbolProperty('size', undefined, calciteSlider.value as number);
                 });
               }}
@@ -153,7 +153,7 @@ export default class SimpleSymbolEditor extends Widget {
             Outline width
             <calcite-slider
               afterCreate={(calciteSlider: HTMLCalciteSliderElement) => {
-                calciteSlider.addEventListener('calciteSliderChange', () => {
+                calciteSlider.addEventListener('calciteSliderInput', () => {
                   this.setSymbolProperty('outline.width', undefined, calciteSlider.value as number);
                 });
               }}
@@ -224,7 +224,7 @@ export default class SimpleSymbolEditor extends Widget {
             Width
             <calcite-slider
               afterCreate={(calciteSlider: HTMLCalciteSliderElement) => {
-                calciteSlider.addEventListener('calciteSliderChange', () => {
+                calciteSlider.addEventListener('calciteSliderInput', () => {
                   this.setSymbolProperty('width', undefined, calciteSlider.value as number);
                 });
               }}
@@ -289,7 +289,7 @@ export default class SimpleSymbolEditor extends Widget {
             Line width
             <calcite-slider
               afterCreate={(calciteSlider: HTMLCalciteSliderElement) => {
-                calciteSlider.addEventListener('calciteSliderChange', () => {
+                calciteSlider.addEventListener('calciteSliderInput', () => {
                   this.setSymbolProperty('outline.width', undefined, calciteSlider.value as number);
                 });
               }}
@@ -326,7 +326,7 @@ export default class SimpleSymbolEditor extends Widget {
             Fill opacity
             <calcite-slider
               afterCreate={(calciteSlider: HTMLCalciteSliderElement) => {
-                calciteSlider.addEventListener('calciteSliderChange', () => {
+                calciteSlider.addEventListener('calciteSliderInput', () => {
                   const fill = this.symbol.color.clone();
                   fill.a = calciteSlider.value as number;
                   this.setSymbolProperty('color', undefined, fill);
@@ -370,7 +370,7 @@ export default class SimpleSymbolEditor extends Widget {
             Size
             <calcite-slider
               afterCreate={(calciteSlider: HTMLCalciteSliderElement) => {
-                calciteSlider.addEventListener('calciteSliderChange', () => {
+                calciteSlider.addEventListener('calciteSliderInput', () => {
                   this.setSymbolProperty('font.size', undefined, calciteSlider.value as number);
                 });
               }}
