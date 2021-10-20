@@ -294,6 +294,52 @@ declare namespace __cov {
     layers: esri.Collection<PortalItemToAddProperties>;
   }
 
+  /**
+   * cov/widgets/Alert
+   * Calcite alert widget.
+   */
+  export interface AlertShowOptions extends Object {
+    /**
+     * Alert title
+     */
+    title?: string;
+    /**
+     * Alert message.
+     */
+    message: string;
+    /**
+     * Alert color.
+     * @default 'blue'
+     */
+    color?: 'blue' | 'green' | 'red' | 'yellow';
+    /**
+     * Alert duration in milliseconds.
+     * @default 3000
+     */
+    duration?: number;
+  }
+  export interface AlertProperties extends esri.WidgetProperties {
+    /**
+     * Create PubSub subscription.
+     * @default false
+     */
+    subscribe?: boolean;
+    /**
+     * Subscribe message.
+     * @default 'SHOW_ALERT'
+     */
+    message?: string;
+  }
+  export class Alert extends esri.Widget {
+    constructor(properties?: AlertProperties);
+    subscribe: boolean;
+    message: string;
+    readonly alert: HTMLCalciteAlertElement;
+    protected options: AlertShowOptions;
+    protected stack: AlertShowOptions[];
+    show(options: AlertShowOptions): void;
+  }
+
   export interface ColorPickerProperties extends esri.WidgetProperties {
     /**
      * Hex value of selected color.
@@ -963,6 +1009,11 @@ declare module '@vernonia/core/viewModels/UnitsViewModel' {
 declare module '@vernonia/core/widgets/AddLayers' {
   import AddLayers = __cov.AddLayers;
   export = AddLayers;
+}
+
+declare module '@vernonia/core/widgets/Alert' {
+  import Alert = __cov.Alert;
+  export = Alert;
 }
 
 declare module '@vernonia/core/widgets/ColorPicker' {

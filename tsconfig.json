@@ -19,7 +19,8 @@
     "types": [
       "@esri/calcite-components",
       "papaparse",
-      "pouchdb"
+      "pouchdb",
+      "pubsub-js"
     ]
   },
   "exclude": [
