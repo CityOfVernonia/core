@@ -15,6 +15,8 @@ import Cookies from 'js-cookie';
 const COOKIE_NAME = 'cov_disclaimer_widget_accepted';
 const COOKIE_VALUE = 'accepted';
 
+const DISCLAIMER_TEXT = `The purpose of this application is to support City business. Any information herein is for reference only. The City of Vernonia makes every effort to keep this information current and accurate. However, the City is not responsible for errors, misuse, omissions, or misinterpretations. There are no warranties, expressed or implied, including the warranty of merchantability or fitness for a particular purpose, accompanying this application.`;
+
 // class export
 @subclass('cov.widgets.DisclaimerModal')
 export default class DisclaimerModal extends Widget {
@@ -22,7 +24,10 @@ export default class DisclaimerModal extends Widget {
   title = 'Disclaimer';
 
   @property()
-  text = `The purpose of this application is to support City business. Any information herein is for reference only. The City of Vernonia makes every effort to keep this information current and accurate. However, the City is not responsible for errors, misuse, omissions, or misinterpretations. There are no warranties, expressed or implied, including the warranty of merchantability or fitness for a particular purpose, accompanying this application.`;
+  text = DISCLAIMER_TEXT;
+
+  @property()
+  enableDontShow = true;
 
   @property()
   container = document.createElement('div');
@@ -47,8 +52,16 @@ export default class DisclaimerModal extends Widget {
     return cookie && cookie === COOKIE_VALUE ? true : false;
   }
 
+  /**
+   * Get default disclaimer text.
+   * @returns string
+   */
+  static getDefaultDisclaimer(): string {
+    return DISCLAIMER_TEXT;
+  }
+
   render(): tsx.JSX.Element {
-    const { title, text, _active } = this;
+    const { title, text, enableDontShow, _active } = this;
 
     return (
       <div>
@@ -61,15 +74,22 @@ export default class DisclaimerModal extends Widget {
           disable-outside-close=""
         >
           <h3 slot="header">{title}</h3>
-          <div slot="content">{text}</div>
-          <calcite-label slot="back" layout="inline" alignment="end">
-            <calcite-checkbox
-              afterCreate={(checkbox: HTMLCalciteCheckboxElement) => {
-                this._checkbox = checkbox;
-              }}
-            ></calcite-checkbox>
-            Don't show me this again
-          </calcite-label>
+          <div
+            slot="content"
+            afterCreate={(div: HTMLDivElement) => {
+              div.innerHTML = text;
+            }}
+          ></div>
+          {enableDontShow ? (
+            <calcite-label slot="back" layout="inline" alignment="end">
+              <calcite-checkbox
+                afterCreate={(checkbox: HTMLCalciteCheckboxElement) => {
+                  this._checkbox = checkbox;
+                }}
+              ></calcite-checkbox>
+              Don't show me this again
+            </calcite-label>
+          ) : null}
           <calcite-button slot="primary" width="full" onclick={this._accept.bind(this)}>
             Accept
           </calcite-button>
@@ -79,7 +99,8 @@ export default class DisclaimerModal extends Widget {
   }
 
   private _accept(): void {
-    if (this._checkbox.checked) {
+    const { _checkbox } = this;
+    if (_checkbox && _checkbox.checked) {
       Cookies.set(COOKIE_NAME, COOKIE_VALUE, { expires: 30 });
     }
     this._active = false;

@@ -367,16 +367,23 @@ declare namespace __cov {
      */
     title?: string;
     /**
-     * Disclaimer text.
+     * Disclaimer text or HTML.
      * @default 'The purpose of this application is to support...'
      */
     text?: string;
+    /**
+     * Enable `Don't show me this again` checkbox.
+     * @default true
+     */
+    enableDontShow?: boolean;
   }
   export class DisclaimerModal extends esri.Widget {
     constructor(properties: DisclaimerModalProperties);
     title: string;
     text: string;
+    enableDontShow: boolean;
     static isAccepted(): boolean;
+    static getDefaultDisclaimer(): string;
   }
 
   /**
