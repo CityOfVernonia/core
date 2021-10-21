@@ -6,7 +6,7 @@
     "build": "tsc",
     "lint": "eslint . --ext .ts,.tsx",
     "prettier": "prettier --write \"**/*.ts?(x)\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run prettier && npm run lint && npm run build"
   },
   "repository": {
     "type": "git",
