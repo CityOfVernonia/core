@@ -371,6 +371,7 @@ export default class Markup extends Widget {
 
     graphic = new Graphic({
       geometry: graphic.geometry,
+      symbol: graphic.symbol,
     });
     ///////////////////////////////////////////////////////////////
 
