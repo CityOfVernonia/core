@@ -12,6 +12,7 @@
   --calcite-ui-text-link: #{$cov-hover};
   --calcite-link-blue-underline: rgba(57, 89, 51, 0.4);
   font-family: $font-family;
+  --calcite-sans-family: #{$font-family};
 }
 
 // same here since @arcgis/core adds this to view ui since 4.20
@@ -22,6 +23,7 @@
   --calcite-ui-text-link: #{$cov-hover};
   --calcite-link-blue-underline: rgba(57, 89, 51, 0.4);
   font-family: $font-family;
+  --calcite-sans-family: #{$font-family};
 }
 
 /** global esri overrides **/
