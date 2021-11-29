@@ -22,26 +22,26 @@
     "@vernonia/assessor-urls": "^1.0.2",
     "js-cookie": "^3.0.1",
     "papaparse": "^5.3.1",
-    "pubsub-js": "^1.9.3"
+    "pubsub-js": "^1.9.4"
   },
   "devDependencies": {
     "@arcgis/core": "^4.21.2",
-    "@esri/calcite-components": "^1.0.0-beta.67",
-    "@types/js-cookie": "^3.0.0",
+    "@esri/calcite-components": "^1.0.0-beta.70",
+    "@types/js-cookie": "^3.0.1",
     "@types/papaparse": "^5.3.1",
     "@types/pouchdb": "^6.4.0",
     "@types/pubsub-js": "^1.8.3",
     "@types/sortablejs": "^1.10.7",
-    "@typescript-eslint/eslint-plugin": "^5.2.0",
-    "@typescript-eslint/parser": "^5.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.5.0",
+    "@typescript-eslint/parser": "^5.5.0",
     "ansi-regex": ">=6.0.1",
-    "eslint": "^8.1.0",
+    "eslint": "^8.3.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "prettier": "^2.4.1",
-    "sass": "^1.43.3",
+    "prettier": "^2.5.0",
+    "sass": "^1.43.5",
     "tslib": "^2.3.1",
-    "typescript": "^4.4.4"
+    "typescript": "^4.5.2"
   },
   "eslintConfig": {
     "env": {
