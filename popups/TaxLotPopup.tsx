@@ -172,7 +172,7 @@ class Content extends Widget {
                   return (
                     <a
                       style="margin-right:0.75rem;"
-                      href={propertyInfoUrl(accountId, 2021)}
+                      href={propertyInfoUrl(accountId, 2022)}
                       target="_blank"
                       rel="noopener"
                     >
