@@ -360,6 +360,24 @@ declare namespace __cov {
     on(name: 'color-change', listener: EventListener): IHandle;
   }
 
+  /**
+   * cov/widgets/ConfirmationModal
+   * A modal widget for confirming user actions.
+   */
+  export interface ConfirmationModalDetail extends Object {
+    title?: string;
+    message?: string;
+    confirmButtonText?: string;
+    cancelButtonText?: string;
+    confirm?: () => void;
+    cancel?: () => void;
+  }
+  export class ConfirmationModal extends esri.Widget {
+    constructor(properties?: esri.WidgetProperties);
+    show(detail?: cov.ConfirmationModalDetail): void;
+    on(name: 'confirmation', listener: EventListener): IHandle;
+  }
+
   export interface DisclaimerModalProperties extends esri.WidgetProperties {
     /**
      * Modal title.
@@ -1026,6 +1044,11 @@ declare module '@vernonia/core/widgets/Alert' {
 declare module '@vernonia/core/widgets/ColorPicker' {
   import ColorPicker = __cov.ColorPicker;
   export = ColorPicker;
+}
+
+declare module '@vernonia/core/widgets/ConfirmationModal' {
+  import ConfirmationModal = __cov.ConfirmationModal;
+  export = ConfirmationModal;
 }
 
 declare module '@vernonia/core/widgets/DisclaimerModal' {
