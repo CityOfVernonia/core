@@ -5,6 +5,24 @@ import esri = __esri;
  */
 declare namespace __cov {
   ////////////////////////////////////////////////////////////////////////////////
+  // Internal interfaces
+  ////////////////////////////////////////////////////////////////////////////////
+  /**
+   * Extended esri.Widget with `onShow` and `onHide` methods to be called when the widget is shown or hidden.
+   */
+  interface _Widget extends esri.Widget {
+    onShow?: () => void | undefined;
+    onHide?: () => void | undefined;
+  }
+
+  /**
+   * Extended WidgetInfo used internally by the class.
+   */
+  interface _WidgetInfo extends WidgetInfo {
+    _action: esri.widget.tsx.JSX.Element;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
   // Generic interfaces
   ////////////////////////////////////////////////////////////////////////////////
   export interface CollectionElement extends Object {
@@ -26,7 +44,28 @@ declare namespace __cov {
     /**
      * The widget of your choosing.
      */
-    widget: esri.Widget & { onShow?: () => void | undefined; onHide?: () => void | undefined };
+    widget: _Widget;
+    /**
+     * Type of HTML element for widget container, e.g. `calcite-panel`, `calcite-tabs`, etc.
+     * If `containerElement` is `calcite-panel` the panel itself will be set as widget container.
+     * @default 'div'
+     */
+    containerElement?: string;
+    /**
+     * Widget container as calcite modal with action click activating the modal.
+     * NOTE: the `widget` should return 'calcite-modal' root VNode element.
+     */
+    modal?: boolean;
+    /**
+     * Groups all actions above up to another WidgetInfo `groupEnd` into a group.
+     */
+    groupEnd?: boolean;
+    /**
+     * Groups all actions into bottom actions slot.
+     * `groupEnd` has no effect on bottom slotted actions.
+     * `bottomAction` WidgetInfos provided to `uiWidgets` grouped in last group.
+     */
+    bottomAction?: boolean;
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -974,6 +1013,230 @@ declare namespace __cov {
     markup: Markup;
     oAuthViewModel: OAuthViewModel;
   }
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // Application
+  ////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * cov/Application
+   * A calcite shell application widget.
+   * One layout to rule them all!
+   */
+  export interface ApplicationProperties extends esri.WidgetProperties {
+    /**
+     * External loader instance.
+     */
+    loader?: esri.Widget;
+    /**
+     * Options for internally loaded loader.
+     */
+    loaderOptions?: {
+      /**
+       * Copyright entity. Empty string for no copyright.
+       * @default 'City of Vernonia'
+       */
+      copyright?: string;
+      /**
+       * User and password MD5 hashes.
+       */
+      credentials?: {
+        /**
+         * Password MD5 hash.
+         */
+        password: string;
+        /**
+         * User MD5 hash.
+         */
+        user: string;
+      };
+      /**
+       * Require oAuth sign in.
+       * NOTE: initialize external Loader, handle OAuth and provide `loader` property when OAuth is required.
+       */
+      oAuthViewModel?: OAuthViewModel;
+      /**
+       * Application title. Empty string for no title.
+       * @default 'My Map'
+       */
+      title?: string;
+      /**
+       * Made with love and coffee where. Empty string for no made where.
+       * @default 'Vernonia, Oregon'
+       */
+      where?: string;
+    };
+
+    /**
+     * Map view.
+     */
+    view: esri.MapView;
+
+    /**
+     * Options for view control.
+     */
+    viewControlOptions?: {
+      /**
+       * Include home button.
+       * @default true
+       */
+      includeHome?: boolean;
+      /**
+       * Include compass button.
+       * Defaults true if view rotation enabled.
+       * @default false
+       */
+      includeCompass?: boolean;
+      /**
+       * Include locate button.
+       * @default false
+       */
+      includeLocate?: boolean;
+      /**
+       * Include fullscreen toggle button.
+       * @default false
+       */
+      includeFullscreen?: boolean;
+    };
+
+    /**
+     * Position of view control.
+     * UI widget selector placed opposite.
+     * @default 'left'
+     */
+    viewControlPosition?: 'left' | 'right';
+
+    /**
+     * Title of application.
+     * @default 'My Map'
+     */
+    title?: string;
+
+    /**
+     * Include shell `slot="header"`.
+     * @default true
+     */
+    includeHeader?: boolean;
+
+    /**
+     * Include title in UI.
+     * `includeHeader` must be `false`.
+     * @default false
+     */
+    includeUITitle?: boolean;
+
+    /**
+     * Header widget with `container` property set as div with `slot="header"`.
+     * Replaces default header widget.
+     */
+    headerWidget?: esri.Widget;
+
+    /**
+     * Default header widget options.
+     */
+    headerOptions?: {
+      /**
+       * Include search in header.
+       * @default true
+       */
+      includeSearch?: boolean;
+      /**
+       * Optional search view model to back header search.
+       */
+      searchViewModel?: esri.SearchViewModel;
+      /**
+       * OAuth view model to back header account control.
+       */
+      oAuthViewModel?: OAuthViewModel;
+    };
+
+    /**
+     * Footer widget with `container` property set as div with `slot="footer"`.
+     */
+    footerWidget?: esri.Widget;
+
+    /**
+     * Include scale bar in UI 'bottom-right`.
+     * @default true
+     */
+    includeScaleBar?: boolean;
+
+    /**
+     * When included basemap toggle added to UI `bottom-right`.
+     */
+    nextBasemap?: esri.Basemap;
+
+    /**
+     * Primary panel (start position) as static or menu style shell panel.
+     */
+    primaryWidgetsMode?: 'static' | 'menu';
+
+    /**
+     * Widgets to add to primary panel (start position).
+     */
+    primaryWidgets?: esri.Collection<WidgetInfo> | WidgetInfo[];
+
+    /**
+     * Widgets to add to contextual panel (end position).
+     */
+    contextualWidgets?: esri.Collection<WidgetInfo> | WidgetInfo[];
+
+    /**
+     * Widgets to add to UI widget selector.
+     */
+    uiWidgets?: esri.Collection<WidgetInfo> | WidgetInfo[];
+  }
+
+  export class Application extends esri.Widget {
+    constructor(properties: ApplicationProperties);
+    loader: esri.Widget;
+    loaderOptions: {
+      copyright: string;
+      credentials: {
+        password: string;
+        user: string;
+      };
+      oAuthViewModel: OAuthViewModel;
+      title: string;
+      where: string;
+    };
+    view: esri.MapView;
+    viewControlOptions: {
+      includeHome: boolean;
+      includeCompass: boolean;
+      includeLocate: boolean;
+      includeFullscreen: boolean;
+    };
+    viewControlPosition: 'left' | 'right';
+    title: string;
+    includeHeader: boolean;
+    includeUITitle: boolean;
+    headerWidget: esri.Widget;
+    headerOptions: {
+      includeSearch: boolean;
+      searchViewModel: esri.SearchViewModel;
+      oAuthViewModel: OAuthViewModel;
+    };
+    footerWidget: esri.Widget;
+    includeScaleBar: boolean;
+    nextBasemap: esri.Basemap;
+    primaryWidgetsMode: 'static' | 'menu';
+    primaryWidgets: esri.Collection<WidgetInfo>;
+    contextualWidgets: esri.Collection<WidgetInfo>;
+    uiWidgets: esri.Collection<WidgetInfo>;
+  }
+
+  export class Loader extends esri.Widget {
+    constructor(properties?: esri.WidgetProperties & ApplicationProperties['loaderOptions']);
+    copyright: string;
+    credentials: {
+      password: string;
+      user: string;
+    };
+    oAuthViewModel: OAuthViewModel;
+    title: string;
+    where: string;
+  }
 }
 /**
  * End namespace.
@@ -1162,4 +1425,17 @@ declare module '@vernonia/core/layouts/ShellApp' {
 declare module '@vernonia/core/layouts/Viewer' {
   import Viewer = __cov.Viewer;
   export = Viewer;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Application
+////////////////////////////////////////////////////////////////////////////////
+declare module '@vernonia/core/Application' {
+  import Application = __cov.Application;
+  export = Application;
+}
+
+declare module '@vernonia/core/ApplicationLoader' {
+  import Loader = __cov.Loader;
+  export = Loader;
 }

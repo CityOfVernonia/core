@@ -28,6 +28,7 @@
     "@arcgis/core": "^4.22.2",
     "@esri/calcite-components": "^1.0.0-beta.74",
     "@types/js-cookie": "^3.0.1",
+    "@types/md5": "^2.3.1",
     "@types/papaparse": "^5.3.1",
     "@types/pouchdb": "^6.4.0",
     "@types/pubsub-js": "^1.8.3",

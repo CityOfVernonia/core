@@ -27,11 +27,13 @@
     "node_modules/"
   ],
   "include": [
+    "Application/",
     "layouts/",
     "popups/",
     "support/",
     "viewModels/",
     "widgets/",
+    "Application.tsx",
     "interfaces.d.ts"
   ]
 }
