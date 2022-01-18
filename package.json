@@ -1,6 +1,6 @@
 {
   "name": "@vernonia/core",
-  "version": "1.0.59",
+  "version": "1.0.60",
   "description": "City of Vernonia widgets and friends for Esri JavaScript API using Calcite.",
   "scripts": {
     "build": "tsc",
@@ -21,6 +21,7 @@
   "dependencies": {
     "@vernonia/assessor-urls": "^1.0.2",
     "js-cookie": "^3.0.1",
+    "md5": "^2.3.0",
     "papaparse": "^5.3.1",
     "pubsub-js": "^1.9.4"
   },
