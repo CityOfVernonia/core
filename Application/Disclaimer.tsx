@@ -1,25 +1,18 @@
-/**
- * Simple info widget for displaying text.
- */
-
-// namespaces and types
 import cov = __cov;
-
-// base imports
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
-
 import Cookies from 'js-cookie';
 
-const COOKIE_NAME = 'cov_disclaimer_widget_accepted';
+const COOKIE_NAME = 'cov_application_disclaimer_accepted';
+
 const COOKIE_VALUE = 'accepted';
 
 const DISCLAIMER_TEXT = `The purpose of this application is to support City business. Any information herein is for reference only. The City of Vernonia makes every effort to keep this information current and accurate. However, the City is not responsible for errors, misuse, omissions, or misinterpretations. There are no warranties, expressed or implied, including the warranty of merchantability or fitness for a particular purpose, accompanying this application.`;
 
 // class export
-@subclass('cov.widgets.DisclaimerModal')
-export default class DisclaimerModal extends Widget {
+@subclass('cov.Application.Disclaimer')
+export default class Disclaimer extends Widget {
   @property()
   title = 'Disclaimer';
 
@@ -38,7 +31,7 @@ export default class DisclaimerModal extends Widget {
   @property()
   private _checkbox!: HTMLCalciteCheckboxElement;
 
-  constructor(properties?: cov.DisclaimerModalProperties) {
+  constructor(properties?: esri.Widget & cov.ApplicationProperties['disclaimerOptions']) {
     super(properties);
     document.body.append(this.container);
   }

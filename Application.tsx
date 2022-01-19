@@ -34,6 +34,19 @@ export default class ShellApplication extends Widget {
       });
     }
 
+    // initialize disclaimer modal
+    if (properties.includeDisclaimer) {
+      import('./Application/Disclaimer').then((module: any) => {
+        const { default: Disclaimer } = module;
+
+        if (!Disclaimer.isAccepted()) {
+          new Disclaimer({
+            ...(properties.disclaimerOptions || {}),
+          });
+        }
+      });
+    }
+
     // append container to <body>
     document.body.append(this.container);
   }

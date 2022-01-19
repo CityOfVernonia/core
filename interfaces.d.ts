@@ -417,32 +417,6 @@ declare namespace __cov {
     on(name: 'confirmation', listener: EventListener): IHandle;
   }
 
-  export interface DisclaimerModalProperties extends esri.WidgetProperties {
-    /**
-     * Modal title.
-     * @default 'Disclaimer'
-     */
-    title?: string;
-    /**
-     * Disclaimer text or HTML.
-     * @default 'The purpose of this application is to support...'
-     */
-    text?: string;
-    /**
-     * Enable `Don't show me this again` checkbox.
-     * @default true
-     */
-    enableDontShow?: boolean;
-  }
-  export class DisclaimerModal extends esri.Widget {
-    constructor(properties: DisclaimerModalProperties);
-    title: string;
-    text: string;
-    enableDontShow: boolean;
-    static isAccepted(): boolean;
-    static getDefaultDisclaimer(): string;
-  }
-
   /**
    * cov/widgets/HeaderAccountControl
    * A widget to display sign in button or user account control in the header of layouts.
@@ -887,134 +861,6 @@ declare namespace __cov {
   }
 
   ////////////////////////////////////////////////////////////////////////////////
-  // Layouts
-  ////////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * cov/layouts/FullMap
-   * Full page map application layout.
-   */
-  export interface FullMapProperties extends esri.WidgetProperties {
-    /**
-     * Map or scene view.
-     */
-    view: esri.MapView | esri.SceneView;
-    /**
-     * Application title.
-     */
-    title?: string;
-  }
-  export class FullMap extends esri.Widget {
-    constructor(properties: FullMapProperties);
-    view: esri.MapView | esri.SceneView;
-    title: string;
-  }
-
-  /**
-   * cov/layouts/Viewer
-   * Web map application layout with header and optional menu for most applications.
-   */
-  export interface ViewerProperties extends esri.WidgetProperties {
-    /**
-     * Map or scene view.
-     */
-    view: esri.MapView | esri.SceneView;
-    /**
-     * Application title.
-     */
-    title?: string;
-    /**
-     * Include search in header.
-     * @default true
-     */
-    includeSearch?: boolean;
-    /**
-     * Optional search view model to back header search.
-     */
-    searchViewModel?: esri.SearchViewModel;
-    /**
-     * OAuth view model to back header account control.
-     */
-    oAuthViewModel?: OAuthViewModel;
-    /**
-     * Widgets to add to menu.
-     */
-    menuWidgets?: WidgetInfo[] | esri.Collection<WidgetInfo>;
-  }
-  export class Viewer extends esri.Widget {
-    constructor(properties: ViewerProperties);
-    view: esri.MapView | esri.SceneView;
-    title: string;
-    includeSearch: boolean;
-    searchViewModel: esri.SearchViewModel;
-    oAuthViewModel: OAuthViewModel;
-    menuWidgets: esri.Collection<WidgetInfo>;
-  }
-
-  /**
-   * cov/layouts/ShellApp
-   * A calcite shell layout.
-   */
-  export interface ShellAppProperties extends esri.WidgetProperties {
-    /**
-     * Map or scene view.
-     */
-    view: esri.MapView | esri.SceneView;
-    /**
-     * Application title.
-     */
-    title?: string;
-    /**
-     * Include search in header.
-     * @default true
-     */
-    includeSearch?: boolean;
-    /**
-     * Optional search view model to back search.
-     */
-    searchViewModel?: esri.SearchViewModel;
-    /**
-     * Panel collapsed on load.
-     * @default false
-     */
-    panelCollapsed?: boolean;
-    /**
-     * Place panel at start or end of shell.
-     * @default 'start'
-     */
-    panelPosition?: 'start' | 'end';
-    /**
-     * Width scale of shell panel.
-     */
-    widthScale?: 's' | 'm' | 'l';
-    /**
-     * Action widgets.
-     */
-    actionWidgets?: WidgetInfo[];
-    /**
-     * Include markup actions in view control.
-     */
-    markup?: Markup;
-    /**
-     * OAuth view model.
-     */
-    oAuthViewModel?: OAuthViewModel;
-  }
-  export class ShellApp extends esri.Widget {
-    constructor(properties: ShellAppProperties);
-    view: esri.MapView | esri.SceneView;
-    title: string;
-    includeSearch: boolean;
-    searchViewModel: esri.SearchViewModel;
-    panelCollapsed: boolean;
-    panelPosition: 'start' | 'end';
-    widthScale: 's' | 'm' | 'l';
-    actionWidgets: WidgetInfo[];
-    markup: Markup;
-    oAuthViewModel: OAuthViewModel;
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////
   // Application
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -1068,10 +914,34 @@ declare namespace __cov {
     };
 
     /**
+     * Include disclaimer modal.
+     */
+    includeDisclaimer?: boolean;
+
+    /**
+     * Disclaimer options.
+     */
+    disclaimerOptions?: {
+      /**
+       * Modal title.
+       * @default 'Disclaimer'
+       */
+      title?: string;
+      /**
+       * Disclaimer text or HTML.
+       * @default 'The purpose of this application is to support...'
+       */
+      text?: string;
+      /**
+       * Enable `Don't show me this again` checkbox.
+       * @default true
+       */
+      enableDontShow?: boolean;
+    };
+    /**
      * Map view.
      */
     view: esri.MapView;
-
     /**
      * Options for view control.
      */
@@ -1098,7 +968,6 @@ declare namespace __cov {
        */
       includeFullscreen?: boolean;
     };
-
     /**
      * Position of view control.
      * UI widget selector placed opposite.
@@ -1189,53 +1058,16 @@ declare namespace __cov {
 
   export class Application extends esri.Widget {
     constructor(properties: ApplicationProperties);
-    loader: esri.Widget;
-    loaderOptions: {
-      copyright: string;
-      credentials: {
-        password: string;
-        user: string;
-      };
-      oAuthViewModel: OAuthViewModel;
-      title: string;
-      where: string;
-    };
-    view: esri.MapView;
-    viewControlOptions: {
-      includeHome: boolean;
-      includeCompass: boolean;
-      includeLocate: boolean;
-      includeFullscreen: boolean;
-    };
-    viewControlPosition: 'left' | 'right';
-    title: string;
-    includeHeader: boolean;
-    includeUITitle: boolean;
-    headerWidget: esri.Widget;
-    headerOptions: {
-      includeSearch: boolean;
-      searchViewModel: esri.SearchViewModel;
-      oAuthViewModel: OAuthViewModel;
-    };
-    footerWidget: esri.Widget;
-    includeScaleBar: boolean;
-    nextBasemap: esri.Basemap;
-    primaryWidgetsMode: 'static' | 'menu';
-    primaryWidgets: esri.Collection<WidgetInfo>;
-    contextualWidgets: esri.Collection<WidgetInfo>;
-    uiWidgets: esri.Collection<WidgetInfo>;
+  }
+
+  export class Disclaimer extends esri.Widget {
+    constructor(properties?: esri.Widget & ApplicationProperties['disclaimerOptions']);
+    static isAccepted(): boolean;
+    static getDefaultDisclaimer(): string;
   }
 
   export class Loader extends esri.Widget {
     constructor(properties?: esri.WidgetProperties & ApplicationProperties['loaderOptions']);
-    copyright: string;
-    credentials: {
-      password: string;
-      user: string;
-    };
-    oAuthViewModel: OAuthViewModel;
-    title: string;
-    where: string;
   }
 }
 /**
@@ -1312,11 +1144,6 @@ declare module '@vernonia/core/widgets/ColorPicker' {
 declare module '@vernonia/core/widgets/ConfirmationModal' {
   import ConfirmationModal = __cov.ConfirmationModal;
   export = ConfirmationModal;
-}
-
-declare module '@vernonia/core/widgets/DisclaimerModal' {
-  import DisclaimerModal = __cov.DisclaimerModal;
-  export = DisclaimerModal;
 }
 
 declare module '@vernonia/core/widgets/HeaderAccountControl' {
@@ -1410,24 +1237,6 @@ declare module '@vernonia/core/widgets/WaterMeters' {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Layouts
-////////////////////////////////////////////////////////////////////////////////
-declare module '@vernonia/core/layouts/FullMap' {
-  import FullMap = __cov.FullMap;
-  export = FullMap;
-}
-
-declare module '@vernonia/core/layouts/ShellApp' {
-  import ShellApp = __cov.ShellApp;
-  export = ShellApp;
-}
-
-declare module '@vernonia/core/layouts/Viewer' {
-  import Viewer = __cov.Viewer;
-  export = Viewer;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Application
 ////////////////////////////////////////////////////////////////////////////////
 declare module '@vernonia/core/Application' {
@@ -1435,7 +1244,12 @@ declare module '@vernonia/core/Application' {
   export = Application;
 }
 
-declare module '@vernonia/core/ApplicationLoader' {
+declare module '@vernonia/core/Application/Disclaimer' {
+  import Disclaimer = __cov.Disclaimer;
+  export = Disclaimer;
+}
+
+declare module '@vernonia/core/Application/Loader' {
   import Loader = __cov.Loader;
   export = Loader;
 }

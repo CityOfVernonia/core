@@ -10,6 +10,8 @@ $brand-hover: darken($brand, 7.5);
 $brand-press: darken($brand, 13);
 $link-underline: rgba($brand-press, 0.4);
 
+$brand-dark: #44693d;
+
 // @arcgis/core widgets set to false
 // set to true in apps as needed
 $include_AreaMeasurement2D: false !default;
