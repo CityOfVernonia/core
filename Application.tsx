@@ -166,6 +166,14 @@ export default class ShellApplication extends Widget {
         }),
         selectorPosition,
       );
+
+      const activeWidgetInfo = uiWidgets.find((widgetInfo: cov._WidgetInfo): boolean => {
+        return widgetInfo.active === true;
+      });
+
+      if (activeWidgetInfo) {
+        this._uiActiveId = activeWidgetInfo.widget.id;
+      }
     }
 
     // assure no view or dom race conditions
@@ -291,6 +299,7 @@ export default class ShellApplication extends Widget {
           if (placement === 'ui') {
             calciteAction.scale = 's';
             calciteAction.title = text;
+            if (this._uiActiveId === widget.id && !modal) calciteAction.active = true;
           }
           this.own(
             watch(this, `_${placement}ActiveId`, (id: string): void => {
@@ -321,6 +330,7 @@ export default class ShellApplication extends Widget {
           if (placement === 'ui') {
             calcitePanel.widthScale = 'm';
             calcitePanel.heightScale = 'l';
+            if (this._uiActiveId === widget.id) calcitePanel.hidden = false;
           }
           if (containerElement === 'calcite-panel') {
             widget.container = calcitePanel;

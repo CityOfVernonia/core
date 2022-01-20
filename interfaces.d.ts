@@ -66,6 +66,12 @@ declare namespace __cov {
      * `bottomAction` WidgetInfos provided to `uiWidgets` grouped in last group.
      */
     bottomAction?: boolean;
+    /**
+     * Set this widget active.
+     * Only sets first widget in collection of `WidgetInfos` as active.
+     * Currently only implemented for `uiWidgets`.
+     */
+    active?: boolean;
   }
 
   ////////////////////////////////////////////////////////////////////////////////
