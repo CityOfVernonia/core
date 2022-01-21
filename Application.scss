@@ -21,6 +21,7 @@ body {
   --calcite-ui-brand: #{$brand};
   --calcite-ui-brand-hover: #{$brand-hover};
   --calcite-ui-brand-press: #{$brand-press};
+  --calcite-ui-text-link: #{$brand-hover};
   --calcite-link-blue-underline: #{$link-underline};
 }
 
@@ -28,6 +29,7 @@ body {
   --calcite-ui-brand: #{$brand};
   --calcite-ui-brand-hover: #{$brand-hover};
   --calcite-ui-brand-press: #{$brand-press};
+  --calcite-ui-text-link: #{$brand-hover};
   --calcite-link-blue-underline: #{$link-underline};
 }
 
