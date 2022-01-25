@@ -223,7 +223,7 @@ export default class Loader extends Widget {
             </calcite-button>
           ) : null}
 
-          {!credentials || (oAuthViewModel && oAuthViewModel.signedIn) || (credentials && _signedIn) ? (
+          {!credentials && (!oAuthViewModel || (oAuthViewModel && oAuthViewModel.signedIn)) ? (
             <calcite-progress type="indeterminate"></calcite-progress>
           ) : null}
 
