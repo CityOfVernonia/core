@@ -604,6 +604,22 @@ declare namespace __cov {
   }
 
   /**
+   * cov/widgets/Notes
+   * A widget to add related record notes.
+   */
+  export interface NotesProperties extends esri.WidgetProperties {
+    layer: esri.FeatureLayer;
+    relationshipId: number;
+    feature?: esri.Graphic;
+  }
+  export class Notes extends esri.Widget {
+    constructor(properties: NotesProperties);
+    layer: esri.FeatureLayer;
+    relationshipId: number;
+    feature: esri.Graphic;
+  }
+
+  /**
    * cov/widgets/Print
    * Simple print and snapshot widget.
    */
@@ -1185,6 +1201,11 @@ declare module '@vernonia/core/widgets/SimpleSymbolEditor' {
 declare module '@vernonia/core/widgets/Measure' {
   import Measure = __cov.Measure;
   export = Measure;
+}
+
+declare module '@vernonia/core/widgets/Notes' {
+  import Notes = __cov.Notes;
+  export = Notes;
 }
 
 declare module '@vernonia/core/widgets/Print' {

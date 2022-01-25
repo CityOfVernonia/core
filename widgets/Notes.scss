@@ -1,0 +1,15 @@
+.cov-notes {
+  calcite-notice[active=""] {
+    margin-top: 0.75rem;
+  }
+}
+
+.cov-notes--note {
+  margin-top: 0.75rem;
+  font-size: var(--calcite-font-size--1);
+}
+
+.cov-notes--note--date {
+  margin-top: 0.25rem;
+  font-size: var(--calcite-font-size--3);
+}
