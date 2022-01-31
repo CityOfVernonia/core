@@ -234,6 +234,8 @@ export default class ShellApplication extends Widget {
   })
   uiWidgets?: esri.Collection<cov._WidgetInfo>;
 
+  contextualShellPanel!: esri.Widget;
+
   /**
    * Initialize widget infos.
    * @param placement
@@ -421,6 +423,7 @@ export default class ShellApplication extends Widget {
       _contextualActionGroups,
       _contextualPanels,
       _contextualCollapsed,
+      contextualShellPanel,
     } = this;
 
     return (
@@ -457,6 +460,16 @@ export default class ShellApplication extends Widget {
             <calcite-action-bar slot="action-bar">{_contextualActionGroups.toArray()}</calcite-action-bar>
             {_contextualPanels.toArray()}
           </calcite-shell-panel>
+        ) : null}
+
+        {!_contextualActionGroups && contextualShellPanel ? (
+          <calcite-shell-panel
+            slot="contextual-panel"
+            position="end"
+            afterCreate={(calciteShellPanel: HTMLCalciteShellPanelElement): void => {
+              contextualShellPanel.container = calciteShellPanel;
+            }}
+          ></calcite-shell-panel>
         ) : null}
 
         {/* header widget */}

@@ -1076,6 +1076,8 @@ declare namespace __cov {
      * Widgets to add to UI widget selector.
      */
     uiWidgets?: esri.Collection<WidgetInfo> | WidgetInfo[];
+
+    contextualShellPanel?: esri.Widget;
   }
 
   export class Application extends esri.Widget {
