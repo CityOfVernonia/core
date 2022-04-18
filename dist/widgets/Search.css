@@ -1,0 +1,60 @@
+.cov-search .esri-search {
+  width: 20vw;
+  min-width: 240px;
+  max-width: 420px;
+  transition: width var(--calcite-animation-timing);
+  border-radius: var(--calcite-border-radius);
+}
+.cov-search .esri-search .esri-widget--button,
+.cov-search .esri-search .esri-input {
+  background: var(--calcite-ui-foreground-1);
+  fill: var(--calcite-ui-text-3);
+  color: var(--calcite-ui-text-3);
+}
+.cov-search .esri-search .esri-widget--button:hover {
+  background-color: var(--calcite-ui-foreground-2);
+  fill: var(--calcite-ui-text-1);
+  color: var(--calcite-ui-text-1);
+}
+.cov-search .esri-search .esri-widget--button:active {
+  background-color: var(--calcite-ui-foreground-3);
+}
+.cov-search .esri-search .esri-search__input {
+  border-bottom-left-radius: var(--calcite-border-radius);
+  border-top-left-radius: var(--calcite-border-radius);
+}
+.cov-search .esri-search .esri-search__input::-webkit-input-placeholder, .cov-search .esri-search .esri-search__input::placeholder {
+  color: rgba(106, 106, 106, 0.6);
+}
+.cov-search .esri-search .esri-search--multiple-sources .esri-search__input {
+  border-radius: 0;
+}
+.cov-search .esri-search .esri-search__sources-button {
+  border: none;
+  border-bottom-left-radius: var(--calcite-border-radius);
+  border-top-left-radius: var(--calcite-border-radius);
+}
+.cov-search .esri-search .esri-search__submit-button {
+  border: none;
+  border-bottom-right-radius: var(--calcite-border-radius);
+  border-top-right-radius: var(--calcite-border-radius);
+}
+.cov-search .esri-search .esri-menu {
+  border-radius: var(--calcite-border-radius);
+}
+.cov-search .esri-search .esri-menu__list-item--active,
+.cov-search .esri-search .esri-menu__list-item--active:hover,
+.cov-search .esri-search .esri-menu__list-item--active:focus {
+  background-color: #dde7da;
+  border-left-color: #6b9560;
+}
+.cov-search .esri-search .esri-menu__list-item--focus,
+.cov-search .esri-search .esri-menu__list-item:hover,
+.cov-search .esri-search .esri-menu__list-item:focus {
+  background-color: #dde7da;
+}
+.cov-search .esri-search .esri-search__source.esri-menu__list-item:active {
+  background-color: #c0d3bb;
+}
+
+/*# sourceMappingURL=Search.css.map */

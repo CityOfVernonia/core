@@ -1,0 +1,223 @@
+@import  "./variables";
+
+/////////
+// global
+/////////
+body,
+html {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  background-color: var(--calcite-ui-background);
+  color: var(--calcite-ui-text-1);
+  font-size: 16px;
+}
+
+//////////////////////////////////////
+// calcite and arcgis js api variables
+//////////////////////////////////////
+
+:root {
+  --calcite-ui-brand: #{$brand};
+  --calcite-ui-brand-hover: #{$brand-hover};
+  --calcite-ui-brand-press: #{$brand-press};
+  --calcite-ui-text-link: #{$brand-hover};
+  --calcite-link-blue-underline: #{$link-underline};
+}
+
+.calcite-theme-light {
+  --calcite-ui-brand: #{$brand};
+  --calcite-ui-brand-hover: #{$brand-hover};
+  --calcite-ui-brand-press: #{$brand-press};
+  --calcite-ui-text-link: #{$brand-hover};
+  --calcite-link-blue-underline: #{$link-underline};
+}
+
+//////////////////////////
+// arcgis js api overrides
+//////////////////////////
+
+// browsers have gotten weird with the focused view outline
+.esri-view .esri-view-surface--inset-outline:focus::after {
+  outline: none !important;
+  outline-offset: 0;
+}
+
+// tighten up ui
+.esri-ui-top-right {
+  top: -5px;
+  right: -5px;
+}
+
+// top left heading
+.esri-ui-top-left {
+  top: -15px;
+  left: -15px;
+}
+
+.esri-ui-bottom-left {
+  bottom: -5px;
+  left: -5px;
+}
+
+.esri-ui-bottom-right {
+  bottom: -5px;
+  right: -5px;
+}
+
+// smaller basemap toggle
+.esri-basemap-toggle {
+  width: 59px;
+  height: 59px;
+  .esri-basemap-toggle__container,
+  .esri-basemap-toggle__image {
+    width: 54px;
+    height: 54px;
+    border-radius: var(--calcite-border-radius);
+  }
+}
+
+//////////////
+// application
+//////////////
+
+.cov-layout {
+  width: 100vw;
+  height: 100vh;
+
+  calcite-panel,
+  calcite-action-bar {
+    border-top: none;
+    border-bottom: none;
+  }
+}
+
+.cov-layout--view {
+  height: 100%;
+  width: 100%;
+}
+
+/////////
+// loader
+/////////
+
+@import "./widgets/Loader";
+
+//////////////
+// map heading
+//////////////
+
+.cov-layout--map-heading {
+  height: 40px;
+  display: flex;
+  flex-flow: row;
+  gap: 1rem;
+  align-items: center;
+  z-index: 2;
+  padding: 0 1rem;
+  background-color: $brand-dark;
+  border-bottom-right-radius: var(--calcite-border-radius);
+  box-shadow: none !important;
+
+  calcite-icon {
+    cursor: pointer;
+    color: var(--calcite-ui-foreground-1);
+    margin-top: 4px;
+    user-select: none;
+  }
+
+  &.cov-layout--map-heading-search-padding {
+    padding-right: 0;
+  }
+}
+
+.cov-layout--map-heading-title {
+  color: var(--calcite-ui-foreground-1);
+  font-size: var(--calcite-font-size-1);
+  user-select: none;
+}
+
+.cov-layout--map-heading-logo {
+  height: 24px;
+  user-select: none;
+}
+
+.cov-layout--map-heading-search.esri-search {
+  width: 25vw;
+  min-width: 240px;
+  max-width: 420px;
+  transition: width var(--calcite-animation-timing);
+  border-bottom-right-radius: var(--calcite-border-radius);
+
+  * {
+    outline: none !important;
+  }
+
+  .esri-widget--button {
+    width: 40px;
+  }
+  .esri-widget--button,
+  .esri-input {
+    height: 40px;
+    background: lighten($brand-dark, 7.5%);
+    color: white;
+  }
+  .esri-search__input {
+    &::-webkit-input-placeholder,
+    &::placeholder {
+      color: rgba(white, 0.6);
+    }
+  }
+  .esri-search__sources-button {
+    border: none;
+  }
+  .esri-search__submit-button {
+    border: none;
+    border-bottom-right-radius: var(--calcite-border-radius);
+  }
+  .esri-menu {
+    margin-top: 4px;
+  }
+  .esri-menu__list-item--active,
+  .esri-menu__list-item--active:hover,
+  .esri-menu__list-item--active:focus {
+    background-color: lighten($brand, 40%);
+    border-left-color: $brand;
+  }
+
+  .esri-menu__list-item--focus,
+  .esri-menu__list-item:hover,
+  .esri-menu__list-item:focus {
+    background-color: lighten($brand, 40%);
+  }
+
+  .esri-search__source.esri-menu__list-item:active {
+    background-color: lighten($brand, 30%);
+    // background-color: $brand;
+  }
+}
+//////////////
+// ui selector
+//////////////
+
+.cov-layout--ui-selector-panels {
+  position: absolute;
+  box-shadow: $box-shadow;
+  top: 0;
+  right: calc(100% + 8px);
+  
+  calcite-panel {
+    border-radius: var(--calcite-border-radius);
+  }
+}
+
+///////////////
+// view control
+///////////////
+
+@import "./widgets/ViewControl";

@@ -1,0 +1,19 @@
+@import "./../variables";
+
+.cov--view-control {
+  display: flex;
+  flex-flow: row;
+  align-items: flex-end;
+  gap: 0.75rem;
+  box-shadow: none !important;
+}
+
+.cov--view-control--pads {
+  display: flex;
+  flex-flow: column;
+  gap: 0.75rem;
+
+  calcite-action-pad {
+    box-shadow: $box-shadow;
+  }
+}

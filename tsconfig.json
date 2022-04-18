@@ -6,34 +6,27 @@
     ],
     "strict": true,
     "esModuleInterop": true,
+    "moduleResolution": "node",
     "importHelpers": true,
-    "skipLibCheck": true,
     "paths": {
       "tslib": ["./node_modules/tslib/tslib.d.ts"]
     },
     "experimentalDecorators": true,
     "jsx": "react",
     "jsxFactory": "tsx",
-    "outDir": "dist/",
+    "target": "ES6",
+    "module": "es2022",
+    "rootDir": "src",
+    "outDir": "dist",
     "declaration": true,
     "types": [
-      "@esri/calcite-components",
-      "papaparse",
-      "pouchdb",
-      "pubsub-js"
+      "@esri/calcite-components"
     ]
   },
-  "exclude": [
-    "node_modules/"
-  ],
   "include": [
-    "Application/",
-    "layouts/",
-    "popups/",
-    "support/",
-    "viewModels/",
-    "widgets/",
-    "Application.tsx",
-    "interfaces.d.ts"
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }

@@ -1,0 +1,17 @@
+.cov-tax-lot-buffer--content {
+  padding: 0.75rem;
+}
+
+.cov-tax-lot-buffer--inner-content {
+  display: flex;
+  flex-flow: column;
+  gap: 0.75rem;
+
+  &[hidden=""] {
+    display: none;
+  }
+}
+
+.cov-tax-lot-buffer--error {
+  color: var(--calcite-ui-danger);
+}
