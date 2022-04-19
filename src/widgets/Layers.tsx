@@ -1,6 +1,6 @@
 import esri = __esri;
 
-interface ImageryInfo extends Object {
+export interface ImageryInfo extends Object {
   title: string;
   layer: esri.Layer;
 }
@@ -118,10 +118,11 @@ export default class Layers extends Widget {
               this.state = 'layers';
             }}
           ></calcite-action>
-          <calcite-tooltip reference-element={tooltips[0]} overlay-positioning="fixed" placement="bottom">
-            Layers
-          </calcite-tooltip>
         </calcite-tooltip-manager>
+        <calcite-tooltip reference-element={tooltips[0]} overlay-positioning="fixed" placement="bottom">
+          Layers
+        </calcite-tooltip>
+
         <calcite-tooltip-manager slot="header-actions-end">
           <calcite-action
             id={tooltips[1]}
@@ -131,10 +132,11 @@ export default class Layers extends Widget {
               this.state = 'legend';
             }}
           ></calcite-action>
-          <calcite-tooltip reference-element={tooltips[1]} overlay-positioning="fixed" placement="bottom">
-            Legend
-          </calcite-tooltip>
         </calcite-tooltip-manager>
+        <calcite-tooltip reference-element={tooltips[1]} overlay-positioning="fixed" placement="bottom">
+          Legend
+        </calcite-tooltip>
+
         {_radioButtonGroup ? (
           <calcite-tooltip-manager slot="header-actions-end">
             <calcite-action
@@ -145,10 +147,13 @@ export default class Layers extends Widget {
                 this.state = 'imagery';
               }}
             ></calcite-action>
-            <calcite-tooltip reference-element={tooltips[2]} overlay-positioning="fixed" placement="bottom">
-              Basemap Imagery
-            </calcite-tooltip>
+
           </calcite-tooltip-manager>
+        ) : null}
+        {_radioButtonGroup ? (
+          <calcite-tooltip reference-element={tooltips[2]} overlay-positioning="fixed" placement="bottom">
+            Imagery
+          </calcite-tooltip>
         ) : null}
 
         {/* layers */}
