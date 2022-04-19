@@ -147,7 +147,6 @@ export default class Layers extends Widget {
                 this.state = 'imagery';
               }}
             ></calcite-action>
-
           </calcite-tooltip-manager>
         ) : null}
         {_radioButtonGroup ? (

@@ -53,18 +53,18 @@ let Layers = class Layers extends Widget {
             tsx("calcite-tooltip-manager", { slot: "header-actions-end" },
                 tsx("calcite-action", { id: tooltips[0], active: state === 'layers', icon: "layers", onclick: () => {
                         this.state = 'layers';
-                    } }),
-                tsx("calcite-tooltip", { "reference-element": tooltips[0], "overlay-positioning": "fixed", placement: "bottom" }, "Layers")),
+                    } })),
+            tsx("calcite-tooltip", { "reference-element": tooltips[0], "overlay-positioning": "fixed", placement: "bottom" }, "Layers"),
             tsx("calcite-tooltip-manager", { slot: "header-actions-end" },
                 tsx("calcite-action", { id: tooltips[1], active: state === 'legend', icon: "legend", onclick: () => {
                         this.state = 'legend';
-                    } }),
-                tsx("calcite-tooltip", { "reference-element": tooltips[1], "overlay-positioning": "fixed", placement: "bottom" }, "Legend")),
+                    } })),
+            tsx("calcite-tooltip", { "reference-element": tooltips[1], "overlay-positioning": "fixed", placement: "bottom" }, "Legend"),
             _radioButtonGroup ? (tsx("calcite-tooltip-manager", { slot: "header-actions-end" },
                 tsx("calcite-action", { id: tooltips[2], active: state === 'imagery', icon: "layer-basemap", onclick: () => {
                         this.state = 'imagery';
-                    } }),
-                tsx("calcite-tooltip", { "reference-element": tooltips[2], "overlay-positioning": "fixed", placement: "bottom" }, "Basemap Imagery"))) : null,
+                    } }))) : null,
+            _radioButtonGroup ? (tsx("calcite-tooltip", { "reference-element": tooltips[2], "overlay-positioning": "fixed", placement: "bottom" }, "Imagery")) : null,
             tsx("div", { hidden: state !== 'layers', afterCreate: (container) => {
                     const { view } = this;
                     this.layers = new LayerList({

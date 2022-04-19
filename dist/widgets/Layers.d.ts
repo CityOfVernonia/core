@@ -1,5 +1,5 @@
 import esri = __esri;
-interface ImageryInfo extends Object {
+export interface ImageryInfo extends Object {
     title: string;
     layer: esri.Layer;
 }
@@ -35,4 +35,3 @@ export default class Layers extends Widget {
     onHide(): void;
     render(): tsx.JSX.Element;
 }
-export {};

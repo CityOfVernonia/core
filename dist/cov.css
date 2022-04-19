@@ -325,6 +325,9 @@ body {
 .cov-layers--content calcite-label {
   cursor: pointer;
 }
+.cov-layers--content p {
+  margin: 0 0 0.75rem;
+}
 
 .cov-loader {
   display: flex;
