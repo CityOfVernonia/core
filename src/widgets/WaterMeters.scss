@@ -1,0 +1,15 @@
+.cov-water-meters {
+  border-radius: var(--calcite-border-radius);
+}
+
+.cov-water-meters--content {
+  padding: 0.75rem 0.75rem 0;
+
+  p {
+    margin: 0 0 0.75rem;
+  }
+
+  calcite-button {
+    margin-bottom: 0.75rem;
+  }
+}
