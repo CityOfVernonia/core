@@ -180,6 +180,7 @@ export default class Layers extends Widget {
         {/* imagery */}
         {_radioButtonGroup ? (
           <div hidden={state !== 'imagery'} class={CSS.content}>
+            <p>Select basemap imagery.</p>
             {_radioButtonGroup}
           </div>
         ) : null}
