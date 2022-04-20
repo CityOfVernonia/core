@@ -79,7 +79,9 @@ let Layers = class Layers extends Widget {
                         container,
                     });
                 } }),
-            _radioButtonGroup ? (tsx("div", { hidden: state !== 'imagery', class: CSS.content }, _radioButtonGroup)) : null));
+            _radioButtonGroup ? (tsx("div", { hidden: state !== 'imagery', class: CSS.content },
+                tsx("p", null, "Select basemap imagery."),
+                _radioButtonGroup)) : null));
     }
 };
 __decorate([

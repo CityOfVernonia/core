@@ -100,20 +100,22 @@ class WaterMeterPopup extends Widget {
  */
 @subclass('cov.widgets.WaterMeters')
 export default class WaterMeters extends Widget {
-  constructor(properties: esri.WidgetProperties & {
-    /**
-     * Map view.
-     */
-    view: esri.MapView;
-    /**
-     * Water meters feature layer.
-     */
-    layer: esri.FeatureLayer;
-    /**
-     * Print service URL.
-     */
-    printServiceUrl: string;
-  }) {
+  constructor(
+    properties: esri.WidgetProperties & {
+      /**
+       * Map view.
+       */
+      view: esri.MapView;
+      /**
+       * Water meters feature layer.
+       */
+      layer: esri.FeatureLayer;
+      /**
+       * Print service URL.
+       */
+      printServiceUrl: string;
+    },
+  ) {
     super(properties);
     whenOnce(this, 'layer.loaded', () => {
       const { layer, search } = this;
@@ -358,9 +360,13 @@ export default class WaterMeters extends Widget {
       .then((response: any) => {
         result.item = (
           <calcite-value-list-item key={KEY++} label={label} non-interactive="">
-            <calcite-action slot="actions-end" icon="download" onclick={(): void => {
-              window.open(response.url, '_blank');
-            }}></calcite-action>
+            <calcite-action
+              slot="actions-end"
+              icon="download"
+              onclick={(): void => {
+                window.open(response.url, '_blank');
+              }}
+            ></calcite-action>
           </calcite-value-list-item>
         );
 
@@ -388,27 +394,46 @@ export default class WaterMeters extends Widget {
 
     return (
       <calcite-panel class={CSS.base} heading="Water Meters" width-scale="m">
-
         <calcite-tooltip-manager slot="header-actions-end" hidden={state === 'search'}>
-          <calcite-action id={ids[0]} text-enabled="" text="Back" icon="chevron-left" onclick={(): void => {
-            this.state = 'search';
-          }}></calcite-action>
+          <calcite-action
+            id={ids[0]}
+            text-enabled=""
+            text="Back"
+            icon="chevron-left"
+            onclick={(): void => {
+              this.state = 'search';
+            }}
+          ></calcite-action>
         </calcite-tooltip-manager>
-        <calcite-tooltip reference-element={ids[0]} placement="bottom">Back</calcite-tooltip>
+        <calcite-tooltip reference-element={ids[0]} placement="bottom">
+          Back
+        </calcite-tooltip>
 
         <calcite-tooltip-manager slot="header-actions-end" hidden={state !== 'search'}>
-          <calcite-action id={ids[1]} icon="print" onclick={(): void => {
-            this.state = 'print';
-          }}></calcite-action>
+          <calcite-action
+            id={ids[1]}
+            icon="print"
+            onclick={(): void => {
+              this.state = 'print';
+            }}
+          ></calcite-action>
         </calcite-tooltip-manager>
-        <calcite-tooltip reference-element={ids[1]} placement="bottom">Print</calcite-tooltip>
+        <calcite-tooltip reference-element={ids[1]} placement="bottom">
+          Print
+        </calcite-tooltip>
 
         <calcite-tooltip-manager slot="header-actions-end" hidden={state !== 'search'}>
-          <calcite-action id={ids[2]} icon="label" onclick={(): void => {
-            this.state = 'labels';
-          }}></calcite-action>
+          <calcite-action
+            id={ids[2]}
+            icon="label"
+            onclick={(): void => {
+              this.state = 'labels';
+            }}
+          ></calcite-action>
         </calcite-tooltip-manager>
-        <calcite-tooltip reference-element={ids[2]} placement="bottom">Labels</calcite-tooltip>
+        <calcite-tooltip reference-element={ids[2]} placement="bottom">
+          Labels
+        </calcite-tooltip>
 
         {/* <calcite-tooltip-manager slot="header-actions-end">
           <calcite-action id={ids[0]} icon="search" active={state === 'search'} onclick={(): void => {
