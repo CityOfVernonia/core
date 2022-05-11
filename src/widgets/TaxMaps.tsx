@@ -73,7 +73,8 @@ export default class TaxMaps extends Widget {
     await layer.when();
     await imagery.load();
 
-    this.sublayers = imagery.sublayers.getItemAt(0).sublayers;
+    // this.sublayers = imagery.sublayers.getItemAt(0).sublayers;
+    this.sublayers = imagery.sublayers;
 
     const result = (await layer.queryFeatures({
       where: '1 = 1',
@@ -101,16 +102,16 @@ export default class TaxMaps extends Widget {
     features.forEach((graphic: esri.Graphic): void => {
       const {
         geometry,
-        attributes: { filename, taxmap, alias },
+        attributes: { name, taxmap },
       } = graphic;
 
       const sublayer = this.sublayers.find((sublayer: esri.Sublayer): boolean => {
-        return sublayer.title === filename;
+        return sublayer.title === taxmap;
       });
 
       options.push(
         <calcite-option
-          label={alias}
+          label={name}
           value={`${sublayer.id}`}
           afterCreate={this._optionSelected.bind(this)}
         ></calcite-option>,
