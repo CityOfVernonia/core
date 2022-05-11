@@ -13,6 +13,9 @@ const CSS = {
     // application
     base: 'cov-layout',
     view: 'cov-layout--view',
+    menu: 'cov-layout--menu',
+    menuOpen: 'cov-layout--menu-open',
+    menuBackground: 'cov-layout--menu-background',
     // map heading
     mapHeading: 'cov-layout--map-heading',
     mapHeadingTitle: 'cov-layout--map-heading-title',
@@ -39,9 +42,10 @@ let Layout = class Layout extends Widget {
     constructor(properties) {
         super(properties);
         this.container = document.createElement('calcite-shell');
+        this.title = 'Web Map';
         this.includeDisclaimer = false;
+        this.includeMapHeading = true;
         this.mapHeadingOptions = {};
-        this.primaryMenu = false;
         // requires decoration
         this._primaryActiveId = null;
         // requires decoration
@@ -54,6 +58,11 @@ let Layout = class Layout extends Widget {
         this._contextualCollapsed = true;
         // requires decoration
         this._uiActiveId = null;
+        /**
+         * Menu widgets variables.
+         */
+        // requires decoration
+        this._menuOpen = false;
         document.body.append(this.container);
         const loader = new Loader(properties.loaderOptions || {});
         properties.view.when(() => {
@@ -65,29 +74,37 @@ let Layout = class Layout extends Widget {
     }
     postInitialize() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { view, mapHeadingOptions, viewControlOptions, nextBasemap, primaryMenu, primaryShellPanel, primaryWidgets, contextualShellPanel, contextualWidgets, uiWidgets, } = this;
+            const { view, header, includeMapHeading, mapHeadingOptions, viewControlOptions, nextBasemap, primaryShellPanel, primaryWidgets, contextualShellPanel, contextualWidgets, uiWidgets, menuWidgets, } = this;
             // clear default zoom
             view.ui.empty('top-left');
+            // menu mode?
+            const menuControl = menuWidgets ? true : false;
             //////////////
             // map heading
             //////////////
-            // menu mode?
-            const menuControl = primaryShellPanel && primaryMenu;
-            // create map heading
-            const mapHeading = new MapHeading(Object.assign(Object.assign({ menuControl }, mapHeadingOptions), { container: document.createElement('div') }));
-            // set search view model view
-            if (mapHeadingOptions.searchViewModel && !mapHeadingOptions.searchViewModel.view) {
-                mapHeadingOptions.searchViewModel.view = view;
+            if (includeMapHeading) {
+                // create map heading
+                const mapHeading = new MapHeading(Object.assign(Object.assign({ menuControl }, mapHeadingOptions), { container: document.createElement('div') }));
+                // set search view model view
+                if (mapHeadingOptions.searchViewModel && !mapHeadingOptions.searchViewModel.view) {
+                    mapHeadingOptions.searchViewModel.view = view;
+                }
+                if (menuControl) {
+                    this.own(mapHeading.on('menu', () => {
+                        this._menuOpen = true;
+                    }));
+                    document.addEventListener('keydown', (event) => {
+                        if (this._menuOpen && event.key === 'Escape')
+                            this._menuOpen = false;
+                    });
+                }
+                view.ui.add(mapHeading, 'top-left');
             }
-            // in menu mode set primary hidden and watch map heading `menuOpen`
-            if (menuControl) {
-                this._primaryHidden = true;
-                this.own(watch(mapHeading, 'menuOpen', (open) => {
-                    this._primaryHidden = !open;
+            if (header && header.on && typeof header.on === 'function') {
+                this.own(header.on('menu', () => {
+                    this._menuOpen = true;
                 }));
             }
-            // append map heading to body in menu mode or add to view ui if not
-            menuControl ? document.body.append(mapHeading.container) : view.ui.add(mapHeading, 'top-left');
             ///////////////////
             // add view control
             ///////////////////
@@ -152,6 +169,10 @@ let Layout = class Layout extends Widget {
                 if (activeWidgetInfo) {
                     this._uiActiveId = activeWidgetInfo.widget.id;
                 }
+            }
+            if (menuWidgets) {
+                this._menuAccordionItems = new Collection();
+                menuWidgets.forEach(this._menuWidgetInfo.bind(this));
             }
             ////////////////////////////////////////
             // assure no view or dom race conditions
@@ -310,9 +331,30 @@ let Layout = class Layout extends Widget {
             groups.push(tsx("calcite-action-group", { key: KEY++, slot: uiWidgets ? null : 'bottom-actions' }, bottomActions));
         return groups;
     }
+    /**
+     * Initialize menu widgets.
+     * @param menuWidgetInfo
+     * @param index
+     */
+    _menuWidgetInfo(menuWidgetInfo, index) {
+        const { _menuAccordionItems } = this;
+        const { title, icon, widget } = menuWidgetInfo;
+        _menuAccordionItems.add(tsx("calcite-accordion-item", { icon: icon, "item-title": title, active: index === 0 },
+            tsx("div", { afterCreate: (div) => {
+                    widget.container = div;
+                } })));
+    }
     render() {
-        const { header, footer, _primaryActionGroups, _primaryPanels, _primaryCollapsed, _primaryHidden, primaryShellPanel, _contextualActionGroups, _contextualPanels, _contextualCollapsed, contextualShellPanel, } = this;
+        const { title, header, footer, _primaryActionGroups, _primaryPanels, _primaryCollapsed, _primaryHidden, primaryShellPanel, _contextualActionGroups, _contextualPanels, _contextualCollapsed, contextualShellPanel, _menuOpen, _menuAccordionItems, } = this;
         return (tsx("calcite-shell", { class: CSS.base },
+            tsx("calcite-panel", { class: this.classes(CSS.menu, _menuOpen ? CSS.menuOpen : ''), heading: title },
+                tsx("calcite-action", { slot: "header-actions-end", icon: "chevron-left", onclick: () => {
+                        this._menuOpen = false;
+                    } }),
+                tsx("calcite-accordion", { appearance: "transparent", "selection-mode": "single-persist" }, _menuAccordionItems ? _menuAccordionItems.toArray() : null)),
+            tsx("div", { class: _menuOpen ? CSS.menuBackground : '', onclick: () => {
+                    this._menuOpen = false;
+                } }),
             header ? (tsx("div", { slot: "header", afterCreate: (div) => {
                     header.container = div;
                 } })) : null,
@@ -344,6 +386,9 @@ __decorate([
     property({ type: Collection })
 ], Layout.prototype, "uiWidgets", void 0);
 __decorate([
+    property({ type: Collection })
+], Layout.prototype, "menuWidgets", void 0);
+__decorate([
     property()
 ], Layout.prototype, "_primaryActiveId", void 0);
 __decorate([
@@ -361,6 +406,9 @@ __decorate([
 __decorate([
     property()
 ], Layout.prototype, "_uiActiveId", void 0);
+__decorate([
+    property()
+], Layout.prototype, "_menuOpen", void 0);
 Layout = __decorate([
     subclass('cov.Layout')
 ], Layout);
@@ -388,19 +436,18 @@ UISelector = __decorate([
 let MapHeading = class MapHeading extends Widget {
     constructor(properties) {
         super(properties);
-        this.menuOpen = false;
     }
     render() {
-        const { id, title, logoUrl, searchViewModel, menuControl, menuOpen } = this;
+        const { id, title, logoUrl, searchViewModel, menuControl } = this;
         const tooltip = `tooltip_${id}`;
         return (tsx("div", { class: this.classes(CSS.mapHeading, searchViewModel ? CSS.mapHeadingSearchPadding : '') },
             menuControl ? (tsx("calcite-tooltip-manager", null,
-                tsx("calcite-icon", { id: tooltip, scale: "m", icon: menuOpen ? 'x' : 'hamburger', afterCreate: (icon) => {
+                tsx("calcite-icon", { id: tooltip, scale: "m", icon: "hamburger", afterCreate: (icon) => {
                         icon.addEventListener('click', () => {
-                            this.menuOpen = !this.menuOpen;
+                            this.emit('menu');
                         });
                     } }),
-                tsx("calcite-tooltip", { "reference-element": tooltip, "overlay-positioning": "fixed", placement: "bottom-trailing" }, menuOpen ? 'Close menu' : 'Open menu'))) : null,
+                tsx("calcite-tooltip", { "reference-element": tooltip, "overlay-positioning": "fixed", placement: "bottom-trailing" }, "Menu"))) : null,
             logoUrl ? tsx("img", { class: CSS.mapHeadingLogo, src: logoUrl }) : null,
             title ? tsx("div", { class: CSS.mapHeadingTitle }, title) : null,
             searchViewModel ? tsx("div", { class: CSS.mapHeadingSearch, afterCreate: this._renderSearch.bind(this) }) : null));
@@ -415,9 +462,6 @@ let MapHeading = class MapHeading extends Widget {
         });
     }
 };
-__decorate([
-    property()
-], MapHeading.prototype, "menuOpen", void 0);
 MapHeading = __decorate([
     subclass('MapHeading')
 ], MapHeading);
