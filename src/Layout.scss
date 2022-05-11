@@ -102,6 +102,28 @@ body {
   width: 100%;
 }
 
+.cov-layout--menu {
+  position: absolute;
+  height: 100vh;
+  width: 260px;
+  left: -260px;
+  top: 0;
+  z-index: 500;
+  transition: left 0.125s ease-in;
+}
+
+.cov-layout--menu-open {
+  left: 0;
+}
+
+.cov-layout--menu-background {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  z-index: 400;
+  background-color: rgba(#151515, 0.75);
+}
+
 /////////
 // loader
 /////////

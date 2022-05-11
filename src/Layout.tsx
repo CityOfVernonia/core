@@ -79,6 +79,23 @@ interface WidgetInfo extends Object {
   active?: boolean;
 }
 
+interface MenuWidgetInfo extends Object {
+  /**
+   * Menu accordion title.
+   */
+  title: string;
+
+  /**
+   * Menu accordion icon.
+   */
+  icon: string;
+
+  /**
+   * The widget of your choosing.
+   */
+  widget: esri.Widget;
+}
+
 /**
  * Application layout constructor properties.
  */
@@ -87,6 +104,12 @@ interface LayoutProperties extends esri.WidgetProperties {
    * The map view.
    */
   view: esri.MapView;
+
+  /**
+   * Application title.
+   * @default 'Web Map'
+   */
+  title?: string;
 
   /**
    * Options for configuring loader.
@@ -103,6 +126,12 @@ interface LayoutProperties extends esri.WidgetProperties {
    * Options for configuring disclaimer.
    */
   disclaimerOptions?: DisclaimerOptions;
+
+  /**
+   * Include map heading.
+   * @default true
+   */
+  includeMapHeading?: boolean;
 
   /**
    * Options for configuring map heading.
@@ -130,13 +159,6 @@ interface LayoutProperties extends esri.WidgetProperties {
   footer?: esri.Widget;
 
   /**
-   * Primary panel in menu mode.
-   * NOTE: only works when `primaryShellPanel` is provided.
-   * @default false
-   */
-  primaryMenu?: boolean;
-
-  /**
    * Widgets to add to the primary shell panel.
    */
   primaryWidgets?: esri.Collection<WidgetInfo> | WidgetInfo[];
@@ -150,6 +172,11 @@ interface LayoutProperties extends esri.WidgetProperties {
    * Widgets to add to ui widget selector.
    */
   uiWidgets?: esri.Collection<WidgetInfo> | WidgetInfo[];
+
+  /**
+   * Widgets to add to menu accordion.
+   */
+  menuWidgets?: esri.Collection<MenuWidgetInfo> | MenuWidgetInfo[];
 
   /**
    * Widget to add to as primary panel.
@@ -191,6 +218,9 @@ const CSS = {
   // application
   base: 'cov-layout',
   view: 'cov-layout--view',
+  menu: 'cov-layout--menu',
+  menuOpen: 'cov-layout--menu-open',
+  menuBackground: 'cov-layout--menu-background',
   // map heading
   mapHeading: 'cov-layout--map-heading',
   mapHeadingTitle: 'cov-layout--map-heading-title',
@@ -238,44 +268,62 @@ export default class Layout extends Widget {
   async postInitialize(): Promise<void> {
     const {
       view,
+      header,
+      includeMapHeading,
       mapHeadingOptions,
       viewControlOptions,
       nextBasemap,
-      primaryMenu,
       primaryShellPanel,
       primaryWidgets,
       contextualShellPanel,
       contextualWidgets,
       uiWidgets,
+      menuWidgets,
     } = this;
     // clear default zoom
     view.ui.empty('top-left');
+
+    // menu mode?
+    const menuControl = menuWidgets ? true : false;
+
     //////////////
     // map heading
     //////////////
-    // menu mode?
-    const menuControl = primaryShellPanel && primaryMenu;
-    // create map heading
-    const mapHeading = new MapHeading({
-      menuControl,
-      ...mapHeadingOptions,
-      container: document.createElement('div'),
-    });
-    // set search view model view
-    if (mapHeadingOptions.searchViewModel && !mapHeadingOptions.searchViewModel.view) {
-      mapHeadingOptions.searchViewModel.view = view;
+    if (includeMapHeading) {
+      // create map heading
+      const mapHeading = new MapHeading({
+        menuControl,
+        ...mapHeadingOptions,
+        container: document.createElement('div'),
+      });
+      // set search view model view
+      if (mapHeadingOptions.searchViewModel && !mapHeadingOptions.searchViewModel.view) {
+        mapHeadingOptions.searchViewModel.view = view;
+      }
+
+      if (menuControl) {
+        this.own(
+          mapHeading.on('menu', (): void => {
+            this._menuOpen = true;
+          }),
+        );
+
+        document.addEventListener('keydown', (event: KeyboardEvent): void => {
+          if (this._menuOpen && event.key === 'Escape') this._menuOpen = false;
+        });
+      }
+
+      view.ui.add(mapHeading, 'top-left');
     }
-    // in menu mode set primary hidden and watch map heading `menuOpen`
-    if (menuControl) {
-      this._primaryHidden = true;
+
+    if (header && header.on && typeof header.on === 'function') {
       this.own(
-        watch(mapHeading, 'menuOpen', (open: boolean): void => {
-          this._primaryHidden = !open;
+        header.on('menu', (): void => {
+          this._menuOpen = true;
         }),
       );
     }
-    // append map heading to body in menu mode or add to view ui if not
-    menuControl ? document.body.append(mapHeading.container) : view.ui.add(mapHeading, 'top-left');
+
     ///////////////////
     // add view control
     ///////////////////
@@ -351,6 +399,13 @@ export default class Layout extends Widget {
         this._uiActiveId = activeWidgetInfo.widget.id;
       }
     }
+
+    if (menuWidgets) {
+      this._menuAccordionItems = new Collection();
+
+      menuWidgets.forEach(this._menuWidgetInfo.bind(this));
+    }
+
     ////////////////////////////////////////
     // assure no view or dom race conditions
     ////////////////////////////////////////
@@ -371,7 +426,11 @@ export default class Layout extends Widget {
 
   view!: esri.MapView;
 
+  title = 'Web Map';
+
   includeDisclaimer = false;
+
+  includeMapHeading = true;
 
   mapHeadingOptions: MapHeadingOptions = {};
 
@@ -383,8 +442,6 @@ export default class Layout extends Widget {
 
   footer?: esri.Widget;
 
-  primaryMenu = false;
-
   @property({ type: Collection })
   primaryWidgets?: esri.Collection<_WidgetInfo>;
 
@@ -393,6 +450,9 @@ export default class Layout extends Widget {
 
   @property({ type: Collection })
   uiWidgets?: esri.Collection<_WidgetInfo>;
+
+  @property({ type: Collection })
+  menuWidgets?: esri.Collection<MenuWidgetInfo>;
 
   primaryShellPanel?: esri.Widget;
 
@@ -439,6 +499,15 @@ export default class Layout extends Widget {
   // requires decoration
   @property()
   private _uiActiveId: string | null = null;
+
+  /**
+   * Menu widgets variables.
+   */
+  // requires decoration
+  @property()
+  private _menuOpen = false;
+
+  private _menuAccordionItems!: esri.Collection<tsx.JSX.Element>;
 
   /**
    * Initialize widget infos.
@@ -657,8 +726,29 @@ export default class Layout extends Widget {
     return groups;
   }
 
+  /**
+   * Initialize menu widgets.
+   * @param menuWidgetInfo
+   * @param index
+   */
+  private _menuWidgetInfo(menuWidgetInfo: MenuWidgetInfo, index: number): void {
+    const { _menuAccordionItems } = this;
+    const { title, icon, widget } = menuWidgetInfo;
+
+    _menuAccordionItems.add(
+      <calcite-accordion-item icon={icon} item-title={title} active={index === 0}>
+        <div
+          afterCreate={(div: HTMLDivElement) => {
+            widget.container = div;
+          }}
+        ></div>
+      </calcite-accordion-item>,
+    );
+  }
+
   render(): tsx.JSX.Element {
     const {
+      title,
       header,
       footer,
       _primaryActionGroups,
@@ -670,14 +760,38 @@ export default class Layout extends Widget {
       _contextualPanels,
       _contextualCollapsed,
       contextualShellPanel,
+      _menuOpen,
+      _menuAccordionItems,
     } = this;
     return (
       <calcite-shell class={CSS.base}>
+        {/* menu */}
+        <calcite-panel class={this.classes(CSS.menu, _menuOpen ? CSS.menuOpen : '')} heading={title}>
+          <calcite-action
+            slot="header-actions-end"
+            icon="chevron-left"
+            onclick={(): void => {
+              this._menuOpen = false;
+            }}
+          ></calcite-action>
+          <calcite-accordion appearance="transparent" selection-mode="single-persist">
+            {_menuAccordionItems ? _menuAccordionItems.toArray() : null}
+          </calcite-accordion>
+        </calcite-panel>
+
+        {/* menu background */}
+        <div
+          class={_menuOpen ? CSS.menuBackground : ''}
+          onclick={(): void => {
+            this._menuOpen = false;
+          }}
+        ></div>
+
         {/* header */}
         {header ? (
           <div
             slot="header"
-            afterCreate={(div: HTMLDivElement) => {
+            afterCreate={(div: HTMLDivElement): void => {
               header.container = div;
             }}
           ></div>
@@ -790,11 +904,8 @@ class MapHeading extends Widget {
 
   menuControl?: boolean;
 
-  @property()
-  menuOpen = false;
-
   render(): tsx.JSX.Element {
-    const { id, title, logoUrl, searchViewModel, menuControl, menuOpen } = this;
+    const { id, title, logoUrl, searchViewModel, menuControl } = this;
 
     const tooltip = `tooltip_${id}`;
 
@@ -805,15 +916,15 @@ class MapHeading extends Widget {
             <calcite-icon
               id={tooltip}
               scale="m"
-              icon={menuOpen ? 'x' : 'hamburger'}
+              icon="hamburger"
               afterCreate={(icon: HTMLCalciteIconElement): void => {
                 icon.addEventListener('click', (): void => {
-                  this.menuOpen = !this.menuOpen;
+                  this.emit('menu');
                 });
               }}
             ></calcite-icon>
             <calcite-tooltip reference-element={tooltip} overlay-positioning="fixed" placement="bottom-trailing">
-              {menuOpen ? 'Close menu' : 'Open menu'}
+              Menu
             </calcite-tooltip>
           </calcite-tooltip-manager>
         ) : null}
