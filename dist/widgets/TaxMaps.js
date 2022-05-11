@@ -47,7 +47,8 @@ let TaxMaps = class TaxMaps extends Widget {
             yield view.when();
             yield layer.when();
             yield imagery.load();
-            this.sublayers = imagery.sublayers.getItemAt(0).sublayers;
+            // this.sublayers = imagery.sublayers.getItemAt(0).sublayers;
+            this.sublayers = imagery.sublayers;
             const result = (yield layer.queryFeatures({
                 where: '1 = 1',
                 outFields: ['*'],
@@ -63,11 +64,11 @@ let TaxMaps = class TaxMaps extends Widget {
                 tsx("calcite-option", { label: "None", value: "9999", selected: true, afterCreate: this._optionSelected.bind(this) }),
             ];
             features.forEach((graphic) => {
-                const { geometry, attributes: { filename, taxmap, alias }, } = graphic;
+                const { geometry, attributes: { name, taxmap }, } = graphic;
                 const sublayer = this.sublayers.find((sublayer) => {
-                    return sublayer.title === filename;
+                    return sublayer.title === taxmap;
                 });
-                options.push(tsx("calcite-option", { label: alias, value: `${sublayer.id}`, afterCreate: this._optionSelected.bind(this) }));
+                options.push(tsx("calcite-option", { label: name, value: `${sublayer.id}`, afterCreate: this._optionSelected.bind(this) }));
                 _items[sublayer.id] = {
                     taxmap,
                     sublayer,
