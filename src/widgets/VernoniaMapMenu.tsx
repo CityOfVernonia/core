@@ -9,7 +9,6 @@ import AccountControl from './AccountControl';
 
 const CSS = {
   base: 'cov-vernonia-map-menu',
-  content: 'cov-vernonia-map-menu--content',
   info: 'cov-vernonia-map-menu--info',
   heart: 'cov-vernonia-map-menu--heart',
   coffee: 'cov-vernonia-map-menu--coffee',
@@ -37,49 +36,44 @@ export default class VernoniaMapMenu extends Widget {
     const { oAuth, _heart, _coffee } = this;
 
     return (
-      <calcite-shell-panel class={CSS.base}>
-        <calcite-panel>
-          <div class={CSS.content}>
-            <h2>Vernonia Map</h2>
-            <div
-              afterCreate={(container: HTMLDivElement): void => {
-                new AccountControl({
-                  oAuth,
-                  container,
-                });
-              }}
-            ></div>
+      <div class={CSS.base}>
+        <div
+          afterCreate={(container: HTMLDivElement): void => {
+            new AccountControl({
+              oAuth,
+              container,
+            });
+          }}
+        ></div>
+        <div class={CSS.info}>
+          <div>Copyright &copy; {new Date().getFullYear()} City of Vernonia</div>
+          <div>
+            <span>Made with</span>
+            <svg
+              class={CSS.heart}
+              aria-hidden="true"
+              focusable="false"
+              role="img"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+            >
+              <path fill="currentColor" d={_heart}></path>
+            </svg>
+            <span>and</span>
+            <svg
+              class={CSS.coffee}
+              aria-hidden="true"
+              focusable="false"
+              role="img"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 640 512"
+            >
+              <path fill="currentColor" d={_coffee}></path>
+            </svg>
+            <span>in Vernonia, Oregon</span>
           </div>
-          <div class={CSS.info}>
-            <div>Copyright &copy; {new Date().getFullYear()} City of Vernonia</div>
-            <div>
-              <span>Made with</span>
-              <svg
-                class={CSS.heart}
-                aria-hidden="true"
-                focusable="false"
-                role="img"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 512 512"
-              >
-                <path fill="currentColor" d={_heart}></path>
-              </svg>
-              <span>and</span>
-              <svg
-                class={CSS.coffee}
-                aria-hidden="true"
-                focusable="false"
-                role="img"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 640 512"
-              >
-                <path fill="currentColor" d={_coffee}></path>
-              </svg>
-              <span>in Vernonia, Oregon</span>
-            </div>
-          </div>
-        </calcite-panel>
-      </calcite-shell-panel>
+        </div>
+      </div>
     );
   }
 }

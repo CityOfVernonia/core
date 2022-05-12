@@ -5,7 +5,6 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
 import AccountControl from './AccountControl';
 const CSS = {
     base: 'cov-vernonia-map-menu',
-    content: 'cov-vernonia-map-menu--content',
     info: 'cov-vernonia-map-menu--info',
     heart: 'cov-vernonia-map-menu--heart',
     coffee: 'cov-vernonia-map-menu--coffee',
@@ -18,29 +17,26 @@ let VernoniaMapMenu = class VernoniaMapMenu extends Widget {
     }
     render() {
         const { oAuth, _heart, _coffee } = this;
-        return (tsx("calcite-shell-panel", { class: CSS.base },
-            tsx("calcite-panel", null,
-                tsx("div", { class: CSS.content },
-                    tsx("h2", null, "Vernonia Map"),
-                    tsx("div", { afterCreate: (container) => {
-                            new AccountControl({
-                                oAuth,
-                                container,
-                            });
-                        } })),
-                tsx("div", { class: CSS.info },
-                    tsx("div", null,
-                        "Copyright \u00A9 ",
-                        new Date().getFullYear(),
-                        " City of Vernonia"),
-                    tsx("div", null,
-                        tsx("span", null, "Made with"),
-                        tsx("svg", { class: CSS.heart, "aria-hidden": "true", focusable: "false", role: "img", xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 512 512" },
-                            tsx("path", { fill: "currentColor", d: _heart })),
-                        tsx("span", null, "and"),
-                        tsx("svg", { class: CSS.coffee, "aria-hidden": "true", focusable: "false", role: "img", xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 640 512" },
-                            tsx("path", { fill: "currentColor", d: _coffee })),
-                        tsx("span", null, "in Vernonia, Oregon"))))));
+        return (tsx("div", { class: CSS.base },
+            tsx("div", { afterCreate: (container) => {
+                    new AccountControl({
+                        oAuth,
+                        container,
+                    });
+                } }),
+            tsx("div", { class: CSS.info },
+                tsx("div", null,
+                    "Copyright \u00A9 ",
+                    new Date().getFullYear(),
+                    " City of Vernonia"),
+                tsx("div", null,
+                    tsx("span", null, "Made with"),
+                    tsx("svg", { class: CSS.heart, "aria-hidden": "true", focusable: "false", role: "img", xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 512 512" },
+                        tsx("path", { fill: "currentColor", d: _heart })),
+                    tsx("span", null, "and"),
+                    tsx("svg", { class: CSS.coffee, "aria-hidden": "true", focusable: "false", role: "img", xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 640 512" },
+                        tsx("path", { fill: "currentColor", d: _coffee })),
+                    tsx("span", null, "in Vernonia, Oregon")))));
     }
 };
 VernoniaMapMenu = __decorate([

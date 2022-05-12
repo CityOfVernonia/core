@@ -79,23 +79,6 @@ interface WidgetInfo extends Object {
   active?: boolean;
 }
 
-interface MenuWidgetInfo extends Object {
-  /**
-   * Menu accordion title.
-   */
-  title: string;
-
-  /**
-   * Menu accordion icon.
-   */
-  icon: string;
-
-  /**
-   * The widget of your choosing.
-   */
-  widget: esri.Widget;
-}
-
 /**
  * Application layout constructor properties.
  */
@@ -159,6 +142,11 @@ interface LayoutProperties extends esri.WidgetProperties {
   footer?: esri.Widget;
 
   /**
+   * Menu widget.
+   */
+  menu?: esri.Widget;
+
+  /**
    * Widgets to add to the primary shell panel.
    */
   primaryWidgets?: esri.Collection<WidgetInfo> | WidgetInfo[];
@@ -172,11 +160,6 @@ interface LayoutProperties extends esri.WidgetProperties {
    * Widgets to add to ui widget selector.
    */
   uiWidgets?: esri.Collection<WidgetInfo> | WidgetInfo[];
-
-  /**
-   * Widgets to add to menu accordion.
-   */
-  menuWidgets?: esri.Collection<MenuWidgetInfo> | MenuWidgetInfo[];
 
   /**
    * Widget to add to as primary panel.
@@ -278,13 +261,13 @@ export default class Layout extends Widget {
       contextualShellPanel,
       contextualWidgets,
       uiWidgets,
-      menuWidgets,
+      menu,
     } = this;
     // clear default zoom
     view.ui.empty('top-left');
 
     // menu mode?
-    const menuControl = menuWidgets ? true : false;
+    const menuControl = menu ? true : false;
 
     //////////////
     // map heading
@@ -400,12 +383,6 @@ export default class Layout extends Widget {
       }
     }
 
-    if (menuWidgets) {
-      this._menuAccordionItems = new Collection();
-
-      menuWidgets.forEach(this._menuWidgetInfo.bind(this));
-    }
-
     ////////////////////////////////////////
     // assure no view or dom race conditions
     ////////////////////////////////////////
@@ -442,6 +419,8 @@ export default class Layout extends Widget {
 
   footer?: esri.Widget;
 
+  menu?: esri.Widget;
+
   @property({ type: Collection })
   primaryWidgets?: esri.Collection<_WidgetInfo>;
 
@@ -450,9 +429,6 @@ export default class Layout extends Widget {
 
   @property({ type: Collection })
   uiWidgets?: esri.Collection<_WidgetInfo>;
-
-  @property({ type: Collection })
-  menuWidgets?: esri.Collection<MenuWidgetInfo>;
 
   primaryShellPanel?: esri.Widget;
 
@@ -506,8 +482,6 @@ export default class Layout extends Widget {
   // requires decoration
   @property()
   private _menuOpen = false;
-
-  private _menuAccordionItems!: esri.Collection<tsx.JSX.Element>;
 
   /**
    * Initialize widget infos.
@@ -726,26 +700,6 @@ export default class Layout extends Widget {
     return groups;
   }
 
-  /**
-   * Initialize menu widgets.
-   * @param menuWidgetInfo
-   * @param index
-   */
-  private _menuWidgetInfo(menuWidgetInfo: MenuWidgetInfo, index: number): void {
-    const { _menuAccordionItems } = this;
-    const { title, icon, widget } = menuWidgetInfo;
-
-    _menuAccordionItems.add(
-      <calcite-accordion-item icon={icon} item-title={title} active={index === 0}>
-        <div
-          afterCreate={(div: HTMLDivElement) => {
-            widget.container = div;
-          }}
-        ></div>
-      </calcite-accordion-item>,
-    );
-  }
-
   render(): tsx.JSX.Element {
     const {
       title,
@@ -761,7 +715,7 @@ export default class Layout extends Widget {
       _contextualCollapsed,
       contextualShellPanel,
       _menuOpen,
-      _menuAccordionItems,
+      menu,
     } = this;
     return (
       <calcite-shell class={CSS.base}>
@@ -769,14 +723,16 @@ export default class Layout extends Widget {
         <calcite-panel class={this.classes(CSS.menu, _menuOpen ? CSS.menuOpen : '')} heading={title}>
           <calcite-action
             slot="header-actions-end"
-            icon="chevron-left"
+            icon="x"
             onclick={(): void => {
               this._menuOpen = false;
             }}
           ></calcite-action>
-          <calcite-accordion appearance="transparent" selection-mode="single-persist">
-            {_menuAccordionItems ? _menuAccordionItems.toArray() : null}
-          </calcite-accordion>
+          <div
+            afterCreate={(div: HTMLDivElement): void => {
+              if (menu) menu.container = div;
+            }}
+          ></div>
         </calcite-panel>
 
         {/* menu background */}

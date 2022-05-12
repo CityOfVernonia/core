@@ -68,20 +68,6 @@ interface WidgetInfo extends Object {
      */
     active?: boolean;
 }
-interface MenuWidgetInfo extends Object {
-    /**
-     * Menu accordion title.
-     */
-    title: string;
-    /**
-     * Menu accordion icon.
-     */
-    icon: string;
-    /**
-     * The widget of your choosing.
-     */
-    widget: esri.Widget;
-}
 /**
  * Application layout constructor properties.
  */
@@ -134,6 +120,10 @@ interface LayoutProperties extends esri.WidgetProperties {
      */
     footer?: esri.Widget;
     /**
+     * Menu widget.
+     */
+    menu?: esri.Widget;
+    /**
      * Widgets to add to the primary shell panel.
      */
     primaryWidgets?: esri.Collection<WidgetInfo> | WidgetInfo[];
@@ -145,10 +135,6 @@ interface LayoutProperties extends esri.WidgetProperties {
      * Widgets to add to ui widget selector.
      */
     uiWidgets?: esri.Collection<WidgetInfo> | WidgetInfo[];
-    /**
-     * Widgets to add to menu accordion.
-     */
-    menuWidgets?: esri.Collection<MenuWidgetInfo> | MenuWidgetInfo[];
     /**
      * Widget to add to as primary panel.
      * NOTE: do not set `container` property.
@@ -188,10 +174,10 @@ export default class Layout extends Widget {
     nextBasemap?: esri.Basemap;
     header?: esri.Widget;
     footer?: esri.Widget;
+    menu?: esri.Widget;
     primaryWidgets?: esri.Collection<_WidgetInfo>;
     contextualWidgets?: esri.Collection<_WidgetInfo>;
     uiWidgets?: esri.Collection<_WidgetInfo>;
-    menuWidgets?: esri.Collection<MenuWidgetInfo>;
     primaryShellPanel?: esri.Widget;
     contextualShellPanel?: esri.Widget;
     private _primaryActionGroups;
@@ -216,7 +202,6 @@ export default class Layout extends Widget {
      * Menu widgets variables.
      */
     private _menuOpen;
-    private _menuAccordionItems;
     /**
      * Initialize widget infos.
      * @param placement
@@ -251,12 +236,6 @@ export default class Layout extends Widget {
      * @returns esri.widget.tsx.JSX.(Element as HTMLCalcitePanelElement)[]
      */
     private _createActionGroups;
-    /**
-     * Initialize menu widgets.
-     * @param menuWidgetInfo
-     * @param index
-     */
-    private _menuWidgetInfo;
     render(): tsx.JSX.Element;
 }
 export {};

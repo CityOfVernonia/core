@@ -74,11 +74,11 @@ let Layout = class Layout extends Widget {
     }
     postInitialize() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { view, header, includeMapHeading, mapHeadingOptions, viewControlOptions, nextBasemap, primaryShellPanel, primaryWidgets, contextualShellPanel, contextualWidgets, uiWidgets, menuWidgets, } = this;
+            const { view, header, includeMapHeading, mapHeadingOptions, viewControlOptions, nextBasemap, primaryShellPanel, primaryWidgets, contextualShellPanel, contextualWidgets, uiWidgets, menu, } = this;
             // clear default zoom
             view.ui.empty('top-left');
             // menu mode?
-            const menuControl = menuWidgets ? true : false;
+            const menuControl = menu ? true : false;
             //////////////
             // map heading
             //////////////
@@ -169,10 +169,6 @@ let Layout = class Layout extends Widget {
                 if (activeWidgetInfo) {
                     this._uiActiveId = activeWidgetInfo.widget.id;
                 }
-            }
-            if (menuWidgets) {
-                this._menuAccordionItems = new Collection();
-                menuWidgets.forEach(this._menuWidgetInfo.bind(this));
             }
             ////////////////////////////////////////
             // assure no view or dom race conditions
@@ -331,27 +327,17 @@ let Layout = class Layout extends Widget {
             groups.push(tsx("calcite-action-group", { key: KEY++, slot: uiWidgets ? null : 'bottom-actions' }, bottomActions));
         return groups;
     }
-    /**
-     * Initialize menu widgets.
-     * @param menuWidgetInfo
-     * @param index
-     */
-    _menuWidgetInfo(menuWidgetInfo, index) {
-        const { _menuAccordionItems } = this;
-        const { title, icon, widget } = menuWidgetInfo;
-        _menuAccordionItems.add(tsx("calcite-accordion-item", { icon: icon, "item-title": title, active: index === 0 },
-            tsx("div", { afterCreate: (div) => {
-                    widget.container = div;
-                } })));
-    }
     render() {
-        const { title, header, footer, _primaryActionGroups, _primaryPanels, _primaryCollapsed, _primaryHidden, primaryShellPanel, _contextualActionGroups, _contextualPanels, _contextualCollapsed, contextualShellPanel, _menuOpen, _menuAccordionItems, } = this;
+        const { title, header, footer, _primaryActionGroups, _primaryPanels, _primaryCollapsed, _primaryHidden, primaryShellPanel, _contextualActionGroups, _contextualPanels, _contextualCollapsed, contextualShellPanel, _menuOpen, menu, } = this;
         return (tsx("calcite-shell", { class: CSS.base },
             tsx("calcite-panel", { class: this.classes(CSS.menu, _menuOpen ? CSS.menuOpen : ''), heading: title },
-                tsx("calcite-action", { slot: "header-actions-end", icon: "chevron-left", onclick: () => {
+                tsx("calcite-action", { slot: "header-actions-end", icon: "x", onclick: () => {
                         this._menuOpen = false;
                     } }),
-                tsx("calcite-accordion", { appearance: "transparent", "selection-mode": "single-persist" }, _menuAccordionItems ? _menuAccordionItems.toArray() : null)),
+                tsx("div", { afterCreate: (div) => {
+                        if (menu)
+                            menu.container = div;
+                    } })),
             tsx("div", { class: _menuOpen ? CSS.menuBackground : '', onclick: () => {
                     this._menuOpen = false;
                 } }),
@@ -385,9 +371,6 @@ __decorate([
 __decorate([
     property({ type: Collection })
 ], Layout.prototype, "uiWidgets", void 0);
-__decorate([
-    property({ type: Collection })
-], Layout.prototype, "menuWidgets", void 0);
 __decorate([
     property()
 ], Layout.prototype, "_primaryActiveId", void 0);
