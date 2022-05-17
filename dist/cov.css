@@ -624,6 +624,16 @@ body {
   background-color: #c0d3bb;
 }
 
+.cov-share {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+  box-shadow: none !important;
+}
+
 .snapshot-widget--result {
   width: 100%;
   margin-top: 0.75rem;
