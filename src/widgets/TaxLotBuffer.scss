@@ -1,3 +1,7 @@
+.cov-tax-lot-buffer {
+  border-radius: var(--calcite-border-radius);
+}
+
 .cov-tax-lot-buffer--content {
   padding: 0.75rem;
 }
@@ -10,8 +14,4 @@
   &[hidden=""] {
     display: none;
   }
-}
-
-.cov-tax-lot-buffer--error {
-  color: var(--calcite-ui-danger);
 }

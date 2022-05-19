@@ -665,6 +665,10 @@ body {
   margin: 0 0 0.75rem;
 }
 
+.cov-tax-lot-buffer {
+  border-radius: var(--calcite-border-radius);
+}
+
 .cov-tax-lot-buffer--content {
   padding: 0.75rem;
 }
@@ -676,10 +680,6 @@ body {
 }
 .cov-tax-lot-buffer--inner-content[hidden=""] {
   display: none;
-}
-
-.cov-tax-lot-buffer--error {
-  color: var(--calcite-ui-danger);
 }
 
 .cov-vernonia-map-menu {

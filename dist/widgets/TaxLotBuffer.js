@@ -2,18 +2,22 @@ import { __awaiter, __decorate } from "tslib";
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
-import { geodesicBuffer } from '@arcgis/core/geometry/geometryEngine';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import { SimpleFillSymbol } from '@arcgis/core/symbols';
 import Graphic from '@arcgis/core/Graphic';
+import { geodesicBuffer } from '@arcgis/core/geometry/geometryEngine';
 import { unparse } from 'papaparse';
 import { propertyInfoUrl } from './../support/AssessorURLs';
+import PrintViewModel from '@arcgis/core/widgets/Print/PrintViewModel';
+import PrintTemplate from '@arcgis/core/rest/support/PrintTemplate';
 const CSS = {
     base: 'cov-tax-lot-buffer',
     content: 'cov-tax-lot-buffer--content',
     innerContent: 'cov-tax-lot-buffer--inner-content',
-    error: 'cov-tax-lot-buffer--error',
 };
+/**
+ * Buffer a tax lot.
+ */
 let TaxLotBuffer = class TaxLotBuffer extends Widget {
     constructor(properties) {
         super(properties);
@@ -49,26 +53,32 @@ let TaxLotBuffer = class TaxLotBuffer extends Widget {
     }
     postInitialize() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { view, view: { map }, layer, _graphics, } = this;
-            yield view.when();
-            yield layer.when();
+            const { view, view: { map }, _graphics, printServiceUrl, } = this;
             map.add(_graphics);
-            const selectFeature = this.watch(['state', '_visible', '_selectedFeature'], () => {
-                const { layer, state, _visible, _selectedFeature } = this;
+            const state = this.watch(['state', '_visible', '_selectedFeature'], () => {
+                const { state, _visible, _selectedFeature } = this;
                 if (state === 'buffered')
                     return;
-                this.state = _visible && _selectedFeature && _selectedFeature.layer === layer ? 'selected' : 'ready';
+                this.state = _visible && _selectedFeature ? 'selected' : 'ready';
             });
-            this.own([selectFeature]);
+            this.own(state);
+            if (printServiceUrl) {
+                this._printer = new PrintViewModel({
+                    view,
+                    printServiceUrl,
+                });
+            }
         });
-    }
-    _clear() {
-        const { _graphics } = this;
-        this.state = 'ready';
-        _graphics.removeAll();
     }
     onHide() {
         this._clear();
+    }
+    _clear() {
+        const { view: { popup }, _graphics, } = this;
+        popup.clear();
+        popup.close();
+        this.state = 'ready';
+        _graphics.removeAll();
     }
     _buffer(event) {
         var _a;
@@ -128,7 +138,7 @@ let TaxLotBuffer = class TaxLotBuffer extends Widget {
             const { attributes } = feature;
             // just need one account link in download
             const accounts = attributes.ACCOUNT_IDS.split(',').map((account) => {
-                return propertyInfoUrl(account, 2021);
+                return propertyInfoUrl(account, 2022);
             });
             const result = {
                 'Tax Lot': attributes.TAXLOT_ID,
@@ -146,9 +156,31 @@ let TaxLotBuffer = class TaxLotBuffer extends Widget {
         a.click();
         document.body.removeChild(a);
     }
+    _print(event) {
+        const { _printer, _id, _distance } = this;
+        const button = event.target;
+        button.loading = true;
+        _printer
+            .print(new PrintTemplate({
+            format: 'pdf',
+            layout: 'letter-ansi-a-landscape',
+            layoutOptions: {
+                titleText: `${_id} ${_distance}' Buffer`,
+            },
+        }))
+            .then((result) => {
+            window.open(result.url, '_blank');
+            button.loading = false;
+        })
+            .catch((error) => {
+            console.log(error);
+            window.alert('A print error occurred.');
+            button.loading = false;
+        });
+    }
     render() {
-        const { state, _distance, _id, _results } = this;
-        return (tsx("calcite-panel", { class: CSS.base, heading: "Tax Lot Buffer" },
+        const { printServiceUrl, state, _distance, _id, _results } = this;
+        return (tsx("calcite-panel", { class: CSS.base, "width-scale": "m", "height-scale": "l", heading: "Tax Lot Buffer" },
             tsx("div", { class: CSS.content },
                 tsx("div", { hidden: state !== 'ready' }, "Select a tax lot in the map."),
                 tsx("form", { hidden: state !== 'selected', afterCreate: (form) => {
@@ -163,19 +195,18 @@ let TaxLotBuffer = class TaxLotBuffer extends Widget {
                     tsx("calcite-progress", { type: "indeterminate" })),
                 tsx("div", { class: CSS.innerContent, hidden: state !== 'buffered' },
                     tsx("span", null,
-                        "There are ",
                         _results.length,
                         " tax lots within ",
                         _distance,
                         " feet of tax lot ",
                         _id,
                         "."),
-                    tsx("div", null,
-                        tsx("calcite-button", { appearance: "outline", width: "half", onclick: this._clear.bind(this) }, "Clear"),
-                        tsx("calcite-button", { width: "half", onclick: this._download.bind(this) }, "Download"))),
+                    tsx("calcite-button", { width: "full", "icon-start": "file-csv", onclick: this._download.bind(this) }, "Download CSV"),
+                    printServiceUrl ? (tsx("calcite-button", { width: "full", "icon-start": "print", onclick: this._print.bind(this) }, "Print Map")) : null,
+                    tsx("calcite-button", { appearance: "outline", width: "full", onclick: this._clear.bind(this) }, "Clear")),
                 tsx("div", { class: CSS.innerContent, hidden: state !== 'error' },
-                    tsx("span", { class: CSS.error }, "Something went wrong."),
-                    tsx("calcite-button", { appearance: "outline", onclick: this._clear.bind(this) }, "Try again")))));
+                    tsx("span", null, "Something went wrong."),
+                    tsx("calcite-button", { appearance: "outline", width: "full", onclick: this._clear.bind(this) }, "Try again")))));
     }
 };
 __decorate([
@@ -192,6 +223,6 @@ __decorate([
     })
 ], TaxLotBuffer.prototype, "_selectedFeature", void 0);
 TaxLotBuffer = __decorate([
-    subclass('cov.widgets.TaxLotBuffer')
+    subclass('TaxLotBuffer')
 ], TaxLotBuffer);
 export default TaxLotBuffer;

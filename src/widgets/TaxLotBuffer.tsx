@@ -1,28 +1,32 @@
 import esri = __esri;
-
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
-import { geodesicBuffer } from '@arcgis/core/geometry/geometryEngine';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import { SimpleFillSymbol } from '@arcgis/core/symbols';
 import Graphic from '@arcgis/core/Graphic';
+import { geodesicBuffer } from '@arcgis/core/geometry/geometryEngine';
 import { unparse } from 'papaparse';
 import { propertyInfoUrl } from './../support/AssessorURLs';
+import PrintViewModel from '@arcgis/core/widgets/Print/PrintViewModel';
+import PrintTemplate from '@arcgis/core/rest/support/PrintTemplate';
 
 const CSS = {
   base: 'cov-tax-lot-buffer',
   content: 'cov-tax-lot-buffer--content',
   innerContent: 'cov-tax-lot-buffer--inner-content',
-  error: 'cov-tax-lot-buffer--error',
 };
 
-@subclass('cov.widgets.TaxLotBuffer')
+/**
+ * Buffer a tax lot.
+ */
+@subclass('TaxLotBuffer')
 export default class TaxLotBuffer extends Widget {
   constructor(
     properties: esri.WidgetProperties & {
       view: esri.MapView;
       layer: esri.FeatureLayer;
+      printServiceUrl?: string;
     },
   ) {
     super(properties);
@@ -32,29 +36,33 @@ export default class TaxLotBuffer extends Widget {
     const {
       view,
       view: { map },
-      layer,
       _graphics,
+      printServiceUrl,
     } = this;
-
-    await view.when();
-    await layer.when();
 
     map.add(_graphics);
 
-    const selectFeature = this.watch(['state', '_visible', '_selectedFeature'], (): void => {
-      const { layer, state, _visible, _selectedFeature } = this;
-
+    const state = this.watch(['state', '_visible', '_selectedFeature'], (): void => {
+      const { state, _visible, _selectedFeature } = this;
       if (state === 'buffered') return;
-
-      this.state = _visible && _selectedFeature && _selectedFeature.layer === layer ? 'selected' : 'ready';
+      this.state = _visible && _selectedFeature ? 'selected' : 'ready';
     });
 
-    this.own([selectFeature]);
+    this.own(state);
+
+    if (printServiceUrl) {
+      this._printer = new PrintViewModel({
+        view,
+        printServiceUrl,
+      });
+    }
   }
 
   view!: esri.MapView;
 
   layer!: esri.FeatureLayer;
+
+  printServiceUrl!: string;
 
   @property()
   protected state: 'ready' | 'selected' | 'buffering' | 'buffered' | 'error' = 'ready';
@@ -104,16 +112,24 @@ export default class TaxLotBuffer extends Widget {
 
   private _results: esri.FeatureSet['features'] | [] = [];
 
+  private _printer!: PrintViewModel;
+
+  onHide(): void {
+    this._clear();
+  }
+
   private _clear(): void {
-    const { _graphics } = this;
+    const {
+      view: { popup },
+      _graphics,
+    } = this;
+
+    popup.clear();
+    popup.close();
 
     this.state = 'ready';
 
     _graphics.removeAll();
-  }
-
-  onHide(): void {
-    this._clear();
   }
 
   private async _buffer(event: Event): Promise<void> {
@@ -204,7 +220,7 @@ export default class TaxLotBuffer extends Widget {
 
       // just need one account link in download
       const accounts = attributes.ACCOUNT_IDS.split(',').map((account: string) => {
-        return propertyInfoUrl(account, 2021);
+        return propertyInfoUrl(account, 2022);
       });
 
       const result = {
@@ -226,14 +242,46 @@ export default class TaxLotBuffer extends Widget {
     document.body.removeChild(a);
   }
 
+  private _print(event: Event): void {
+    const { _printer, _id, _distance } = this;
+
+    const button = event.target as HTMLCalciteButtonElement;
+
+    button.loading = true;
+
+    _printer
+      .print(
+        new PrintTemplate({
+          format: 'pdf',
+          layout: 'letter-ansi-a-landscape',
+          layoutOptions: {
+            titleText: `${_id} ${_distance}' Buffer`,
+          },
+        }),
+      )
+      .then((result: any): void => {
+        window.open(result.url, '_blank');
+
+        button.loading = false;
+      })
+      .catch((error: esri.Error): void => {
+        console.log(error);
+
+        window.alert('A print error occurred.');
+
+        button.loading = false;
+      });
+  }
+
   render(): tsx.JSX.Element {
-    const { state, _distance, _id, _results } = this;
+    const { printServiceUrl, state, _distance, _id, _results } = this;
 
     return (
-      <calcite-panel class={CSS.base} heading="Tax Lot Buffer">
+      <calcite-panel class={CSS.base} width-scale="m" height-scale="l" heading="Tax Lot Buffer">
         <div class={CSS.content}>
+          {/* ready */}
           <div hidden={state !== 'ready'}>Select a tax lot in the map.</div>
-
+          {/* selected */}
           <form
             hidden={state !== 'selected'}
             afterCreate={(form: HTMLFormElement): void => {
@@ -246,29 +294,32 @@ export default class TaxLotBuffer extends Widget {
             </calcite-label>
             <calcite-button type="submit">Buffer</calcite-button>
           </form>
-
+          {/* buffering */}
           <div class={CSS.innerContent} hidden={state !== 'buffering'}>
             <span>Buffering...</span>
             <calcite-progress type="indeterminate"></calcite-progress>
           </div>
-
+          {/* buffered */}
           <div class={CSS.innerContent} hidden={state !== 'buffered'}>
             <span>
-              There are {_results.length} tax lots within {_distance} feet of tax lot {_id}.
+              {_results.length} tax lots within {_distance} feet of tax lot {_id}.
             </span>
-            <div>
-              <calcite-button appearance="outline" width="half" onclick={this._clear.bind(this)}>
-                Clear
+            <calcite-button width="full" icon-start="file-csv" onclick={this._download.bind(this)}>
+              Download CSV
+            </calcite-button>
+            {printServiceUrl ? (
+              <calcite-button width="full" icon-start="print" onclick={this._print.bind(this)}>
+                Print Map
               </calcite-button>
-              <calcite-button width="half" onclick={this._download.bind(this)}>
-                Download
-              </calcite-button>
-            </div>
+            ) : null}
+            <calcite-button appearance="outline" width="full" onclick={this._clear.bind(this)}>
+              Clear
+            </calcite-button>
           </div>
-
+          {/* error */}
           <div class={CSS.innerContent} hidden={state !== 'error'}>
-            <span class={CSS.error}>Something went wrong.</span>
-            <calcite-button appearance="outline" onclick={this._clear.bind(this)}>
+            <span>Something went wrong.</span>
+            <calcite-button appearance="outline" width="full" onclick={this._clear.bind(this)}>
               Try again
             </calcite-button>
           </div>
