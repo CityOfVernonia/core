@@ -19,6 +19,7 @@ export default class WaterMeters extends Widget {
          */
         printServiceUrl: string;
     });
+    postInitialize(): void;
     protected search: esri.SearchViewModel;
     protected print: esri.PrintViewModel;
     view: esri.MapView;
@@ -28,10 +29,6 @@ export default class WaterMeters extends Widget {
     private _controller;
     private _searchResults;
     private _printResults;
-    /**
-     * Initialize when layer loaded.
-     */
-    private _init;
     /**
      * Controller abort;
      */

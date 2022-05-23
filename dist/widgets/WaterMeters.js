@@ -1,13 +1,8 @@
 import { __decorate } from "tslib";
-import { whenOnce } from '@arcgis/core/core/watchUtils';
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
-// popup
-import PopupTemplate from '@arcgis/core/PopupTemplate';
-import CustomContent from '@arcgis/core/popup/content/CustomContent';
-// search and print
 import SearchViewModel from '@arcgis/core/widgets/Search/SearchViewModel';
 import LayerSearchSource from '@arcgis/core/widgets/Search/LayerSearchSource';
 import PrintViewModel from '@arcgis/core/widgets/Print/PrintViewModel';
@@ -15,68 +10,9 @@ import PrintTemplate from '@arcgis/core/rest/support/PrintTemplate';
 const CSS = {
     base: 'cov-water-meters',
     content: 'cov-water-meters--content',
-    // popup
-    table: 'esri-widget__table',
-    th: 'esri-feature__field-header',
-    td: 'esri-feature__field-data',
 };
 let KEY = 0;
 let PRINT_COUNT = 1;
-/**
- * Popup widget.
- */
-let WaterMeterPopup = class WaterMeterPopup extends Widget {
-    constructor(properties) {
-        super(properties);
-        whenOnce(this, 'layer.loaded', () => {
-            this.accountDomain = this.layer.getFieldDomain('ACCT_TYPE');
-        });
-    }
-    render() {
-        const { graphic, accountDomain } = this;
-        const { attributes: { WSC_TYPE, ACCT_TYPE, METER_SIZE_T, METER_SN, METER_REG_SN, METER_AGE }, } = graphic;
-        const acctType = accountDomain.codedValues.filter((codedValue) => {
-            return codedValue.code === ACCT_TYPE;
-        })[0].name;
-        return (tsx("table", { class: CSS.table },
-            tsx("tr", null,
-                tsx("th", { class: CSS.th }, "Service Type"),
-                tsx("td", { class: CSS.td }, WSC_TYPE)),
-            tsx("tr", null,
-                tsx("th", { class: CSS.th }, "Account Type"),
-                tsx("td", { class: CSS.td }, acctType)),
-            tsx("tr", null,
-                tsx("th", { class: CSS.th }, "Meter Size"),
-                tsx("td", { class: CSS.td },
-                    METER_SIZE_T,
-                    "\"")),
-            tsx("tr", null,
-                tsx("th", { class: CSS.th }, "Serial No."),
-                tsx("td", { class: CSS.td }, METER_SN)),
-            METER_REG_SN ? (tsx("tr", null,
-                tsx("th", { class: CSS.th }, "Register No."),
-                tsx("td", { class: CSS.td }, METER_REG_SN))) : null,
-            tsx("tr", null,
-                tsx("th", { class: CSS.th }, "Meter Age"),
-                tsx("td", { class: CSS.td },
-                    METER_AGE,
-                    " years"))));
-    }
-};
-__decorate([
-    property()
-], WaterMeterPopup.prototype, "graphic", void 0);
-__decorate([
-    property({
-        aliasOf: 'graphic.layer',
-    })
-], WaterMeterPopup.prototype, "layer", void 0);
-__decorate([
-    property()
-], WaterMeterPopup.prototype, "accountDomain", void 0);
-WaterMeterPopup = __decorate([
-    subclass('WaterMeterPopup')
-], WaterMeterPopup);
 /**
  * Vernonia water meters widget.
  */
@@ -91,68 +27,9 @@ let WaterMeters = class WaterMeters extends Widget {
         this._controller = null;
         this._searchResults = new Collection();
         this._printResults = new Collection();
-        whenOnce(this, 'layer.loaded', () => {
-            const { layer, search } = this;
-            layer.outFields = ['*'];
-            layer.popupEnabled = true;
-            layer.popupTemplate = new PopupTemplate({
-                outFields: ['*'],
-                title: '{WSC_ID} - {ADDRESS}',
-                content: [
-                    new CustomContent({
-                        outFields: ['*'],
-                        creator: (evt) => {
-                            return new WaterMeterPopup({
-                                graphic: evt.graphic,
-                            });
-                        },
-                    }),
-                ],
-            });
-            search.sources.add(new LayerSearchSource({
-                layer,
-                searchFields: ['WSC_ID', 'ADDRESS'],
-                outFields: ['*'],
-                maxSuggestions: 6,
-                suggestionTemplate: '{WSC_ID} - {ADDRESS}',
-            }));
-        });
     }
-    /**
-     * Initialize when layer loaded.
-     */
-    _init() {
-        const { view, layer, search } = this;
-        // guarantee outFields
-        layer.outFields = ['*'];
-        // set extent to layer
-        layer
-            .queryExtent({
-            where: ' 1 = 1',
-            outSpatialReference: view.spatialReference,
-        })
-            .then((extent) => {
-            view.goTo(extent).then(() => {
-                if (view.scale > 20000)
-                    view.scale = 20000;
-            });
-        });
-        // guarantee popup
-        layer.popupEnabled = true;
-        layer.popupTemplate = new PopupTemplate({
-            outFields: ['*'],
-            title: '{WSC_ID} - {ADDRESS}',
-            content: [
-                new CustomContent({
-                    outFields: ['*'],
-                    creator: (evt) => {
-                        return new WaterMeterPopup({
-                            graphic: evt.graphic,
-                        });
-                    },
-                }),
-            ],
-        });
+    postInitialize() {
+        const { layer, search } = this;
         search.sources.add(new LayerSearchSource({
             layer,
             searchFields: ['WSC_ID', 'ADDRESS'],

@@ -1,16 +1,8 @@
 import esri = __esri;
-
-import { whenOnce } from '@arcgis/core/core/watchUtils';
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
-
-// popup
-import PopupTemplate from '@arcgis/core/PopupTemplate';
-import CustomContent from '@arcgis/core/popup/content/CustomContent';
-
-// search and print
 import SearchViewModel from '@arcgis/core/widgets/Search/SearchViewModel';
 import LayerSearchSource from '@arcgis/core/widgets/Search/LayerSearchSource';
 import PrintViewModel from '@arcgis/core/widgets/Print/PrintViewModel';
@@ -19,81 +11,11 @@ import PrintTemplate from '@arcgis/core/rest/support/PrintTemplate';
 const CSS = {
   base: 'cov-water-meters',
   content: 'cov-water-meters--content',
-  // popup
-  table: 'esri-widget__table',
-  th: 'esri-feature__field-header',
-  td: 'esri-feature__field-data',
 };
 
 let KEY = 0;
 
 let PRINT_COUNT = 1;
-
-/**
- * Popup widget.
- */
-@subclass('WaterMeterPopup')
-class WaterMeterPopup extends Widget {
-  @property()
-  graphic!: esri.Graphic;
-
-  @property({
-    aliasOf: 'graphic.layer',
-  })
-  layer!: esri.FeatureLayer;
-
-  @property()
-  private accountDomain!: esri.CodedValueDomain;
-
-  constructor(properties: esri.WidgetProperties & { graphic: esri.Graphic }) {
-    super(properties);
-    whenOnce(this, 'layer.loaded', () => {
-      this.accountDomain = this.layer.getFieldDomain('ACCT_TYPE') as esri.CodedValueDomain;
-    });
-  }
-
-  render(): tsx.JSX.Element {
-    const { graphic, accountDomain } = this;
-    const {
-      attributes: { WSC_TYPE, ACCT_TYPE, METER_SIZE_T, METER_SN, METER_REG_SN, METER_AGE },
-    } = graphic;
-
-    const acctType = accountDomain.codedValues.filter((codedValue: any) => {
-      return codedValue.code === ACCT_TYPE;
-    })[0].name;
-
-    return (
-      <table class={CSS.table}>
-        <tr>
-          <th class={CSS.th}>Service Type</th>
-          <td class={CSS.td}>{WSC_TYPE}</td>
-        </tr>
-        <tr>
-          <th class={CSS.th}>Account Type</th>
-          <td class={CSS.td}>{acctType}</td>
-        </tr>
-        <tr>
-          <th class={CSS.th}>Meter Size</th>
-          <td class={CSS.td}>{METER_SIZE_T}"</td>
-        </tr>
-        <tr>
-          <th class={CSS.th}>Serial No.</th>
-          <td class={CSS.td}>{METER_SN}</td>
-        </tr>
-        {METER_REG_SN ? (
-          <tr>
-            <th class={CSS.th}>Register No.</th>
-            <td class={CSS.td}>{METER_REG_SN}</td>
-          </tr>
-        ) : null}
-        <tr>
-          <th class={CSS.th}>Meter Age</th>
-          <td class={CSS.td}>{METER_AGE} years</td>
-        </tr>
-      </table>
-    );
-  }
-}
 
 /**
  * Vernonia water meters widget.
@@ -117,37 +39,19 @@ export default class WaterMeters extends Widget {
     },
   ) {
     super(properties);
-    whenOnce(this, 'layer.loaded', () => {
-      const { layer, search } = this;
+  }
 
-      layer.outFields = ['*'];
-      layer.popupEnabled = true;
-
-      layer.popupTemplate = new PopupTemplate({
+  postInitialize(): void {
+    const { layer, search } = this;
+    search.sources.add(
+      new LayerSearchSource({
+        layer,
+        searchFields: ['WSC_ID', 'ADDRESS'],
         outFields: ['*'],
-        title: '{WSC_ID} - {ADDRESS}',
-        content: [
-          new CustomContent({
-            outFields: ['*'],
-            creator: (evt: any) => {
-              return new WaterMeterPopup({
-                graphic: evt.graphic,
-              });
-            },
-          }),
-        ],
-      });
-
-      search.sources.add(
-        new LayerSearchSource({
-          layer,
-          searchFields: ['WSC_ID', 'ADDRESS'],
-          outFields: ['*'],
-          maxSuggestions: 6,
-          suggestionTemplate: '{WSC_ID} - {ADDRESS}',
-        }),
-      );
-    });
+        maxSuggestions: 6,
+        suggestionTemplate: '{WSC_ID} - {ADDRESS}',
+      }),
+    );
   }
 
   protected search = new SearchViewModel({
@@ -178,56 +82,6 @@ export default class WaterMeters extends Widget {
   private _printResults: Collection<{
     item: tsx.JSX.Element;
   }> = new Collection();
-
-  /**
-   * Initialize when layer loaded.
-   */
-  private _init(): void {
-    const { view, layer, search } = this;
-
-    // guarantee outFields
-    layer.outFields = ['*'];
-
-    // set extent to layer
-    layer
-      .queryExtent({
-        where: ' 1 = 1',
-        outSpatialReference: view.spatialReference,
-      })
-      .then((extent: esri.Extent) => {
-        view.goTo(extent).then(() => {
-          if (view.scale > 20000) view.scale = 20000;
-        });
-      });
-
-    // guarantee popup
-    layer.popupEnabled = true;
-
-    layer.popupTemplate = new PopupTemplate({
-      outFields: ['*'],
-      title: '{WSC_ID} - {ADDRESS}',
-      content: [
-        new CustomContent({
-          outFields: ['*'],
-          creator: (evt: any) => {
-            return new WaterMeterPopup({
-              graphic: evt.graphic,
-            });
-          },
-        }),
-      ],
-    });
-
-    search.sources.add(
-      new LayerSearchSource({
-        layer,
-        searchFields: ['WSC_ID', 'ADDRESS'],
-        outFields: ['*'],
-        maxSuggestions: 6,
-        suggestionTemplate: '{WSC_ID} - {ADDRESS}',
-      }),
-    );
-  }
 
   /**
    * Controller abort;
@@ -434,39 +288,6 @@ export default class WaterMeters extends Widget {
         <calcite-tooltip reference-element={ids[2]} placement="bottom">
           Labels
         </calcite-tooltip>
-
-        {/* <calcite-tooltip-manager slot="header-actions-end">
-          <calcite-action id={ids[0]} icon="search" active={state === 'search'} onclick={(): void => {
-            this.state = 'search';
-          }}></calcite-action>
-        </calcite-tooltip-manager>
-        <calcite-tooltip reference-element={ids[0]} placement="bottom">Search</calcite-tooltip>
-
-        <calcite-tooltip-manager slot="header-actions-end">
-          <calcite-action id={ids[1]} icon="print" active={state === 'print'} onclick={(): void => {
-            this.state = 'print';
-          }}></calcite-action>
-        </calcite-tooltip-manager>
-        <calcite-tooltip reference-element={ids[1]} placement="bottom">Print</calcite-tooltip>
-
-        <calcite-tooltip-manager slot="header-actions-end">
-          <calcite-action id={ids[2]} icon="label" active={state === 'labels'} onclick={(): void => {
-            this.state = 'labels';
-          }}></calcite-action>
-        </calcite-tooltip-manager>
-        <calcite-tooltip reference-element={ids[2]} placement="bottom">Labels</calcite-tooltip> */}
-
-        {/* <calcite-action slot="header-menu-actions" text-enabled="" text="Search" icon="search" active={state === 'search'} onclick={(): void => {
-          this.state = 'search';
-        }}></calcite-action>
-
-        <calcite-action slot="header-menu-actions" text-enabled="" text="Print" icon="print" active={state === 'print'} onclick={(): void => {
-          this.state = 'print';
-        }}></calcite-action>
-
-        <calcite-action slot="header-menu-actions" text-enabled="" text="Labels" icon="label" active={state === 'labels'} onclick={(): void => {
-          this.state = 'labels';
-        }}></calcite-action> */}
 
         <div hidden={state !== 'search'}>
           <div class={CSS.content}>
