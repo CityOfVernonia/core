@@ -1,3 +1,5 @@
+import esri = __esri;
+
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { storeNode, tsx } from '@arcgis/core/widgets/support/widget';

@@ -1,3 +1,5 @@
+import esri = __esri;
+
 export interface CreateFeatureSelectorProperties extends esri.WidgetProperties {
   layer: esri.FeatureLayer;
 }

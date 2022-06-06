@@ -1,0 +1,134 @@
+.cov-editor calcite-block {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+calcite-shell-panel.cov-editor calcite-panel {
+  border-top: none;
+  border-bottom: none;
+}
+
+.cov-editor--content {
+  padding: 0.75rem;
+}
+.cov-editor--content p {
+  margin: 0.75rem 0;
+}
+.cov-editor--content p:first-child {
+  margin-top: 0;
+}
+
+.cov-editor--content--default {
+  display: flex;
+  flex-flow: row;
+  align-items: flex-start;
+  padding: 0.75rem 0.5rem 0 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.cov-editor--content--default calcite-button,
+.cov-editor--content--default calcite-tooltip-manager {
+  margin-left: 0.5rem;
+}
+
+.cov-editor--content--button {
+  padding: 0.5rem 0.25rem 0 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.cov-editor__attribute-editor calcite-notice[active=""] {
+  margin-bottom: 0.75rem;
+}
+
+.cov-editor__create-feature-selector--item {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  padding: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+.cov-editor__create-feature-selector--item:hover {
+  background-color: var(--calcite-ui-foreground-2);
+}
+.cov-editor__create-feature-selector--item:active {
+  outline: 2px solid var(--calcite-ui-brand);
+  outline-offset: 2px;
+}
+
+.cov-editor__create-feature-selector--symbol {
+  margin-right: 0.75rem;
+}
+
+.cov-editor__create-feature-selector--html {
+  display: flex;
+  align-items: center;
+}
+
+.cov-editor__geometry-editor p {
+  margin: 0.5rem 0 0.5rem 0;
+  font-weight: var(--calcite-font-weight-medium);
+}
+.cov-editor__geometry-editor p:first-child {
+  margin-top: 0;
+}
+
+.cov-editor__geometry-editor--buttons {
+  display: flex;
+  flex-flow: row;
+  flex-wrap: wrap;
+}
+.cov-editor__geometry-editor--buttons calcite-button {
+  margin: 0 0.25rem;
+}
+.cov-editor__geometry-editor--buttons calcite-button:first-child {
+  margin-left: 0;
+}
+.cov-editor__geometry-editor--buttons calcite-button:last-child {
+  margin-right: 0;
+}
+
+.cov-editor__geometry-info--result {
+  margin-bottom: 0.75rem;
+}
+.cov-editor__geometry-info--result span:first-child {
+  font-weight: var(--calcite-font-weight-medium);
+}
+
+.cov-editor__geometry-info--units {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.cov-editor__geometry-info--units calcite-label {
+  width: 50%;
+}
+.cov-editor__geometry-info--units calcite-label:first-child {
+  margin-right: 0.75rem;
+}
+.cov-editor__geometry-info--units calcite-label:last-child {
+  margin-left: 0.75rem;
+}
+
+.cov-editor__photo-attachments calcite-notice[active=""] {
+  margin-bottom: 0.75rem;
+}
+
+.cov-editor__photo-attachments--attachment {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  width: 100%;
+  margin-top: 0.75rem;
+}
+.cov-editor__photo-attachments--attachment div {
+  width: 100%;
+  height: 48px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+/*# sourceMappingURL=Editor.css.map */

@@ -1,3 +1,5 @@
+import esri = __esri;
+
 export interface FeatureEditorProperties extends esri.WidgetProperties {
   layer: esri.FeatureLayer;
   geometryEditor?: GeometryEditor;

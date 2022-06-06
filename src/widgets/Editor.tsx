@@ -1,3 +1,5 @@
+import esri = __esri;
+
 export interface EditorProperties extends esri.WidgetProperties {
   /**
    * Map view.

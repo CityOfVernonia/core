@@ -1,0 +1,24 @@
+.cov-editor__geometry-info--result {
+  margin-bottom: 0.75rem;
+}
+.cov-editor__geometry-info--result span:first-child {
+  font-weight: var(--calcite-font-weight-medium);
+}
+
+.cov-editor__geometry-info--units {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.cov-editor__geometry-info--units calcite-label {
+  width: 50%;
+}
+.cov-editor__geometry-info--units calcite-label:first-child {
+  margin-right: 0.75rem;
+}
+.cov-editor__geometry-info--units calcite-label:last-child {
+  margin-left: 0.75rem;
+}
+
+/*# sourceMappingURL=GeometryInfo.css.map */

@@ -1,3 +1,5 @@
+import esri = __esri;
+
 export interface SettingsProperties extends esri.WidgetProperties {
   snappingOptions: esri.SnappingOptions;
 }

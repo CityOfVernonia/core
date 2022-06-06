@@ -1,0 +1,26 @@
+.cov-editor__create-feature-selector--item {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  padding: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+.cov-editor__create-feature-selector--item:hover {
+  background-color: var(--calcite-ui-foreground-2);
+}
+.cov-editor__create-feature-selector--item:active {
+  outline: 2px solid var(--calcite-ui-brand);
+  outline-offset: 2px;
+}
+
+.cov-editor__create-feature-selector--symbol {
+  margin-right: 0.75rem;
+}
+
+.cov-editor__create-feature-selector--html {
+  display: flex;
+  align-items: center;
+}
+
+/*# sourceMappingURL=CreateFeatureSelector.css.map */
