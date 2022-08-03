@@ -116,13 +116,13 @@ export default class PhotoAttachments extends Widget {
             if (!results.length) return;
 
             // filter for first feature of layer
-            const filter = results.filter((value: esri.HitTestResultResults): boolean => {
-              return value.graphic.layer === layer;
+            const filter = results.filter((value: esri.ViewHit): boolean => {
+              return value.layer === layer;
             })[0];
 
             // set and highlight feature
-            if (filter && filter.graphic) {
-              this.feature = filter.graphic;
+            if (filter && (filter as esri.GraphicHit).graphic) {
+              this.feature = (filter as esri.GraphicHit).graphic;
               this._highlightHandle = _layerView.highlight(this.feature);
             }
           });

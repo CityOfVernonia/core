@@ -109,7 +109,7 @@ let GeometryInfo = class GeometryInfo extends Widget {
                     tsx("span", null, `${Number(longitude.toFixed(6))}`))));
         }
         else if (type === 'point' && locationUnit === 'dms') {
-            const dms = coordinateFormatter.toLatitudeLongitude(webMercatorToGeographic(feature.geometry), 'dms', 2);
+            const dms = coordinateFormatter.toLatitudeLongitude(webMercatorToGeographic(feature.geometry, false), 'dms', 2);
             const index = dms.indexOf('N') !== -1 ? dms.indexOf('N') : dms.indexOf('S');
             pointInfo = (tsx("div", null,
                 tsx("div", { class: CSS.result },

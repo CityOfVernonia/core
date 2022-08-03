@@ -1051,7 +1051,11 @@ export default class Measure extends Widget {
     let y: number | string = this._round(point.latitude, degreesPrecision);
 
     if (locationUnit === 'dms') {
-      const dms = coordinateFormatter.toLatitudeLongitude(webMercatorToGeographic(point) as esri.Point, 'dms', 2);
+      const dms = coordinateFormatter.toLatitudeLongitude(
+        webMercatorToGeographic(point, false) as esri.Point,
+        'dms',
+        2,
+      );
       const index = dms.indexOf('N') !== -1 ? dms.indexOf('N') : dms.indexOf('S');
       y = dms.substring(0, index + 1);
       x = dms.substring(index + 2, dms.length);

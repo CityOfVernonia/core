@@ -312,18 +312,18 @@ export default class Editor extends Widget {
 
       layerInfo.features =
         results
-          .filter((value: esri.HitTestResultResults): boolean => {
-            return value.graphic.layer === layer;
+          .filter((value: esri.ViewHit): boolean => {
+            return value.layer === layer;
           })
-          .map((value: esri.HitTestResultResults): esri.Graphic => {
-            return value.graphic;
+          .map((value: esri.ViewHit): esri.Graphic => {
+            return (value as esri.GraphicHit).graphic;
           }) || null;
 
       layerInfo.highlight = view.highlight(layerInfo.features);
     });
 
     if (results.length === 1) {
-      this.feature = results[0].graphic;
+      this.feature = (results[0] as esri.GraphicHit).graphic;
       this.state = 'feature';
     } else if (results.length > 1) {
       this.state = 'features';

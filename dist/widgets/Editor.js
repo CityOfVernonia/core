@@ -184,7 +184,7 @@ let Editor = class Editor extends Widget {
             layerInfo.features =
                 results
                     .filter((value) => {
-                    return value.graphic.layer === layer;
+                    return value.layer === layer;
                 })
                     .map((value) => {
                     return value.graphic;

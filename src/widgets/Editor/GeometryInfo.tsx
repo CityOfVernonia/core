@@ -175,7 +175,7 @@ export default class GeometryInfo extends Widget {
       );
     } else if (type === 'point' && locationUnit === 'dms') {
       const dms = coordinateFormatter.toLatitudeLongitude(
-        webMercatorToGeographic(feature.geometry as esri.Point) as esri.Point,
+        webMercatorToGeographic(feature.geometry as esri.Point, false) as esri.Point,
         'dms',
         2,
       );

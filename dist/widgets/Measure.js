@@ -638,7 +638,7 @@ let Measure = class Measure extends Widget {
         let x = this._round(point.longitude, degreesPrecision);
         let y = this._round(point.latitude, degreesPrecision);
         if (locationUnit === 'dms') {
-            const dms = coordinateFormatter.toLatitudeLongitude(webMercatorToGeographic(point), 'dms', 2);
+            const dms = coordinateFormatter.toLatitudeLongitude(webMercatorToGeographic(point, false), 'dms', 2);
             const index = dms.indexOf('N') !== -1 ? dms.indexOf('N') : dms.indexOf('S');
             y = dms.substring(0, index + 1);
             x = dms.substring(index + 2, dms.length);

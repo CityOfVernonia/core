@@ -109,7 +109,7 @@ let PhotoAttachments = class PhotoAttachments extends Widget {
                             return;
                         // filter for first feature of layer
                         const filter = results.filter((value) => {
-                            return value.graphic.layer === layer;
+                            return value.layer === layer;
                         })[0];
                         // set and highlight feature
                         if (filter && filter.graphic) {

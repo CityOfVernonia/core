@@ -154,7 +154,7 @@ export default class SurveySearch extends Widget {
       where: `${objectIdField} = ${_selectedFeature.attributes[objectIdField]}`,
       returnGeometry: true,
       outSpatialReference: spatialReference,
-    }) as Promise<esri.supportFeatureSet>);
+    }) as Promise<esri.FeatureSet>);
     // feature
     const feature = featureQuery.features[0];
     // handle error
@@ -169,7 +169,7 @@ export default class SurveySearch extends Widget {
       returnGeometry: true,
       outSpatialReference: spatialReference,
       orderByFields: ['SurveyDate DESC'],
-    }) as Promise<esri.supportFeatureSet>);
+    }) as Promise<esri.FeatureSet>);
     // features
     const features = featuresQuery.features;
     // handle error
@@ -178,7 +178,7 @@ export default class SurveySearch extends Widget {
       return;
     }
     // sort by date
-    features.sort((a, b) => (a.attributes.SurveyDate > b.attributes.SurveyDate ? -1 : 1));
+    features.sort((a: any, b: any) => (a.attributes.SurveyDate > b.attributes.SurveyDate ? -1 : 1));
     // add clear
     _results.add(
       <calcite-list-item key={KEY++} non-interactive="">
