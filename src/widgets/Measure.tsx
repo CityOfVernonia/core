@@ -145,7 +145,7 @@ interface SettingsInfo extends Object {
   color: number[];
 }
 
-import { watch } from '@arcgis/core/core/watchUtils';
+import { watch } from '@arcgis/core/core/reactiveUtils';
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -169,8 +169,7 @@ const CSS = {
   content: 'cov-measure--content',
   optionsContent: 'cov-measure--options-content',
   // controls and results
-  actionRow: 'cov-measure--action-row',
-  selectRow: 'cov-measure--select-row',
+  row: 'cov-measure--row',
   result: 'cov-measure--result',
   // color selector
   colorSelector: 'cov-measure--color-selector',
@@ -309,71 +308,45 @@ export default class Measure extends Widget {
     });
 
     // watch units to update measurements and displayed units
-    const unitsChange = watch(
-      this,
-      ['lengthUnit', 'areaUnit', 'locationUnit', 'elevationUnit'],
-      async (): Promise<void> => {
-        const {
-          state: { operation, lengthGeometry, areaGeometry, locationGeometry, elevationGeometry },
-        } = this;
+    const lenghUnitChange = watch((): any => this.lengthUnit, this._unitsChange.bind(this));
 
-        if (lengthGeometry) this._length(lengthGeometry);
+    const areaUnitChange = watch((): any => this.areaUnit, this._unitsChange.bind(this));
 
-        if (operation === 'length' && lengthGeometry) this._addLabels(lengthGeometry);
+    const locationUnitChange = watch((): any => this.locationUnit, this._unitsChange.bind(this));
 
-        if (areaGeometry) this._area(areaGeometry);
-
-        if (operation === 'area' && areaGeometry) this._addLabels(areaGeometry);
-
-        if (locationGeometry) {
-          const { x, y } = this._location(locationGeometry);
-          this.state = {
-            ...this.state,
-            locationX: x,
-            locationY: y,
-          };
-        }
-
-        if (operation === 'location' && locationGeometry) this._addLabels(locationGeometry);
-
-        if (elevationGeometry) {
-          const z = await this._elevation(elevationGeometry);
-          this.state = {
-            ...this.state,
-            z,
-            elevation: z,
-          };
-        }
-
-        if (operation === 'elevation' && elevationGeometry) this._addLabels(elevationGeometry);
-
-        elevationProfile.unit = this.elevationUnit as 'feet' | 'meters';
-      },
-    );
+    const elevationUnitChange = watch((): any => this.elevationUnit, this._unitsChange.bind(this));
 
     // watch settings change except lables and color
-    const settingsChange = watch(
-      this,
-      [
-        'labelUnits',
-        'localeFormat',
-        'sketch.snappingOptions.enabled',
-        'elevationProfile.viewModel.uniformChartScaling',
-      ],
+    const labelUnitsChange = watch((): any => this.labelUnits, this._updateSettings.bind(this));
+
+    const localeFormatChange = watch((): any => this.localeFormat, this._updateSettings.bind(this));
+
+    const snappingEnabledChange = watch((): any => sketch.snappingOptions.enabled, this._updateSettings.bind(this));
+
+    const uniformChartScalingChange = watch(
+      (): any => elevationProfile.viewModel.uniformChartScaling,
       this._updateSettings.bind(this),
     );
 
     // watch label visibility
-    const labelsVisibility = watch(this, 'labelsVisible', (visible: boolean): void => {
-      labels.visible = visible;
-      this._updateSettings();
-    });
+    const labelsVisibilityChange = watch(
+      (): any => this.labelsVisible,
+      (visible): void => {
+        labels.visible = visible;
+        this._updateSettings();
+      },
+    );
 
-    // symbol colors
-    const colorChange = watch(this, 'color', (color): void => {
-      this._setColors(color);
-      this._updateSettings();
-    });
+    const colorChange = watch(
+      (): any => this.color,
+      (color): void => {
+        this._setColors(color);
+        this._updateSettings();
+        // FIX
+        // only updates text color
+        // this._unitsChange();
+      },
+    );
 
     // own handles
     this.own([
@@ -382,9 +355,15 @@ export default class Measure extends Widget {
       locationLabels,
       elevationHandle,
       elevationLabels,
-      unitsChange,
-      settingsChange,
-      labelsVisibility,
+      lenghUnitChange,
+      areaUnitChange,
+      locationUnitChange,
+      elevationUnitChange,
+      labelUnitsChange,
+      localeFormatChange,
+      snappingEnabledChange,
+      uniformChartScalingChange,
+      labelsVisibilityChange,
       colorChange,
     ]);
   }
@@ -478,7 +457,7 @@ export default class Measure extends Widget {
   protected sketch = new SketchViewModel({
     layer: new GraphicsLayer({
       listMode: 'hide',
-      title: 'Measure Sketch',
+      title: 'Measure',
     }),
     snappingOptions: {
       enabled: true,
@@ -632,6 +611,48 @@ export default class Measure extends Widget {
   ////////////////////////////////////////////////////////////////
   // Private methods
   ///////////////////////////////////////////////////////////////
+  /**
+   * Handle unit changes.
+   */
+  private async _unitsChange(): Promise<void> {
+    const {
+      state: { operation, lengthGeometry, areaGeometry, locationGeometry, elevationGeometry },
+      elevationProfile,
+    } = this;
+
+    if (lengthGeometry) this._length(lengthGeometry);
+
+    if (operation === 'length' && lengthGeometry) this._addLabels(lengthGeometry);
+
+    if (areaGeometry) this._area(areaGeometry);
+
+    if (operation === 'area' && areaGeometry) this._addLabels(areaGeometry);
+
+    if (locationGeometry) {
+      const { x, y } = this._location(locationGeometry);
+      this.state = {
+        ...this.state,
+        locationX: x,
+        locationY: y,
+      };
+    }
+
+    if (operation === 'location' && locationGeometry) this._addLabels(locationGeometry);
+
+    if (elevationGeometry) {
+      const z = await this._elevation(elevationGeometry);
+      this.state = {
+        ...this.state,
+        z,
+        elevation: z,
+      };
+    }
+
+    if (operation === 'elevation' && elevationGeometry) this._addLabels(elevationGeometry);
+
+    elevationProfile.unit = this.elevationUnit as 'feet' | 'meters';
+  }
+
   /**
    * Load settings from local storage.
    */
@@ -1534,7 +1555,6 @@ export default class Measure extends Widget {
     const areaResults = !(operation === 'area' || operation === 'measure-area');
     const locationResults = !(operation === 'location' || operation === 'measure-location');
     const elevationResults = !(operation === 'elevation' || operation === 'measure-elevation');
-    const profileAction = operation === 'measure-profile' || operation === 'profile';
     const profileResults = operation !== 'profile' && profileState !== 'created';
     const clearCancel = operation === 'ready';
     const clearCancelText =
@@ -1553,89 +1573,68 @@ export default class Measure extends Widget {
     return (
       <calcite-panel class={CSS.base} heading="Measure">
         {/* show/hide options */}
-        <calcite-tooltip-manager slot="header-actions-end">
-          <calcite-action
-            id={tooltips[0]}
-            icon={optionsVisible ? 'measure' : 'gear'}
-            afterCreate={(action: HTMLCalciteActionElement) => {
-              action.addEventListener('click', (): void => {
-                this.optionsVisible = !this.optionsVisible;
-              });
-            }}
-          ></calcite-action>
-          <calcite-tooltip reference-element={tooltips[0]} overlay-positioning="fixed" placement="bottom">
-            {optionsVisible ? 'Hide options' : 'Show options'}
-          </calcite-tooltip>
-        </calcite-tooltip-manager>
+        <calcite-action
+          id={tooltips[0]}
+          slot="header-actions-end"
+          icon={optionsVisible ? 'x' : 'gear'}
+          afterCreate={(action: HTMLCalciteActionElement) => {
+            action.addEventListener('click', (): void => {
+              this.optionsVisible = !this.optionsVisible;
+            });
+          }}
+        ></calcite-action>
+        <calcite-tooltip reference-element={tooltips[0]} placement="bottom" close-on-click="">
+          {optionsVisible ? 'Close' : 'Options'}
+        </calcite-tooltip>
 
         {/* measure context */}
         <div class={CSS.content} hidden={optionsVisible}>
-          <div class={CSS.actionRow}>
-            <calcite-tooltip-manager>
-              <calcite-action
-                id={tooltips[1]}
-                scale="s"
-                appearance="clear"
-                active={!lengthResults}
-                icon="measure-line"
-                afterCreate={this._measureEvent.bind(this, 'length')}
-              ></calcite-action>
-              <calcite-tooltip reference-element={tooltips[1]} overlay-positioning="fixed" placement="bottom">
-                Length
-              </calcite-tooltip>
-            </calcite-tooltip-manager>
-            <calcite-tooltip-manager>
-              <calcite-action
-                id={tooltips[2]}
-                scale="s"
-                appearance="clear"
-                active={!areaResults}
-                icon="measure-area"
-                afterCreate={this._measureEvent.bind(this, 'area')}
-              ></calcite-action>
-              <calcite-tooltip reference-element={tooltips[2]} overlay-positioning="fixed" placement="bottom">
-                Area
-              </calcite-tooltip>
-            </calcite-tooltip-manager>
-            <calcite-tooltip-manager>
-              <calcite-action
-                id={tooltips[3]}
-                scale="s"
-                appearance="clear"
-                active={!locationResults}
-                icon="point"
-                afterCreate={this._measureEvent.bind(this, 'location')}
-              ></calcite-action>
-              <calcite-tooltip reference-element={tooltips[3]} overlay-positioning="fixed" placement="bottom">
-                Location
-              </calcite-tooltip>
-            </calcite-tooltip-manager>
-            <calcite-tooltip-manager>
-              <calcite-action
-                id={tooltips[4]}
-                scale="s"
-                appearance="clear"
-                active={!elevationResults}
-                icon="altitude"
-                afterCreate={this._measureEvent.bind(this, 'elevation')}
-              ></calcite-action>
-              <calcite-tooltip reference-element={tooltips[4]} overlay-positioning="fixed" placement="bottom">
-                Elevation
-              </calcite-tooltip>
-            </calcite-tooltip-manager>
-            <calcite-tooltip-manager>
-              <calcite-action
-                id={tooltips[5]}
-                scale="s"
-                appearance="clear"
-                active={profileAction}
-                icon="graph-time-series"
-                afterCreate={this._measureEvent.bind(this, 'profile')}
-              ></calcite-action>
-              <calcite-tooltip reference-element={tooltips[5]} overlay-positioning="fixed" placement="bottom">
-                Profile
-              </calcite-tooltip>
-            </calcite-tooltip-manager>
+          <div class={CSS.row}>
+            <calcite-button
+              id={tooltips[1]}
+              appearance="transparent"
+              icon-start="measure-line"
+              afterCreate={this._measureEvent.bind(this, 'length')}
+            ></calcite-button>
+            <calcite-tooltip reference-element={tooltips[1]} placement="bottom" close-on-click="">
+              Length
+            </calcite-tooltip>
+            <calcite-button
+              id={tooltips[2]}
+              appearance="transparent"
+              icon-start="measure-area"
+              afterCreate={this._measureEvent.bind(this, 'area')}
+            ></calcite-button>
+            <calcite-tooltip reference-element={tooltips[2]} placement="bottom" close-on-click="">
+              Area
+            </calcite-tooltip>
+            <calcite-button
+              id={tooltips[3]}
+              appearance="transparent"
+              icon-start="point"
+              afterCreate={this._measureEvent.bind(this, 'location')}
+            ></calcite-button>
+            <calcite-tooltip reference-element={tooltips[3]} placement="bottom" close-on-click="">
+              Location
+            </calcite-tooltip>
+            <calcite-button
+              id={tooltips[4]}
+              appearance="transparent"
+              icon-start="altitude"
+              afterCreate={this._measureEvent.bind(this, 'elevation')}
+            ></calcite-button>
+            <calcite-tooltip reference-element={tooltips[4]} placement="bottom" close-on-click="">
+              Elevation
+            </calcite-tooltip>
+            <calcite-button
+              id={tooltips[5]}
+              appearance="transparent"
+              icon-start="graph-time-series"
+              afterCreate={this._measureEvent.bind(this, 'profile')}
+            ></calcite-button>
+            <calcite-tooltip reference-element={tooltips[5]} placement="bottom" close-on-click="">
+              Profile
+            </calcite-tooltip>
           </div>
 
           <div class={CSS.result} hidden={!clearCancel}>
@@ -1653,7 +1652,7 @@ export default class Measure extends Widget {
             <span>{length}</span>
           </div>
 
-          <div class={CSS.selectRow} hidden={areaResults}>
+          <div class={CSS.row} hidden={areaResults}>
             <calcite-select afterCreate={this._unitChangeEvent.bind(this, 'area')}>
               {this._renderUnitOptions(this.areaUnits, this.areaUnit)}
             </calcite-select>
@@ -1750,7 +1749,7 @@ export default class Measure extends Widget {
             ></calcite-switch>
           </calcite-label>
           <calcite-label alignment="start" layout="inline-space-between">
-            Self snapping
+            Sketch guides
             <calcite-switch
               afterCreate={(_switch: HTMLCalciteSwitchElement): void => {
                 const {
