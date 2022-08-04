@@ -129,7 +129,7 @@ let Heading = class Heading extends Widget {
     // render and rendering specific methods
     ////////////////////////////////////////////
     render() {
-        const { id, iconUrl, title, searchViewModel, menu } = this;
+        const { id, logoUrl, title, searchViewModel, menu } = this;
         const tooltip = `tooltip_${id}`;
         return (tsx("div", { class: CSS.heading },
             menu ? (tsx("calcite-icon", { class: CSS.headingMenuIcon, id: tooltip, icon: "hamburger", afterCreate: (icon) => {
@@ -138,7 +138,7 @@ let Heading = class Heading extends Widget {
                     });
                 } })) : null,
             menu ? (tsx("calcite-tooltip", { "reference-element": tooltip, placement: "bottom", "close-on-click": "" }, "Menu")) : null,
-            iconUrl ? tsx("img", { class: CSS.headingIcon, src: iconUrl }) : null,
+            logoUrl ? tsx("img", { class: CSS.headingIcon, src: logoUrl }) : null,
             title ? tsx("div", { class: CSS.headingTitle }, title) : null,
             searchViewModel ? tsx("div", { class: CSS.headingSearch, afterCreate: this._createSeach.bind(this) }) : null));
     }

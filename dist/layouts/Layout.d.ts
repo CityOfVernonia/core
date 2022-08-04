@@ -11,7 +11,7 @@ interface HeadingOptions extends Object {
      * URL to image or svg to display in heading.
      * Height set to 24px.
      */
-    iconUrl?: string;
+    logoUrl?: string;
     /**
      * Heading title.
      */
@@ -25,10 +25,6 @@ interface HeadingOptions extends Object {
      * Note: Must return `div` root node and `container` property must not be set.
      */
     menuWidget?: esri.Widget;
-    /**
-     *
-     */
-    menuHeading?: string;
 }
 /**
  * Base properties for all layouts.
