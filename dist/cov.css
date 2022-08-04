@@ -574,22 +574,17 @@ calcite-shell-panel.cov-editor calcite-panel {
   padding: 0.75rem;
 }
 
-.cov-measure--action-row {
-  display: flex;
-  flex-flow: row;
-  flex-wrap: wrap;
-  gap: 0.125rem;
-  width: 100%;
-}
-
-.cov-measure--select-row {
+.cov-measure--row {
   display: flex;
   flex-flow: row;
   gap: 0.5rem;
   width: 100%;
 }
-.cov-measure--select-row calcite-select {
+.cov-measure--row calcite-select {
   width: 100%;
+}
+.cov-measure--row[hidden=""] {
+  display: none;
 }
 
 .cov-measure--result {

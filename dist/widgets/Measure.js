@@ -1,5 +1,5 @@
 import { __awaiter, __decorate } from "tslib";
-import { watch } from '@arcgis/core/core/watchUtils';
+import { watch } from '@arcgis/core/core/reactiveUtils';
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -22,8 +22,7 @@ const CSS = {
     content: 'cov-measure--content',
     optionsContent: 'cov-measure--options-content',
     // controls and results
-    actionRow: 'cov-measure--action-row',
-    selectRow: 'cov-measure--select-row',
+    row: 'cov-measure--row',
     result: 'cov-measure--result',
     // color selector
     colorSelector: 'cov-measure--color-selector',
@@ -113,7 +112,7 @@ let Measure = class Measure extends Widget {
         this.sketch = new SketchViewModel({
             layer: new GraphicsLayer({
                 listMode: 'hide',
-                title: 'Measure Sketch',
+                title: 'Measure',
             }),
             snappingOptions: {
                 enabled: true,
@@ -297,46 +296,26 @@ let Measure = class Measure extends Widget {
                 }
             });
             // watch units to update measurements and displayed units
-            const unitsChange = watch(this, ['lengthUnit', 'areaUnit', 'locationUnit', 'elevationUnit'], () => __awaiter(this, void 0, void 0, function* () {
-                const { state: { operation, lengthGeometry, areaGeometry, locationGeometry, elevationGeometry }, } = this;
-                if (lengthGeometry)
-                    this._length(lengthGeometry);
-                if (operation === 'length' && lengthGeometry)
-                    this._addLabels(lengthGeometry);
-                if (areaGeometry)
-                    this._area(areaGeometry);
-                if (operation === 'area' && areaGeometry)
-                    this._addLabels(areaGeometry);
-                if (locationGeometry) {
-                    const { x, y } = this._location(locationGeometry);
-                    this.state = Object.assign(Object.assign({}, this.state), { locationX: x, locationY: y });
-                }
-                if (operation === 'location' && locationGeometry)
-                    this._addLabels(locationGeometry);
-                if (elevationGeometry) {
-                    const z = yield this._elevation(elevationGeometry);
-                    this.state = Object.assign(Object.assign({}, this.state), { z, elevation: z });
-                }
-                if (operation === 'elevation' && elevationGeometry)
-                    this._addLabels(elevationGeometry);
-                elevationProfile.unit = this.elevationUnit;
-            }));
+            const lenghUnitChange = watch(() => this.lengthUnit, this._unitsChange.bind(this));
+            const areaUnitChange = watch(() => this.areaUnit, this._unitsChange.bind(this));
+            const locationUnitChange = watch(() => this.locationUnit, this._unitsChange.bind(this));
+            const elevationUnitChange = watch(() => this.elevationUnit, this._unitsChange.bind(this));
             // watch settings change except lables and color
-            const settingsChange = watch(this, [
-                'labelUnits',
-                'localeFormat',
-                'sketch.snappingOptions.enabled',
-                'elevationProfile.viewModel.uniformChartScaling',
-            ], this._updateSettings.bind(this));
+            const labelUnitsChange = watch(() => this.labelUnits, this._updateSettings.bind(this));
+            const localeFormatChange = watch(() => this.localeFormat, this._updateSettings.bind(this));
+            const snappingEnabledChange = watch(() => sketch.snappingOptions.enabled, this._updateSettings.bind(this));
+            const uniformChartScalingChange = watch(() => elevationProfile.viewModel.uniformChartScaling, this._updateSettings.bind(this));
             // watch label visibility
-            const labelsVisibility = watch(this, 'labelsVisible', (visible) => {
+            const labelsVisibilityChange = watch(() => this.labelsVisible, (visible) => {
                 labels.visible = visible;
                 this._updateSettings();
             });
-            // symbol colors
-            const colorChange = watch(this, 'color', (color) => {
+            const colorChange = watch(() => this.color, (color) => {
                 this._setColors(color);
                 this._updateSettings();
+                // FIX
+                // only updates text color
+                // this._unitsChange();
             });
             // own handles
             this.own([
@@ -345,9 +324,15 @@ let Measure = class Measure extends Widget {
                 locationLabels,
                 elevationHandle,
                 elevationLabels,
-                unitsChange,
-                settingsChange,
-                labelsVisibility,
+                lenghUnitChange,
+                areaUnitChange,
+                locationUnitChange,
+                elevationUnitChange,
+                labelUnitsChange,
+                localeFormatChange,
+                snappingEnabledChange,
+                uniformChartScalingChange,
+                labelsVisibilityChange,
                 colorChange,
             ]);
         });
@@ -365,6 +350,35 @@ let Measure = class Measure extends Widget {
     ////////////////////////////////////////////////////////////////
     // Private methods
     ///////////////////////////////////////////////////////////////
+    /**
+     * Handle unit changes.
+     */
+    _unitsChange() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { state: { operation, lengthGeometry, areaGeometry, locationGeometry, elevationGeometry }, elevationProfile, } = this;
+            if (lengthGeometry)
+                this._length(lengthGeometry);
+            if (operation === 'length' && lengthGeometry)
+                this._addLabels(lengthGeometry);
+            if (areaGeometry)
+                this._area(areaGeometry);
+            if (operation === 'area' && areaGeometry)
+                this._addLabels(areaGeometry);
+            if (locationGeometry) {
+                const { x, y } = this._location(locationGeometry);
+                this.state = Object.assign(Object.assign({}, this.state), { locationX: x, locationY: y });
+            }
+            if (operation === 'location' && locationGeometry)
+                this._addLabels(locationGeometry);
+            if (elevationGeometry) {
+                const z = yield this._elevation(elevationGeometry);
+                this.state = Object.assign(Object.assign({}, this.state), { z, elevation: z });
+            }
+            if (operation === 'elevation' && elevationGeometry)
+                this._addLabels(elevationGeometry);
+            elevationProfile.unit = this.elevationUnit;
+        });
+    }
     /**
      * Load settings from local storage.
      */
@@ -966,7 +980,6 @@ let Measure = class Measure extends Widget {
         const areaResults = !(operation === 'area' || operation === 'measure-area');
         const locationResults = !(operation === 'location' || operation === 'measure-location');
         const elevationResults = !(operation === 'elevation' || operation === 'measure-elevation');
-        const profileAction = operation === 'measure-profile' || operation === 'profile';
         const profileResults = operation !== 'profile' && profileState !== 'created';
         const clearCancel = operation === 'ready';
         const clearCancelText = operation === 'measure-length' ||
@@ -980,30 +993,24 @@ let Measure = class Measure extends Widget {
             return `tooltip_${id}_${num}_${KEY++}`;
         });
         return (tsx("calcite-panel", { class: CSS.base, heading: "Measure" },
-            tsx("calcite-tooltip-manager", { slot: "header-actions-end" },
-                tsx("calcite-action", { id: tooltips[0], icon: optionsVisible ? 'measure' : 'gear', afterCreate: (action) => {
-                        action.addEventListener('click', () => {
-                            this.optionsVisible = !this.optionsVisible;
-                        });
-                    } }),
-                tsx("calcite-tooltip", { "reference-element": tooltips[0], "overlay-positioning": "fixed", placement: "bottom" }, optionsVisible ? 'Hide options' : 'Show options')),
+            tsx("calcite-action", { id: tooltips[0], slot: "header-actions-end", icon: optionsVisible ? 'x' : 'gear', afterCreate: (action) => {
+                    action.addEventListener('click', () => {
+                        this.optionsVisible = !this.optionsVisible;
+                    });
+                } }),
+            tsx("calcite-tooltip", { "reference-element": tooltips[0], placement: "bottom", "close-on-click": "" }, optionsVisible ? 'Close' : 'Options'),
             tsx("div", { class: CSS.content, hidden: optionsVisible },
-                tsx("div", { class: CSS.actionRow },
-                    tsx("calcite-tooltip-manager", null,
-                        tsx("calcite-action", { id: tooltips[1], scale: "s", appearance: "clear", active: !lengthResults, icon: "measure-line", afterCreate: this._measureEvent.bind(this, 'length') }),
-                        tsx("calcite-tooltip", { "reference-element": tooltips[1], "overlay-positioning": "fixed", placement: "bottom" }, "Length")),
-                    tsx("calcite-tooltip-manager", null,
-                        tsx("calcite-action", { id: tooltips[2], scale: "s", appearance: "clear", active: !areaResults, icon: "measure-area", afterCreate: this._measureEvent.bind(this, 'area') }),
-                        tsx("calcite-tooltip", { "reference-element": tooltips[2], "overlay-positioning": "fixed", placement: "bottom" }, "Area")),
-                    tsx("calcite-tooltip-manager", null,
-                        tsx("calcite-action", { id: tooltips[3], scale: "s", appearance: "clear", active: !locationResults, icon: "point", afterCreate: this._measureEvent.bind(this, 'location') }),
-                        tsx("calcite-tooltip", { "reference-element": tooltips[3], "overlay-positioning": "fixed", placement: "bottom" }, "Location")),
-                    tsx("calcite-tooltip-manager", null,
-                        tsx("calcite-action", { id: tooltips[4], scale: "s", appearance: "clear", active: !elevationResults, icon: "altitude", afterCreate: this._measureEvent.bind(this, 'elevation') }),
-                        tsx("calcite-tooltip", { "reference-element": tooltips[4], "overlay-positioning": "fixed", placement: "bottom" }, "Elevation")),
-                    tsx("calcite-tooltip-manager", null,
-                        tsx("calcite-action", { id: tooltips[5], scale: "s", appearance: "clear", active: profileAction, icon: "graph-time-series", afterCreate: this._measureEvent.bind(this, 'profile') }),
-                        tsx("calcite-tooltip", { "reference-element": tooltips[5], "overlay-positioning": "fixed", placement: "bottom" }, "Profile"))),
+                tsx("div", { class: CSS.row },
+                    tsx("calcite-button", { id: tooltips[1], appearance: "transparent", "icon-start": "measure-line", afterCreate: this._measureEvent.bind(this, 'length') }),
+                    tsx("calcite-tooltip", { "reference-element": tooltips[1], placement: "bottom", "close-on-click": "" }, "Length"),
+                    tsx("calcite-button", { id: tooltips[2], appearance: "transparent", "icon-start": "measure-area", afterCreate: this._measureEvent.bind(this, 'area') }),
+                    tsx("calcite-tooltip", { "reference-element": tooltips[2], placement: "bottom", "close-on-click": "" }, "Area"),
+                    tsx("calcite-button", { id: tooltips[3], appearance: "transparent", "icon-start": "point", afterCreate: this._measureEvent.bind(this, 'location') }),
+                    tsx("calcite-tooltip", { "reference-element": tooltips[3], placement: "bottom", "close-on-click": "" }, "Location"),
+                    tsx("calcite-button", { id: tooltips[4], appearance: "transparent", "icon-start": "altitude", afterCreate: this._measureEvent.bind(this, 'elevation') }),
+                    tsx("calcite-tooltip", { "reference-element": tooltips[4], placement: "bottom", "close-on-click": "" }, "Elevation"),
+                    tsx("calcite-button", { id: tooltips[5], appearance: "transparent", "icon-start": "graph-time-series", afterCreate: this._measureEvent.bind(this, 'profile') }),
+                    tsx("calcite-tooltip", { "reference-element": tooltips[5], placement: "bottom", "close-on-click": "" }, "Profile")),
                 tsx("div", { class: CSS.result, hidden: !clearCancel },
                     tsx("span", null, cursorLatitude),
                     tsx("span", null, cursorLongitude),
@@ -1014,7 +1021,7 @@ let Measure = class Measure extends Widget {
                 tsx("calcite-select", { hidden: lengthResults, afterCreate: this._unitChangeEvent.bind(this, 'length') }, this._renderUnitOptions(this.lengthUnits, this.lengthUnit)),
                 tsx("div", { class: CSS.result, hidden: lengthResults },
                     tsx("span", null, length)),
-                tsx("div", { class: CSS.selectRow, hidden: areaResults },
+                tsx("div", { class: CSS.row, hidden: areaResults },
                     tsx("calcite-select", { afterCreate: this._unitChangeEvent.bind(this, 'area') }, this._renderUnitOptions(this.areaUnits, this.areaUnit)),
                     tsx("calcite-select", { afterCreate: this._unitChangeEvent.bind(this, 'length') }, this._renderUnitOptions(this.lengthUnits, this.lengthUnit))),
                 tsx("div", { class: CSS.result, hidden: areaResults },
@@ -1072,7 +1079,7 @@ let Measure = class Measure extends Widget {
                             });
                         } })),
                 tsx("calcite-label", { alignment: "start", layout: "inline-space-between" },
-                    "Self snapping",
+                    "Sketch guides",
                     tsx("calcite-switch", { afterCreate: (_switch) => {
                             const { sketch: { snappingOptions }, } = this;
                             _switch.checked = snappingOptions.selfEnabled;

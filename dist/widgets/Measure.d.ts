@@ -219,6 +219,10 @@ export default class Measure extends Widget {
      */
     onHide(): void;
     /**
+     * Handle unit changes.
+     */
+    private _unitsChange;
+    /**
      * Load settings from local storage.
      */
     private _loadSettings;
