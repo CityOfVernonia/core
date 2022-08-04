@@ -19,7 +19,7 @@ interface HeadingOptions extends Object {
    * URL to image or svg to display in heading.
    * Height set to 24px.
    */
-  iconUrl?: string;
+  logoUrl?: string;
 
   /**
    * Heading title.
@@ -36,11 +36,6 @@ interface HeadingOptions extends Object {
    * Note: Must return `div` root node and `container` property must not be set.
    */
   menuWidget?: esri.Widget;
-
-  /**
-   *
-   */
-  menuHeading?: string;
 }
 
 /**
@@ -266,7 +261,7 @@ class Heading extends Widget {
 
   container = document.createElement('div');
 
-  iconUrl!: string;
+  logoUrl!: string;
 
   title!: string;
 
@@ -302,7 +297,7 @@ class Heading extends Widget {
   ////////////////////////////////////////////
 
   render(): tsx.JSX.Element {
-    const { id, iconUrl, title, searchViewModel, menu } = this;
+    const { id, logoUrl, title, searchViewModel, menu } = this;
 
     const tooltip = `tooltip_${id}`;
 
@@ -327,7 +322,7 @@ class Heading extends Widget {
           </calcite-tooltip>
         ) : null}
         {/* icon logo */}
-        {iconUrl ? <img class={CSS.headingIcon} src={iconUrl}></img> : null}
+        {logoUrl ? <img class={CSS.headingIcon} src={logoUrl}></img> : null}
         {/* heading */}
         {title ? <div class={CSS.headingTitle}>{title}</div> : null}
         {/* search */}
