@@ -32,7 +32,7 @@ export interface ViewControlProperties extends esri.WidgetProperties {
   fullscreenElement?: HTMLElement;
 }
 
-import { watch } from '@arcgis/core/core/watchUtils';
+import { watch } from '@arcgis/core/core/reactiveUtils';
 import { subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -82,6 +82,7 @@ export default class ViewControl extends Widget {
             <calcite-action-pad expand-disabled="">
               <calcite-action-group>
                 <calcite-action
+                  text="Enter Fullscreen"
                   title="Enter Fullscreen"
                   disabled=""
                   scale="s"
@@ -183,17 +184,22 @@ export default class ViewControl extends Widget {
       calciteAction.disabled = fullscreen.state === 'disabled' || fullscreen.state === 'feature-unsupported';
 
       this.own(
-        watch(fullscreen, 'state', (state: esri.FullscreenViewModel['state']): void => {
-          calciteAction.disabled = state === 'disabled' || state === 'feature-unsupported';
-          if (state === 'ready') {
-            calciteAction.icon = 'extent';
-            calciteAction.title = 'Enter Fullscreen';
-          }
-          if (state === 'active') {
-            calciteAction.icon = 'full-screen-exit';
-            calciteAction.title = 'Exit Fullscreen';
-          }
-        }),
+        watch(
+          (): esri.FullscreenViewModel['state'] => fullscreen.state,
+          (state?: esri.FullscreenViewModel['state']): void => {
+            calciteAction.disabled = state === 'disabled' || state === 'feature-unsupported';
+            if (state === 'ready') {
+              calciteAction.icon = 'extent';
+              calciteAction.title = 'Enter Fullscreen';
+              calciteAction.text = 'Enter Fullscreen';
+            }
+            if (state === 'active') {
+              calciteAction.icon = 'full-screen-exit';
+              calciteAction.title = 'Exit Fullscreen';
+              calciteAction.text = 'Exit Fullscreen';
+            }
+          },
+        ),
       );
     });
   }
@@ -210,18 +216,21 @@ export default class ViewControl extends Widget {
       calciteAction.disabled = locate.state === 'disabled';
 
       this.own(
-        watch(locate, 'state', (state: esri.LocateViewModel['state']): void => {
-          calciteAction.disabled = state === 'disabled';
+        watch(
+          (): esri.LocateViewModel['state'] => locate.state,
+          (state?: esri.LocateViewModel['state']): void => {
+            calciteAction.disabled = state === 'disabled';
 
-          calciteAction.icon =
-            locate.state === 'ready'
-              ? 'gps-on'
-              : locate.state === 'locating'
-              ? 'gps-on-f'
-              : locate.state === 'disabled'
-              ? 'gps-off'
-              : '';
-        }),
+            calciteAction.icon =
+              locate.state === 'ready'
+                ? 'gps-on'
+                : locate.state === 'locating'
+                  ? 'gps-on-f'
+                  : locate.state === 'disabled'
+                    ? 'gps-off'
+                    : '';
+          },
+        ),
       );
     });
   }
