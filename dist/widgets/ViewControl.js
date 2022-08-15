@@ -1,5 +1,5 @@
 import { __decorate } from "tslib";
-import { watch } from '@arcgis/core/core/watchUtils';
+import { watch } from '@arcgis/core/core/reactiveUtils';
 import { subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -29,7 +29,7 @@ let ViewControl = class ViewControl extends Widget {
             tsx("div", { class: CSS.pads },
                 includeFullscreen ? (tsx("calcite-action-pad", { "expand-disabled": "" },
                     tsx("calcite-action-group", null,
-                        tsx("calcite-action", { title: "Enter Fullscreen", disabled: "", scale: "s", icon: "extent", afterCreate: this._initializeFullscreen.bind(this) })))) : null,
+                        tsx("calcite-action", { text: "Enter Fullscreen", title: "Enter Fullscreen", disabled: "", scale: "s", icon: "extent", afterCreate: this._initializeFullscreen.bind(this) })))) : null,
                 tsx("calcite-action-pad", { "expand-disabled": "" },
                     tsx("calcite-action-group", null,
                         tsx("calcite-action", { text: "Default Extent", title: "Default Extent", icon: "home", scale: "s", onclick: home.go.bind(home) }),
@@ -73,15 +73,17 @@ let ViewControl = class ViewControl extends Widget {
             });
             calciteAction.addEventListener('click', fullscreen.toggle.bind(fullscreen));
             calciteAction.disabled = fullscreen.state === 'disabled' || fullscreen.state === 'feature-unsupported';
-            this.own(watch(fullscreen, 'state', (state) => {
+            this.own(watch(() => fullscreen.state, (state) => {
                 calciteAction.disabled = state === 'disabled' || state === 'feature-unsupported';
                 if (state === 'ready') {
                     calciteAction.icon = 'extent';
                     calciteAction.title = 'Enter Fullscreen';
+                    calciteAction.text = 'Enter Fullscreen';
                 }
                 if (state === 'active') {
                     calciteAction.icon = 'full-screen-exit';
                     calciteAction.title = 'Exit Fullscreen';
+                    calciteAction.text = 'Exit Fullscreen';
                 }
             }));
         });
@@ -94,7 +96,7 @@ let ViewControl = class ViewControl extends Widget {
             });
             calciteAction.addEventListener('click', locate.locate.bind(locate));
             calciteAction.disabled = locate.state === 'disabled';
-            this.own(watch(locate, 'state', (state) => {
+            this.own(watch(() => locate.state, (state) => {
                 calciteAction.disabled = state === 'disabled';
                 calciteAction.icon =
                     locate.state === 'ready'

@@ -57,10 +57,6 @@
 
 /** view control **/
 .cov--view-control {
-  display: flex;
-  flex-flow: row;
-  align-items: flex-end;
-  gap: 0.75rem;
   box-shadow: none !important;
 }
 

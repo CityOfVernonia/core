@@ -1,1 +1,1 @@
-{"version":3,"sourceRoot":"","sources":["../../src/widgets/ViewControl.scss","../../src/_variables.scss"],"names":[],"mappings":"AAEA;EACE;EACA;EACA;EACA;EACA;;;AAGF;EACE;EACA;EACA;;AAEA;EACE,YCRS","file":"ViewControl.css"}
+{"version":3,"sourceRoot":"","sources":["../../src/widgets/ViewControl.scss","../../src/_variables.scss"],"names":[],"mappings":"AAEA;EACE;;;AAGF;EACE;EACA;EACA;;AAEA;EACE,YCJS","file":"ViewControl.css"}
