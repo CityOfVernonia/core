@@ -198,7 +198,7 @@ const COLORS = {
 /**
  * Measure widget for ArcGIS JS API including length, area, location, elevation and ground profiles.
  */
-@subclass('Measure')
+@subclass('cov.widgets.Measure')
 export default class Measure extends Widget {
   ////////////////////////////////////////////////////////////////
   // Lifecycle
