@@ -1197,6 +1197,6 @@ __decorate([
     property()
 ], Measure.prototype, "optionsVisible", void 0);
 Measure = __decorate([
-    subclass('Measure')
+    subclass('cov.widgets.Measure')
 ], Measure);
 export default Measure;
