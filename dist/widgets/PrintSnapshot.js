@@ -4,7 +4,6 @@ import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import Print from './Print';
 import Snapshot from './Snapshot';
-let KEY = 0;
 /**
  * Print and snapshot widgets in single UI widget.
  * NOTE: must include snapshot CSS.
@@ -23,21 +22,16 @@ let PrintSnapshot = class PrintSnapshot extends Widget {
         this.state = 'print';
     }
     render() {
-        const { id, state } = this;
-        const tooltips = [0, 1, 2].map((num) => {
-            return `tooltip_${id}_${num}_${KEY++}`;
-        });
+        const { state } = this;
         return (tsx("calcite-panel", { heading: state === 'print' ? 'Print' : 'Snapshot' },
-            tsx("calcite-tooltip-manager", { slot: "header-actions-end" },
-                tsx("calcite-action", { id: tooltips[0], active: state === 'print', icon: "print", onclick: () => {
-                        this.state = 'print';
-                    } }),
-                tsx("calcite-tooltip", { "reference-element": tooltips[0], "overlay-positioning": "fixed", placement: "bottom" }, "Print")),
-            tsx("calcite-tooltip-manager", { slot: "header-actions-end" },
-                tsx("calcite-action", { id: tooltips[1], active: state === 'snapshot', icon: "image", onclick: () => {
-                        this.state = 'snapshot';
-                    } }),
-                tsx("calcite-tooltip", { "reference-element": tooltips[1], "overlay-positioning": "fixed", placement: "bottom" }, "Snapshot")),
+            tsx("calcite-action", { slot: "header-actions-end", active: state === 'print', icon: "print", onclick: () => {
+                    this.state = 'print';
+                } },
+                tsx("calcite-tooltip", { placement: "bottom", slot: "tooltip" }, "Print")),
+            tsx("calcite-action", { slot: "header-actions-end", active: state === 'snapshot', icon: "image", onclick: () => {
+                    this.state = 'snapshot';
+                } },
+                tsx("calcite-tooltip", { placement: "bottom", slot: "tooltip" }, "Snapshot")),
             tsx("div", { hidden: state !== 'print' },
                 tsx("div", { afterCreate: this._createPrint.bind(this) })),
             tsx("div", { hidden: state !== 'snapshot' },
