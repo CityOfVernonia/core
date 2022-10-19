@@ -6,8 +6,6 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
 import Print from './Print';
 import Snapshot from './Snapshot';
 
-let KEY = 0;
-
 /**
  * Print and snapshot widgets in single UI widget.
  * NOTE: must include snapshot CSS.
@@ -61,41 +59,35 @@ export default class PrintSnapshot extends Widget {
   protected state: 'print' | 'snapshot' = 'print';
 
   render(): tsx.JSX.Element {
-    const { id, state } = this;
-
-    const tooltips = [0, 1, 2].map((num: number): string => {
-      return `tooltip_${id}_${num}_${KEY++}`;
-    });
+    const { state } = this;
 
     return (
       <calcite-panel heading={state === 'print' ? 'Print' : 'Snapshot'}>
         {/* header action switch between print and snapshot */}
-        <calcite-tooltip-manager slot="header-actions-end">
-          <calcite-action
-            id={tooltips[0]}
-            active={state === 'print'}
-            icon="print"
-            onclick={(): void => {
-              this.state = 'print';
-            }}
-          ></calcite-action>
-          <calcite-tooltip reference-element={tooltips[0]} overlay-positioning="fixed" placement="bottom">
+        <calcite-action
+          slot="header-actions-end"
+          active={state === 'print'}
+          icon="print"
+          onclick={(): void => {
+            this.state = 'print';
+          }}
+        >
+          <calcite-tooltip placement="bottom" slot="tooltip">
             Print
           </calcite-tooltip>
-        </calcite-tooltip-manager>
-        <calcite-tooltip-manager slot="header-actions-end">
-          <calcite-action
-            id={tooltips[1]}
-            active={state === 'snapshot'}
-            icon="image"
-            onclick={(): void => {
-              this.state = 'snapshot';
-            }}
-          ></calcite-action>
-          <calcite-tooltip reference-element={tooltips[1]} overlay-positioning="fixed" placement="bottom">
+        </calcite-action>
+        <calcite-action
+          slot="header-actions-end"
+          active={state === 'snapshot'}
+          icon="image"
+          onclick={(): void => {
+            this.state = 'snapshot';
+          }}
+        >
+          <calcite-tooltip placement="bottom" slot="tooltip">
             Snapshot
           </calcite-tooltip>
-        </calcite-tooltip-manager>
+        </calcite-action>
         {/* print */}
         <div hidden={state !== 'print'}>
           <div afterCreate={this._createPrint.bind(this)}></div>
