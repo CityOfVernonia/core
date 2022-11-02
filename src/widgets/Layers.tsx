@@ -98,63 +98,54 @@ export default class Layers extends Widget {
   }
 
   render(): tsx.JSX.Element {
-    const { id, state, _radioButtonGroup } = this;
+    const { state, _radioButtonGroup } = this;
 
     const heading = state === 'layers' ? 'Layers' : state === 'legend' ? 'Legend' : 'Imagery';
-
-    const tooltips = [0, 1, 2].map((num: number): string => {
-      return `tooltip_${id}_${num}_${KEY++}`;
-    });
 
     return (
       <calcite-panel class={CSS.base} heading={heading}>
         {/* header action switch between layers and legend and imagery */}
-        <calcite-tooltip-manager slot="header-actions-end">
-          <calcite-action
-            id={tooltips[0]}
-            active={state === 'layers'}
-            icon="layers"
-            onclick={(): void => {
-              this.state = 'layers';
-            }}
-          ></calcite-action>
-        </calcite-tooltip-manager>
-        <calcite-tooltip reference-element={tooltips[0]} overlay-positioning="fixed" placement="bottom">
-          Layers
-        </calcite-tooltip>
-
-        <calcite-tooltip-manager slot="header-actions-end">
-          <calcite-action
-            id={tooltips[1]}
-            active={state === 'legend'}
-            icon="legend"
-            onclick={(): void => {
-              this.state = 'legend';
-            }}
-          ></calcite-action>
-        </calcite-tooltip-manager>
-        <calcite-tooltip reference-element={tooltips[1]} overlay-positioning="fixed" placement="bottom">
-          Legend
-        </calcite-tooltip>
-
-        {_radioButtonGroup ? (
-          <calcite-tooltip-manager slot="header-actions-end">
-            <calcite-action
-              id={tooltips[2]}
-              active={state === 'imagery'}
-              icon="layer-basemap"
-              onclick={(): void => {
-                this.state = 'imagery';
-              }}
-            ></calcite-action>
-          </calcite-tooltip-manager>
-        ) : null}
-        {_radioButtonGroup ? (
-          <calcite-tooltip reference-element={tooltips[2]} overlay-positioning="fixed" placement="bottom">
-            Imagery
+        <calcite-action
+          active={state === 'layers'}
+          icon="layers"
+          slot="header-actions-end"
+          text="Layers"
+          onclick={(): void => {
+            this.state = 'layers';
+          }}
+        >
+          <calcite-tooltip placement="bottom" slot="tooltip">
+            Layers
           </calcite-tooltip>
+        </calcite-action>
+        <calcite-action
+          active={state === 'legend'}
+          icon="legend"
+          slot="header-actions-end"
+          text="Legend"
+          onclick={(): void => {
+            this.state = 'legend';
+          }}
+        >
+          <calcite-tooltip placement="bottom" slot="tooltip">
+            Legend
+          </calcite-tooltip>
+        </calcite-action>
+        {_radioButtonGroup ? (
+          <calcite-action
+            active={state === 'imagery'}
+            icon="layer-basemap"
+            slot="header-actions-end"
+            text="Imagery"
+            onclick={(): void => {
+              this.state = 'imagery';
+            }}
+          >
+            <calcite-tooltip placement="bottom" slot="tooltip">
+              Imagery
+            </calcite-tooltip>
+          </calcite-action>
         ) : null}
-
         {/* layers */}
         <div
           hidden={state !== 'layers'}

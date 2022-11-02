@@ -44,27 +44,21 @@ let Layers = class Layers extends Widget {
         this.state = 'layers';
     }
     render() {
-        const { id, state, _radioButtonGroup } = this;
+        const { state, _radioButtonGroup } = this;
         const heading = state === 'layers' ? 'Layers' : state === 'legend' ? 'Legend' : 'Imagery';
-        const tooltips = [0, 1, 2].map((num) => {
-            return `tooltip_${id}_${num}_${KEY++}`;
-        });
         return (tsx("calcite-panel", { class: CSS.base, heading: heading },
-            tsx("calcite-tooltip-manager", { slot: "header-actions-end" },
-                tsx("calcite-action", { id: tooltips[0], active: state === 'layers', icon: "layers", onclick: () => {
-                        this.state = 'layers';
-                    } })),
-            tsx("calcite-tooltip", { "reference-element": tooltips[0], "overlay-positioning": "fixed", placement: "bottom" }, "Layers"),
-            tsx("calcite-tooltip-manager", { slot: "header-actions-end" },
-                tsx("calcite-action", { id: tooltips[1], active: state === 'legend', icon: "legend", onclick: () => {
-                        this.state = 'legend';
-                    } })),
-            tsx("calcite-tooltip", { "reference-element": tooltips[1], "overlay-positioning": "fixed", placement: "bottom" }, "Legend"),
-            _radioButtonGroup ? (tsx("calcite-tooltip-manager", { slot: "header-actions-end" },
-                tsx("calcite-action", { id: tooltips[2], active: state === 'imagery', icon: "layer-basemap", onclick: () => {
-                        this.state = 'imagery';
-                    } }))) : null,
-            _radioButtonGroup ? (tsx("calcite-tooltip", { "reference-element": tooltips[2], "overlay-positioning": "fixed", placement: "bottom" }, "Imagery")) : null,
+            tsx("calcite-action", { active: state === 'layers', icon: "layers", slot: "header-actions-end", text: "Layers", onclick: () => {
+                    this.state = 'layers';
+                } },
+                tsx("calcite-tooltip", { placement: "bottom", slot: "tooltip" }, "Layers")),
+            tsx("calcite-action", { active: state === 'legend', icon: "legend", slot: "header-actions-end", text: "Legend", onclick: () => {
+                    this.state = 'legend';
+                } },
+                tsx("calcite-tooltip", { placement: "bottom", slot: "tooltip" }, "Legend")),
+            _radioButtonGroup ? (tsx("calcite-action", { active: state === 'imagery', icon: "layer-basemap", slot: "header-actions-end", text: "Imagery", onclick: () => {
+                    this.state = 'imagery';
+                } },
+                tsx("calcite-tooltip", { placement: "bottom", slot: "tooltip" }, "Imagery"))) : null,
             tsx("div", { hidden: state !== 'layers', afterCreate: (container) => {
                     const { view } = this;
                     this.layers = new LayerList({
