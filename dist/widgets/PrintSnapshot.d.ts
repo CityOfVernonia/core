@@ -1,24 +1,24 @@
+/// <reference types="@esri/calcite-components" />
 import esri = __esri;
+/**
+ * Internal types.
+ */
+interface I {
+    format: 'jpg' | 'png';
+    mode: 'default' | 'print' | 'snapshot';
+    result: {
+        element: tsx.JSX.Element;
+    };
+    state: 'print' | 'snapshot';
+}
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 /**
- * Print and snapshot widgets in single UI widget.
- * NOTE: must include snapshot CSS.
+ * Print (via print service) and map view snapshot widget.
  */
 export default class PrintSnapshot extends Widget {
+    container: HTMLCalcitePanelElement;
     constructor(properties: esri.WidgetProperties & {
-        /**
-         * Map view to print.
-         */
-        view: esri.MapView;
-        /**
-         * URL of print service.
-         */
-        printServiceUrl: string;
-        /**
-         * Default map title.
-         */
-        printTitle?: string;
         /**
          * Key/value of layouts to include.
          * `<LAYOUT_NAME>: <SELECT_OPTION_LABEL>`
@@ -27,27 +27,54 @@ export default class PrintSnapshot extends Widget {
             [key: string]: string;
         };
         /**
-         * Default snapshot title.
+         * Widget mode for just print or snapshot functionality.
+         * @default 'default'
          */
-        snapshotTitle?: string;
+        mode?: I['mode'];
+        /**
+         * URL of print service.
+         */
+        printServiceUrl?: string;
+        /**
+         * Map view to print and snapshot.
+         */
+        view: esri.MapView;
     });
-    view: esri.MapView;
-    printServiceUrl: string;
-    printTitle: string;
-    snapshotTitle: string;
+    postInitialize(): Promise<void>;
     layouts: {
         [key: string]: string;
     };
-    protected state: 'print' | 'snapshot';
+    mode: I['mode'];
+    printServiceUrl: string;
+    view: esri.MapView;
+    private _state;
+    private _setState;
+    private _printer;
+    private _PrintTemplate;
+    private _printResults;
+    /**
+     * Create a print.
+     */
+    private _print;
+    private _snapshotResults;
+    private _photoModal;
+    /**
+     * Create a snapshot.
+     */
+    private _snapshot;
+    /**
+     * Add title to image and return data url.
+     * @param data Image data to be returned as data url string
+     * @param title Title of the image
+     * @param format Format of the image
+     * @returns Data url string
+     */
+    private _dataUrl;
     render(): tsx.JSX.Element;
     /**
-     * Create Print widget.
-     * @param container
+     * Create options for print layout select.
+     * @returns Array of tsx elements
      */
-    private _createPrint;
-    /**
-     * Create Snapshot widget.
-     * @param container
-     */
-    private _createSnapshot;
+    private _renderLayoutOptions;
 }
+export {};

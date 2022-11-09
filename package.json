@@ -1,9 +1,9 @@
 {
   "name": "@vernonia/core",
-  "version": "2.1.6",
+  "version": "2.1.7",
   "description": "City of Vernonia widgets and friends for Esri JavaScript API using Calcite.",
   "scripts": {
-    "build": "tsc && sass src/cov.scss:dist/cov.css && sass src/widgets:dist/widgets && sass src/layouts:dist/layouts",
+    "build": "tsc && sass src/cov.scss:dist/cov.css && sass src/widgets:dist/widgets",
     "lint": "eslint . --ext .ts,.tsx",
     "prettier": "prettier --write \"src/**/*.ts?(x)\"",
     "test": "npm run prettier && npm run lint"
@@ -20,16 +20,16 @@
   "homepage": "https://github.com/CityOfVernonia/core#readme",
   "devDependencies": {
     "@types/js-cookie": "^3.0.2",
-    "@types/luxon": "^3.0.2",
+    "@types/luxon": "^3.1.0",
     "@types/papaparse": "^5.3.5",
     "@types/sortablejs": "^1.15.0",
-    "@typescript-eslint/eslint-plugin": "^5.42.0",
-    "@typescript-eslint/parser": "^5.42.0",
-    "eslint": "^8.26.0",
+    "@typescript-eslint/eslint-plugin": "^5.42.1",
+    "@typescript-eslint/parser": "^5.42.1",
+    "eslint": "^8.27.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.7.1",
-    "sass": "^1.55.0",
+    "sass": "^1.56.0",
     "tslib": "^2.4.1",
     "typescript": "^4.8.4"
   },
@@ -73,6 +73,7 @@
     "singleQuote": true,
     "trailingComma": "all",
     "printWidth": 120,
-    "tabWidth": 2
+    "tabWidth": 2,
+    "endOfLine": "auto"
   }
 }
