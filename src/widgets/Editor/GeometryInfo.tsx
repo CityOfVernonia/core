@@ -92,7 +92,7 @@ export default class GeometryInfo extends Widget {
    * Current area unit.
    */
   @property()
-  areaUnit: esri.ArealUnits = 'acres';
+  areaUnit: esri.AreaUnits = 'acres';
 
   /**
    * Available area unit and display text key/value pairs.

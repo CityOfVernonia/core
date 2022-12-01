@@ -42,7 +42,7 @@ interface AddServerLayerInfo extends AddLayerInfo {
      */
     snippet: string;
 }
-export declare type AddLayerInfos = (AddPortalLayerInfo | AddServerLayerInfo)[];
+export type AddLayerInfos = (AddPortalLayerInfo | AddServerLayerInfo)[];
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 export default class AddLayers extends Widget {

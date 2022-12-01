@@ -45,7 +45,7 @@ export default class GeometryInfo extends Widget {
     /**
      * Current area unit.
      */
-    areaUnit: esri.ArealUnits;
+    areaUnit: esri.AreaUnits;
     /**
      * Available area unit and display text key/value pairs.
      */
