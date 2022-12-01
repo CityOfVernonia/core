@@ -1,7 +1,7 @@
 /**
  * Location information emitted by `location` event.
  */
-interface LocationInfo {
+export interface LocationInfo {
   /**
    * Latitude of location.
    */
@@ -14,6 +14,10 @@ interface LocationInfo {
    * Accuracy in meters.
    */
   accuracy: number;
+  /**
+   * Accuracy text string including units.
+   */
+  accuracyText: string;
 }
 import esri = __esri;
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
@@ -194,13 +198,15 @@ export default class Locator extends _E {
    * @returns `{ latitude: number, longitude: number, accuracy: number }` | `null`
    */
   getLocation(): LocationInfo | null {
-    const { _position } = this;
+    const { accuracyUnits, _position } = this;
     if (!_position) return null;
     const { latitude, longitude, accuracy } = _position.coords;
+    const accuracyText = (accuracyUnits === 'feet' ? accuracy * 3.28084 : accuracy).toFixed(2);
     return {
       latitude,
       longitude,
       accuracy,
+      accuracyText,
     };
   }
 
@@ -233,13 +239,15 @@ export default class Locator extends _E {
     const { accuracyUnits, view, _graphics, _tracking, _locationGraphic, _accuracyGraphic, _accuracyTextGraphic } =
       this;
     const { latitude, longitude, accuracy } = event.position.coords;
+    const accuracyText = (accuracyUnits === 'feet' ? accuracy * 3.28084 : accuracy).toFixed(2);
     // set position and emit location
     this._position = event.position;
     this.emit('location', {
       latitude,
-      location,
+      longitude,
       accuracy,
-    });
+      accuracyText,
+    } as LocationInfo);
     // create point and set location and accuracy geometries
     const point = new Point({
       latitude,
@@ -254,8 +262,7 @@ export default class Locator extends _E {
       radiusUnit: 'meters',
     });
     _accuracyTextGraphic.geometry = point;
-    const accuracyValue = (accuracyUnits === 'feet' ? accuracy * 3.28084 : accuracy).toFixed(2);
-    (_accuracyTextGraphic.symbol as TextSymbol).text = `${accuracyValue} ${accuracyUnits}`;
+    (_accuracyTextGraphic.symbol as TextSymbol).text = `${accuracyText} ${accuracyUnits}`;
     // will we zoom
     let zoomTo = false;
     // set tracking and add graphics

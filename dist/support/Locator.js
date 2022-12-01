@@ -106,14 +106,16 @@ let Locator = class Locator extends _E {
      * @returns `{ latitude: number, longitude: number, accuracy: number }` | `null`
      */
     getLocation() {
-        const { _position } = this;
+        const { accuracyUnits, _position } = this;
         if (!_position)
             return null;
         const { latitude, longitude, accuracy } = _position.coords;
+        const accuracyText = (accuracyUnits === 'feet' ? accuracy * 3.28084 : accuracy).toFixed(2);
         return {
             latitude,
             longitude,
             accuracy,
+            accuracyText,
         };
     }
     /**
@@ -142,12 +144,14 @@ let Locator = class Locator extends _E {
     _trackEventHandler(event) {
         const { accuracyUnits, view, _graphics, _tracking, _locationGraphic, _accuracyGraphic, _accuracyTextGraphic } = this;
         const { latitude, longitude, accuracy } = event.position.coords;
+        const accuracyText = (accuracyUnits === 'feet' ? accuracy * 3.28084 : accuracy).toFixed(2);
         // set position and emit location
         this._position = event.position;
         this.emit('location', {
             latitude,
-            location,
+            longitude,
             accuracy,
+            accuracyText,
         });
         // create point and set location and accuracy geometries
         const point = new Point({
@@ -163,8 +167,7 @@ let Locator = class Locator extends _E {
             radiusUnit: 'meters',
         });
         _accuracyTextGraphic.geometry = point;
-        const accuracyValue = (accuracyUnits === 'feet' ? accuracy * 3.28084 : accuracy).toFixed(2);
-        _accuracyTextGraphic.symbol.text = `${accuracyValue} ${accuracyUnits}`;
+        _accuracyTextGraphic.symbol.text = `${accuracyText} ${accuracyUnits}`;
         // will we zoom
         let zoomTo = false;
         // set tracking and add graphics

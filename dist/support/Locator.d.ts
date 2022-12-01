@@ -1,7 +1,7 @@
 /**
  * Location information emitted by `location` event.
  */
-interface LocationInfo {
+export interface LocationInfo {
     /**
      * Latitude of location.
      */
@@ -14,6 +14,10 @@ interface LocationInfo {
      * Accuracy in meters.
      */
     accuracy: number;
+    /**
+     * Accuracy text string including units.
+     */
+    accuracyText: string;
 }
 import esri = __esri;
 import { SimpleMarkerSymbol, SimpleFillSymbol, TextSymbol } from '@arcgis/core/symbols';
