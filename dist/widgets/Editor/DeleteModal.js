@@ -11,7 +11,7 @@ let DeleteModal = class DeleteModal extends Widget {
     show(onDelete) {
         const { _modal } = this;
         this._delete = onDelete;
-        _modal.active = true;
+        _modal.open = true;
     }
     render() {
         return (tsx("calcite-modal", { width: "350", afterCreate: storeNode.bind(this), "data-node-ref": "_modal" },
@@ -20,12 +20,12 @@ let DeleteModal = class DeleteModal extends Widget {
             tsx("calcite-button", { slot: "primary", afterCreate: (calciteButton) => {
                     calciteButton.addEventListener('click', () => {
                         this._delete();
-                        this._modal.active = false;
+                        this._modal.open = false;
                     });
                 } }, "Yes"),
             tsx("calcite-button", { slot: "secondary", appearance: "outline", afterCreate: (calciteButton) => {
                     calciteButton.addEventListener('click', () => {
-                        this._modal.active = false;
+                        this._modal.open = false;
                     });
                 } }, "No")));
     }

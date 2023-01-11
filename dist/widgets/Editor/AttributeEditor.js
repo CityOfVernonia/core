@@ -51,7 +51,7 @@ let AttributeEditor = class AttributeEditor extends Widget {
         if (!feature)
             return;
         this.emit('updating');
-        notice.active = false;
+        notice.hidden = false;
         this._toggleUpdating(true);
         for (const attribute in attributes) {
             const control = form.querySelector(`[data-attribute-name="${attribute}"`);
@@ -67,7 +67,7 @@ let AttributeEditor = class AttributeEditor extends Widget {
             const updateResult = editResults.updateFeatureResults[0];
             if (updateResult.error) {
                 console.log(updateResult.error);
-                notice.active = true;
+                notice.hidden = true;
                 this.emit('update-error', updateResult.error);
             }
             this.emit('updated');
@@ -75,7 +75,7 @@ let AttributeEditor = class AttributeEditor extends Widget {
         })
             .catch((error) => {
             console.log(error);
-            notice.active = true;
+            notice.hidden = true;
             this.emit('update-error', error);
             this._toggleUpdating(false);
         });
@@ -86,6 +86,7 @@ let AttributeEditor = class AttributeEditor extends Widget {
         const labels = form.querySelectorAll('calcite-label');
         button.loading = updating;
         labels.forEach((calciteLabel) => {
+            // @ts-ignore
             calciteLabel.disabled = updating;
         });
     }

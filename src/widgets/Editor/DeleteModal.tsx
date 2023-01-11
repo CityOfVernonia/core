@@ -23,7 +23,7 @@ export default class DeleteModal extends Widget {
 
     this._delete = onDelete;
 
-    _modal.active = true;
+    _modal.open = true;
   }
 
   render(): tsx.JSX.Element {
@@ -37,7 +37,7 @@ export default class DeleteModal extends Widget {
             calciteButton.addEventListener('click', (): void => {
               this._delete();
 
-              this._modal.active = false;
+              this._modal.open = false;
             });
           }}
         >
@@ -48,7 +48,7 @@ export default class DeleteModal extends Widget {
           appearance="outline"
           afterCreate={(calciteButton: HTMLCalciteButtonElement): void => {
             calciteButton.addEventListener('click', (): void => {
-              this._modal.active = false;
+              this._modal.open = false;
             });
           }}
         >

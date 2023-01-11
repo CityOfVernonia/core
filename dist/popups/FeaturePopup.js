@@ -239,7 +239,7 @@ let PhotoModal = class PhotoModal extends Widget {
         const { _modal } = this;
         this._title = title;
         this._url = url;
-        _modal.active = true;
+        _modal.open = true;
     }
     render() {
         const { _title, _url } = this;
@@ -249,7 +249,7 @@ let PhotoModal = class PhotoModal extends Widget {
                 tsx("img", { style: "width: 100%;", src: _url })),
             tsx("calcite-button", { slot: "primary", afterCreate: (calciteButton) => {
                     calciteButton.addEventListener('click', () => {
-                        this._modal.active = false;
+                        this._modal.open = false;
                     });
                 } }, "Close")));
     }

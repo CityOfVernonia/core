@@ -381,14 +381,14 @@ export default class PhotoAttachments extends Widget {
   private _confirmDeleteAttachment(id: number): void {
     const { _confirm } = this;
 
-    _confirm.active = true;
+    _confirm.open = true;
 
     const handle = this.on('confirm-delete', (confirm: boolean) => {
       if (confirm) {
         this._deleteAttachment(id);
       }
       handle.remove();
-      _confirm.active = false;
+      _confirm.open = false;
     });
   }
 
@@ -430,7 +430,7 @@ export default class PhotoAttachments extends Widget {
       url,
     };
 
-    _modal.active = true;
+    _modal.open = true;
   }
 
   /**
@@ -455,10 +455,10 @@ export default class PhotoAttachments extends Widget {
 
     this._noticeMessage = message;
 
-    _notice.active = true;
+    _notice.hidden = true;
 
     setTimeout((): void => {
-      _notice.active = false;
+      _notice.hidden = false;
     }, 2000);
   }
 
@@ -552,7 +552,7 @@ export default class PhotoAttachments extends Widget {
             slot="primary"
             width="full"
             onclick={() => {
-              this._modal.active = false;
+              this._modal.open = false;
             }}
           >
             Close

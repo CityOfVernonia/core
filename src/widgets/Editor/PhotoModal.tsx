@@ -25,7 +25,7 @@ export default class PhotoModal extends Widget {
     const { _modal } = this;
     this._title = title;
     this._url = url;
-    _modal.active = true;
+    _modal.open = true;
   }
 
   render(): tsx.JSX.Element {
@@ -41,7 +41,7 @@ export default class PhotoModal extends Widget {
           slot="primary"
           afterCreate={(calciteButton: HTMLCalciteButtonElement): void => {
             calciteButton.addEventListener('click', (): void => {
-              this._modal.active = false;
+              this._modal.open = false;
             });
           }}
         >

@@ -95,7 +95,7 @@ export default class AttributeEditor extends Widget {
 
     this.emit('updating');
 
-    notice.active = false;
+    notice.hidden = false;
 
     this._toggleUpdating(true);
 
@@ -118,7 +118,7 @@ export default class AttributeEditor extends Widget {
 
         if (updateResult.error) {
           console.log(updateResult.error);
-          notice.active = true;
+          notice.hidden = true;
           this.emit('update-error', updateResult.error);
         }
 
@@ -128,7 +128,7 @@ export default class AttributeEditor extends Widget {
       })
       .catch((error: esri.Error): void => {
         console.log(error);
-        notice.active = true;
+        notice.hidden = true;
         this.emit('update-error', error);
         this._toggleUpdating(false);
       });
@@ -142,6 +142,7 @@ export default class AttributeEditor extends Widget {
 
     button.loading = updating;
     labels.forEach((calciteLabel: HTMLCalciteLabelElement) => {
+      // @ts-ignore
       calciteLabel.disabled = updating;
     });
   }

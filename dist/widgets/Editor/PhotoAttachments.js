@@ -166,9 +166,9 @@ let PhotoAttachments = class PhotoAttachments extends Widget {
     _showNotice(message) {
         const { _notice } = this;
         this._noticeMessage = message;
-        _notice.active = true;
+        _notice.hidden = true;
         setTimeout(() => {
-            _notice.active = false;
+            _notice.hidden = false;
         }, 2000);
     }
     /**

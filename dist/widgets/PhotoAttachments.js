@@ -208,13 +208,13 @@ let PhotoAttachments = class PhotoAttachments extends Widget {
      */
     _confirmDeleteAttachment(id) {
         const { _confirm } = this;
-        _confirm.active = true;
+        _confirm.open = true;
         const handle = this.on('confirm-delete', (confirm) => {
             if (confirm) {
                 this._deleteAttachment(id);
             }
             handle.remove();
-            _confirm.active = false;
+            _confirm.open = false;
         });
     }
     /**
@@ -251,7 +251,7 @@ let PhotoAttachments = class PhotoAttachments extends Widget {
             name,
             url,
         };
-        _modal.active = true;
+        _modal.open = true;
     }
     /**
      * Download attachment.
@@ -272,9 +272,9 @@ let PhotoAttachments = class PhotoAttachments extends Widget {
     _showNotice(message) {
         const { _notice } = this;
         this._noticeMessage = message;
-        _notice.active = true;
+        _notice.hidden = true;
         setTimeout(() => {
-            _notice.active = false;
+            _notice.hidden = false;
         }, 2000);
     }
     /**
@@ -316,7 +316,7 @@ let PhotoAttachments = class PhotoAttachments extends Widget {
                     tsx("img", { class: CSS.modalImage, src: _modalOptions.url })),
                 tsx("calcite-button", { slot: "secondary", width: "full", appearance: "outline", onclick: this._downloadAttachment.bind(this, _modalOptions.url) }, "Download"),
                 tsx("calcite-button", { slot: "primary", width: "full", onclick: () => {
-                        this._modal.active = false;
+                        this._modal.open = false;
                     } }, "Close")),
             tsx("calcite-modal", { scale: "s", width: "220", "disable-close-button": "", "disable-escape": "", "disable-outside-close": "", afterCreate: storeNode.bind(this), "data-node-ref": "_confirm" },
                 tsx("div", { slot: "header" }, "Confirm"),

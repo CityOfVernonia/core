@@ -209,7 +209,7 @@ let AddLayers = class AddLayers extends Widget {
             button.loading = false;
             urlInput.value = '';
             urlInput.status = 'valid';
-            errorMessage.active = false;
+            errorMessage.hidden = false;
         };
         const error = (message) => {
             typeSelect.disabled = false;
@@ -218,7 +218,7 @@ let AddLayers = class AddLayers extends Widget {
             urlInput.status = 'invalid';
             urlInput.setFocus();
             errorMessage.innerHTML = message;
-            errorMessage.active = true;
+            errorMessage.hidden = true;
         };
         const addKML = (layer) => {
             layer

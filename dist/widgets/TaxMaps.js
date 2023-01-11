@@ -2,180 +2,203 @@ import { __awaiter, __decorate } from "tslib";
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
-import { taxMapUrl } from './../support/AssessorURLs';
 import PopupTemplate from '@arcgis/core/PopupTemplate';
+import { imageMediaLayer } from '@vernonia/georeferenced-media/dist/GeoreferencedMedia';
+//////////////////////////////////////
+// Constants
+//////////////////////////////////////
+// Styles
+const CSS = {
+    content: 'padding: 0.75rem;',
+    sliderLabels: 'display: flex; flex-flow: row; justify-content: space-between; margin: -1rem 0.35rem 0; font-size: var(--calcite-font-size--2);',
+    popup: 'display: flex; flex-flow: row; gap: 0.75rem; width: 100%; padding: 0.75rem;',
+};
+// Uniqueness
+let KEY = 0;
 /**
- * View and download tax maps.
+ * A widget for displaying tax map image media layers.
  */
 let TaxMaps = class TaxMaps extends Widget {
+    //////////////////////////////////////
+    // Lifecycle
+    //////////////////////////////////////
     constructor(properties) {
         super(properties);
-        this.state = 'ready';
-        this._select = null;
-        this._items = {};
-        this._id = 9999;
+        this.showSwitch = true;
+        //////////////////////////////////////
+        // Variables
+        //////////////////////////////////////
+        this._imageLayerInfos = [];
+        this._imageLayerInfo = null;
+        this._opacity = 0.4;
+        this._options = [
+            tsx("calcite-option", { key: KEY++, value: "none", selected: "" }, "None"),
+        ];
+        this._loading = false;
     }
     postInitialize() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { view, layer, imagery, _items } = this;
+            const { view, view: { popup }, layer, _imageLayerInfos, _options, } = this;
             layer.popupTemplate = new PopupTemplate({
-                title: '{alias}',
                 outFields: ['*'],
+                title: '{MAP_NAME}',
                 content: (event) => {
-                    const popup = new TaxMapsPopup({
+                    const container = document.createElement('div');
+                    const taxMapPopup = new TaxMapPopup({
                         graphic: event.graphic,
+                        container,
                     });
-                    this.own(popup.on('action', (event) => {
-                        const { _items } = this;
-                        const { taxmap, action } = event;
-                        if (action === 'show') {
-                            for (const item in _items) {
-                                if (_items[item].taxmap === taxmap) {
-                                    this._id = parseInt(item);
-                                    break;
-                                }
-                            }
-                        }
-                        else if (action === 'hide') {
-                            this._id = 9999;
-                        }
-                    }));
-                    return popup.container;
+                    taxMapPopup.on('show', (fileName) => {
+                        this._show(fileName);
+                        popup.close();
+                        popup.clear();
+                    });
+                    return container;
                 },
             });
-            layer.popupEnabled = true;
-            yield view.when();
             yield layer.when();
-            yield imagery.load();
-            // this.sublayers = imagery.sublayers.getItemAt(0).sublayers;
-            this.sublayers = imagery.sublayers;
-            const result = (yield layer.queryFeatures({
+            const query = yield layer.queryFeatures({
                 where: '1 = 1',
                 outFields: ['*'],
                 returnGeometry: true,
                 outSpatialReference: view.spatialReference,
+            });
+            query.features.forEach((feature) => {
+                const { attributes: { FILE_NAME, MAP_NAME }, } = feature;
+                _imageLayerInfos.push({
+                    feature,
+                    fileName: FILE_NAME,
+                });
+                _options.push(tsx("calcite-option", { key: KEY++, value: FILE_NAME }, MAP_NAME));
+            });
+            this.scheduleRender();
+            this.own(this.watch('_opacity', (opacity) => {
+                _imageLayerInfos.forEach((imageLayerInfo) => {
+                    const { layer } = imageLayerInfo;
+                    if (layer)
+                        layer.opacity = opacity;
+                });
             }));
-            if (!result.features) {
-                this.state = 'error';
-                return;
-            }
-            const features = result.features;
-            const options = [
-                tsx("calcite-option", { label: "None", value: "9999", selected: true, afterCreate: this._optionSelected.bind(this) }),
-            ];
-            features.forEach((graphic) => {
-                const { geometry, attributes: { name, taxmap }, } = graphic;
-                const sublayer = this.sublayers.find((sublayer) => {
-                    return sublayer.title === taxmap;
-                });
-                options.push(tsx("calcite-option", { label: name, value: `${sublayer.id}`, afterCreate: this._optionSelected.bind(this) }));
-                _items[sublayer.id] = {
-                    taxmap,
-                    sublayer,
-                    geometry,
-                };
-            });
-            this._select = (tsx("calcite-select", { afterCreate: (select) => {
-                    select.addEventListener('calciteSelectChange', () => {
-                        this._id = parseInt(select.selectedOption.value);
-                    });
-                } }, options));
-            const idChange = this.watch('_id', (id) => {
-                const { view, sublayers, _items } = this;
-                sublayers.forEach((sublayer) => {
-                    sublayer.visible = id === sublayer.id;
-                });
-                if (id === 9999) {
-                    this.state = 'ready';
-                }
-                else {
-                    this.state = 'selected';
-                    view.goTo(_items[id].geometry);
-                }
-            });
-            this.own(idChange);
         });
     }
-    _optionSelected(option) {
-        this.own(this.watch('_id', (id) => {
-            if (id === parseInt(option.value))
-                option.selected = true;
+    //////////////////////////////////////
+    // Private methods
+    //////////////////////////////////////
+    /**
+     * Show selected tax map image media layer.
+     * @param value
+     */
+    _show(value) {
+        const { view, _imageLayerInfos } = this;
+        this._imageLayerInfo = null;
+        _imageLayerInfos.forEach((imageLayerInfo) => {
+            const { layer, fileName, feature } = imageLayerInfo;
+            if (layer && fileName === value) {
+                this._imageLayerInfo = imageLayerInfo;
+                layer.visible = true;
+                view.goTo(feature);
+            }
+            else if (!layer && fileName === value) {
+                this._loading = true;
+                this._load(imageLayerInfo);
+            }
+            else {
+                if (layer)
+                    layer.visible = false;
+            }
+        });
+    }
+    /**
+     * On demand load image media layer.
+     * @param imageLayerInfo
+     */
+    _load(imageLayerInfo) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { view, _opacity } = this;
+            const { feature, feature: { attributes: { FILE_NAME, MAP_NAME }, }, } = imageLayerInfo;
+            const layer = yield imageMediaLayer(`https://cityofvernonia.github.io/vernonia-tax-maps/tax-maps/jpg/${FILE_NAME}.jpg`, {
+                opacity: _opacity,
+                title: `Tax Map ${MAP_NAME}`,
+            });
+            imageLayerInfo.layer = layer;
+            this._imageLayerInfo = imageLayerInfo;
+            view.map.add(layer, 0);
+            view.goTo(feature);
+            this._loading = false;
+        });
+    }
+    /**
+     * Wire select events.
+     * @param select
+     */
+    _selectAfterCreate(select) {
+        select.addEventListener('calciteSelectChange', () => {
+            this._show(select.selectedOption.value);
+        });
+        this.own(this.watch('_imageLayerInfo', (_imageLayerInfo) => {
+            console.log(_imageLayerInfo, select);
+            select.value = !_imageLayerInfo ? 'none' : _imageLayerInfo.fileName;
         }));
     }
-    _viewTaxMap() {
-        const { _items, _id } = this;
-        window.open(taxMapUrl(_items[_id].taxmap), '_blank');
-    }
+    //////////////////////////////////////
+    // Render and rendering methods
+    //////////////////////////////////////
     render() {
-        const { layer, imagery, state, _select } = this;
+        const { layer, showSwitch, _imageLayerInfo, _opacity, _options, _loading } = this;
         return (tsx("calcite-panel", { heading: "Tax Maps" },
-            tsx("div", { style: "margin: 0.75rem;" },
-                tsx("div", { hidden: state === 'error' },
-                    tsx("calcite-label", { alignment: "start", layout: "inline-space-between" },
-                        "Tax map boundaries",
-                        tsx("calcite-switch", { afterCreate: (_switch) => {
-                                _switch.checked = layer.visible;
-                                _switch.addEventListener('calciteSwitchChange', () => {
-                                    layer.visible = _switch.checked;
-                                });
-                                this.own(this.watch('layer.visible', (visible) => {
-                                    _switch.checked = visible;
-                                }));
-                            } })),
-                    tsx("calcite-label", null,
-                        "Select tax map",
-                        _select)),
-                tsx("div", { hidden: state !== 'selected' },
-                    tsx("calcite-label", null,
-                        "Layer transparency",
-                        tsx("calcite-slider", { max: "1", min: "0.2", step: "0.05", afterCreate: (slider) => {
-                                slider.value = imagery.opacity;
-                                slider.addEventListener('calciteSliderInput', () => {
-                                    imagery.opacity = slider.value;
-                                });
-                            } })),
-                    tsx("calcite-button", { appearance: "outline", width: "full", "icon-start": "file-pdf", afterCreate: (button) => {
-                            button.addEventListener('click', this._viewTaxMap.bind(this));
-                        } }, "View Tax Map")),
-                tsx("div", { hidden: state !== 'error' }, "An error ocurred loading tax maps."))));
+            _imageLayerInfo ? (tsx("calcite-button", { appearance: "outline", href: `https://gis.columbiacountymaps.com/TaxMaps/${_imageLayerInfo.feature.attributes.FILE_NAME}.pdf`, "icon-start": "file-pdf", slot: "footer-actions", target: "_blank", width: "full" }, `View ${_imageLayerInfo.feature.attributes.MAP_NAME}`)) : null,
+            tsx("div", { style: CSS.content },
+                showSwitch ? (tsx("calcite-label", { layout: "inline" },
+                    tsx("calcite-switch", { checked: layer.visible, afterCreate: (_switch) => {
+                            _switch.addEventListener('calciteSwitchChange', () => {
+                                layer.visible = _switch.checked;
+                            });
+                        } }),
+                    "Tax map boundaries")) : null,
+                tsx("calcite-label", { style: _imageLayerInfo ? '' : '--calcite-label-margin-bottom: 0;' },
+                    "Select tax map",
+                    tsx("calcite-select", { disabled: _loading, afterCreate: this._selectAfterCreate.bind(this) }, _options)),
+                tsx("calcite-label", { hidden: !_imageLayerInfo, style: "--calcite-label-margin-bottom: 0;" },
+                    "Layer opacity",
+                    tsx("calcite-slider", { min: "0.2", max: "1", snap: "", step: "0.1", value: _opacity, afterCreate: (slider) => {
+                            slider.addEventListener('calciteSliderInput', () => {
+                                this._opacity = slider.value;
+                            });
+                        } }),
+                    tsx("div", { style: CSS.sliderLabels },
+                        tsx("span", null, "min"),
+                        tsx("span", null, "max"))))));
     }
 };
 __decorate([
     property()
-], TaxMaps.prototype, "state", void 0);
+], TaxMaps.prototype, "_imageLayerInfo", void 0);
 __decorate([
     property()
-], TaxMaps.prototype, "_select", void 0);
+], TaxMaps.prototype, "_opacity", void 0);
 __decorate([
     property()
-], TaxMaps.prototype, "_id", void 0);
+], TaxMaps.prototype, "_loading", void 0);
 TaxMaps = __decorate([
     subclass('cov.widgets.TaxMaps')
 ], TaxMaps);
 export default TaxMaps;
-let TaxMapsPopup = class TaxMapsPopup extends Widget {
+/**
+ * Popup widget for tax map boundaries.
+ */
+let TaxMapPopup = class TaxMapPopup extends Widget {
     constructor(properties) {
         super(properties);
-        this.container = document.createElement('div');
     }
     render() {
-        const { graphic: { attributes: { taxmap }, }, } = this;
-        return (tsx("div", { style: "display: flex; flex-flow: row; flex-wrap: wrap; gap: 0.75rem;" },
-            tsx("calcite-link", { onclick: () => {
-                    this.emit('action', {
-                        taxmap,
-                        action: 'show',
-                    });
-                } }, "Show Tax Map"),
-            tsx("calcite-link", { href: taxMapUrl(taxmap), target: "_blank" }, "View Tax Map"),
-            tsx("calcite-link", { onclick: () => {
-                    this.emit('action', {
-                        taxmap,
-                        action: 'hide',
-                    });
-                } }, "Hide Tax Maps")));
+        const { graphic: { attributes: { FILE_NAME, MAP_NAME }, }, } = this;
+        return (tsx("div", { style: CSS.popup },
+            tsx("calcite-button", { "icon-start": "image", width: "full", onclick: () => {
+                    this.emit('show', FILE_NAME);
+                } }, `Show ${MAP_NAME}`),
+            tsx("calcite-button", { appearance: "outline", href: `https://gis.columbiacountymaps.com/TaxMaps/${FILE_NAME}.pdf`, "icon-start": "file-pdf", target: "_blank", width: "full" }, `View ${MAP_NAME}`)));
     }
 };
-TaxMapsPopup = __decorate([
-    subclass('cov.widgets.TaxMaps.TaxMapsPopup')
-], TaxMapsPopup);
+TaxMapPopup = __decorate([
+    subclass('TaxMapPopup')
+], TaxMapPopup);

@@ -1,23 +1,54 @@
+//////////////////////////////////////
+// Interfaces and module imports
+//////////////////////////////////////
 import esri = __esri;
 
-interface Item extends Object {
-  taxmap: string;
-  sublayer: esri.Sublayer;
-  geometry: esri.Geometry;
+/**
+ * Image layer info.
+ */
+interface ImageLayerInfo {
+  /**
+   * Image media layer.
+   */
+  layer?: esri.MediaLayer;
+  /**
+   * Tax map file name.
+   */
+  fileName: string;
+  /**
+   * Tax map boundary feature.
+   */
+  feature: esri.Graphic;
 }
 
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
-import Collection from '@arcgis/core/core/Collection';
-import { taxMapUrl } from './../support/AssessorURLs';
 import PopupTemplate from '@arcgis/core/PopupTemplate';
+import { imageMediaLayer } from '@vernonia/georeferenced-media/dist/GeoreferencedMedia';
+
+//////////////////////////////////////
+// Constants
+//////////////////////////////////////
+// Styles
+const CSS = {
+  content: 'padding: 0.75rem;',
+  sliderLabels:
+    'display: flex; flex-flow: row; justify-content: space-between; margin: -1rem 0.35rem 0; font-size: var(--calcite-font-size--2);',
+  popup: 'display: flex; flex-flow: row; gap: 0.75rem; width: 100%; padding: 0.75rem;',
+};
+
+// Uniqueness
+let KEY = 0;
 
 /**
- * View and download tax maps.
+ * A widget for displaying tax map image media layers.
  */
 @subclass('cov.widgets.TaxMaps')
 export default class TaxMaps extends Widget {
+  //////////////////////////////////////
+  // Lifecycle
+  //////////////////////////////////////
   constructor(
     properties: esri.WidgetProperties & {
       /**
@@ -25,229 +56,259 @@ export default class TaxMaps extends Widget {
        */
       view: esri.MapView;
       /**
-       * Tax maps boundary layer.
+       * Tax map boundaries GeoJSON layer.
        */
-      layer: esri.FeatureLayer;
+      layer: esri.GeoJSONLayer;
       /**
-       * Tax maps imagery layer.
+       * Display boundaries layer visibility switch.
+       * @default true
        */
-      imagery: esri.MapImageLayer;
+      showSwitch?: boolean;
     },
   ) {
     super(properties);
   }
 
   async postInitialize(): Promise<void> {
-    const { view, layer, imagery, _items } = this;
+    const {
+      view,
+      view: { popup },
+      layer,
+      _imageLayerInfos,
+      _options,
+    } = this;
 
     layer.popupTemplate = new PopupTemplate({
-      title: '{alias}',
       outFields: ['*'],
-      content: (event: { graphic: esri.Graphic }) => {
-        const popup = new TaxMapsPopup({
+      title: '{MAP_NAME}',
+      content: (event: { graphic: esri.Graphic }): HTMLDivElement => {
+        const container = document.createElement('div');
+
+        const taxMapPopup = new TaxMapPopup({
           graphic: event.graphic,
+          container,
         });
-        this.own(
-          popup.on('action', (event: { taxmap: string; action: 'show' | 'hide' }): void => {
-            const { _items } = this;
-            const { taxmap, action } = event;
-            if (action === 'show') {
-              for (const item in _items) {
-                if (_items[item].taxmap === taxmap) {
-                  this._id = parseInt(item);
-                  break;
-                }
-              }
-            } else if (action === 'hide') {
-              this._id = 9999;
-            }
-          }),
-        );
-        return popup.container;
+
+        taxMapPopup.on('show', (fileName: string) => {
+          this._show(fileName);
+          popup.close();
+          popup.clear();
+        });
+
+        return container;
       },
     });
 
-    layer.popupEnabled = true;
-
-    await view.when();
     await layer.when();
-    await imagery.load();
 
-    // this.sublayers = imagery.sublayers.getItemAt(0).sublayers;
-    this.sublayers = imagery.sublayers;
-
-    const result = (await layer.queryFeatures({
+    const query = await layer.queryFeatures({
       where: '1 = 1',
       outFields: ['*'],
       returnGeometry: true,
       outSpatialReference: view.spatialReference,
-    })) as esri.FeatureSet;
+    });
 
-    if (!result.features) {
-      this.state = 'error';
-      return;
-    }
-
-    const features = result.features;
-
-    const options = [
-      <calcite-option
-        label="None"
-        value="9999"
-        selected={true}
-        afterCreate={this._optionSelected.bind(this)}
-      ></calcite-option>,
-    ];
-
-    features.forEach((graphic: esri.Graphic): void => {
+    query.features.forEach((feature: esri.Graphic): void => {
       const {
-        geometry,
-        attributes: { name, taxmap },
-      } = graphic;
+        attributes: { FILE_NAME, MAP_NAME },
+      } = feature;
 
-      const sublayer = this.sublayers.find((sublayer: esri.Sublayer): boolean => {
-        return sublayer.title === taxmap;
+      _imageLayerInfos.push({
+        feature,
+        fileName: FILE_NAME,
       });
 
-      options.push(
-        <calcite-option
-          label={name}
-          value={`${sublayer.id}`}
-          afterCreate={this._optionSelected.bind(this)}
-        ></calcite-option>,
+      _options.push(
+        <calcite-option key={KEY++} value={FILE_NAME}>
+          {MAP_NAME}
+        </calcite-option>,
       );
-
-      _items[sublayer.id] = {
-        taxmap,
-        sublayer,
-        geometry,
-      };
     });
 
-    this._select = (
-      <calcite-select
-        afterCreate={(select: HTMLCalciteSelectElement): void => {
-          select.addEventListener('calciteSelectChange', (): void => {
-            this._id = parseInt(select.selectedOption.value);
-          });
-        }}
-      >
-        {options}
-      </calcite-select>
-    );
+    this.scheduleRender();
 
-    const idChange = this.watch('_id', (id: number) => {
-      const { view, sublayers, _items } = this;
-
-      sublayers.forEach((sublayer: esri.Sublayer): void => {
-        sublayer.visible = id === sublayer.id;
-      });
-
-      if (id === 9999) {
-        this.state = 'ready';
-      } else {
-        this.state = 'selected';
-        view.goTo(_items[id].geometry);
-      }
-    });
-
-    this.own(idChange);
-  }
-
-  view!: esri.MapView;
-
-  layer!: esri.FeatureLayer;
-
-  imagery!: esri.MapImageLayer;
-
-  protected sublayers!: Collection<esri.Sublayer>;
-
-  @property()
-  protected state: 'ready' | 'selected' | 'error' = 'ready';
-
-  @property()
-  private _select: tsx.JSX.Element | null = null;
-
-  private _items: { [key: number]: Item } = {};
-
-  @property()
-  private _id = 9999;
-
-  private _optionSelected(option: HTMLCalciteOptionElement): void {
     this.own(
-      this.watch('_id', (id: number): void => {
-        if (id === parseInt(option.value)) option.selected = true;
+      this.watch('_opacity', (opacity: number): void => {
+        _imageLayerInfos.forEach((imageLayerInfo: ImageLayerInfo): void => {
+          const { layer } = imageLayerInfo;
+          if (layer) layer.opacity = opacity;
+        });
       }),
     );
   }
 
-  private _viewTaxMap(): void {
-    const { _items, _id } = this;
-    window.open(taxMapUrl(_items[_id].taxmap), '_blank');
+  //////////////////////////////////////
+  // Properties
+  //////////////////////////////////////
+  view!: esri.MapView;
+
+  layer!: esri.GeoJSONLayer;
+
+  showSwitch = true;
+
+  //////////////////////////////////////
+  // Variables
+  //////////////////////////////////////
+  private _imageLayerInfos: ImageLayerInfo[] = [];
+
+  @property()
+  private _imageLayerInfo: ImageLayerInfo | null = null;
+
+  @property()
+  private _opacity = 0.4;
+
+  private _options = [
+    <calcite-option key={KEY++} value="none" selected="">
+      None
+    </calcite-option>,
+  ];
+
+  @property()
+  _loading = false;
+
+  //////////////////////////////////////
+  // Private methods
+  //////////////////////////////////////
+  /**
+   * Show selected tax map image media layer.
+   * @param value
+   */
+  private _show(value: string): void {
+    const { view, _imageLayerInfos } = this;
+
+    this._imageLayerInfo = null;
+
+    _imageLayerInfos.forEach((imageLayerInfo: ImageLayerInfo): void => {
+      const { layer, fileName, feature } = imageLayerInfo;
+
+      if (layer && fileName === value) {
+        this._imageLayerInfo = imageLayerInfo;
+        layer.visible = true;
+        view.goTo(feature);
+      } else if (!layer && fileName === value) {
+        this._loading = true;
+        this._load(imageLayerInfo);
+      } else {
+        if (layer) layer.visible = false;
+      }
+    });
   }
 
+  /**
+   * On demand load image media layer.
+   * @param imageLayerInfo
+   */
+  private async _load(imageLayerInfo: ImageLayerInfo): Promise<void> {
+    const { view, _opacity } = this;
+    const {
+      feature,
+      feature: {
+        attributes: { FILE_NAME, MAP_NAME },
+      },
+    } = imageLayerInfo;
+
+    const layer = await imageMediaLayer(
+      `https://cityofvernonia.github.io/vernonia-tax-maps/tax-maps/jpg/${FILE_NAME}.jpg`,
+      {
+        opacity: _opacity,
+        title: `Tax Map ${MAP_NAME}`,
+      },
+    );
+
+    imageLayerInfo.layer = layer;
+
+    this._imageLayerInfo = imageLayerInfo;
+
+    view.map.add(layer, 0);
+    view.goTo(feature);
+    this._loading = false;
+  }
+
+  /**
+   * Wire select events.
+   * @param select
+   */
+  private _selectAfterCreate(select: HTMLCalciteSelectElement): void {
+    select.addEventListener('calciteSelectChange', (): void => {
+      this._show(select.selectedOption.value);
+    });
+    this.own(
+      this.watch('_imageLayerInfo', (_imageLayerInfo: ImageLayerInfo | null): void => {
+        console.log(_imageLayerInfo, select);
+        select.value = !_imageLayerInfo ? 'none' : _imageLayerInfo.fileName;
+      }),
+    );
+  }
+
+  //////////////////////////////////////
+  // Render and rendering methods
+  //////////////////////////////////////
   render(): tsx.JSX.Element {
-    const { layer, imagery, state, _select } = this;
+    const { layer, showSwitch, _imageLayerInfo, _opacity, _options, _loading } = this;
     return (
       <calcite-panel heading="Tax Maps">
-        <div style="margin: 0.75rem;">
-          <div hidden={state === 'error'}>
-            <calcite-label alignment="start" layout="inline-space-between">
-              Tax map boundaries
+        {_imageLayerInfo ? (
+          <calcite-button
+            appearance="outline"
+            href={`https://gis.columbiacountymaps.com/TaxMaps/${_imageLayerInfo.feature.attributes.FILE_NAME}.pdf`}
+            icon-start="file-pdf"
+            slot="footer-actions"
+            target="_blank"
+            width="full"
+          >
+            {`View ${_imageLayerInfo.feature.attributes.MAP_NAME}`}
+          </calcite-button>
+        ) : null}
+        <div style={CSS.content}>
+          {showSwitch ? (
+            <calcite-label layout="inline">
               <calcite-switch
+                checked={layer.visible}
                 afterCreate={(_switch: HTMLCalciteSwitchElement): void => {
-                  _switch.checked = layer.visible;
                   _switch.addEventListener('calciteSwitchChange', (): void => {
                     layer.visible = _switch.checked;
                   });
-                  this.own(
-                    this.watch('layer.visible', (visible: boolean): void => {
-                      _switch.checked = visible;
-                    }),
-                  );
                 }}
               ></calcite-switch>
+              Tax map boundaries
             </calcite-label>
-            <calcite-label>
-              Select tax map
-              {_select}
-            </calcite-label>
-          </div>
-          <div hidden={state !== 'selected'}>
-            <calcite-label>
-              Layer transparency
-              <calcite-slider
-                max="1"
-                min="0.2"
-                step="0.05"
-                afterCreate={(slider: HTMLCalciteSliderElement) => {
-                  slider.value = imagery.opacity;
-                  slider.addEventListener('calciteSliderInput', (): void => {
-                    imagery.opacity = slider.value as number;
-                  });
-                }}
-              ></calcite-slider>
-            </calcite-label>
-            <calcite-button
-              appearance="outline"
-              width="full"
-              icon-start="file-pdf"
-              afterCreate={(button: HTMLCalciteButtonElement) => {
-                button.addEventListener('click', this._viewTaxMap.bind(this));
+          ) : null}
+          <calcite-label style={_imageLayerInfo ? '' : '--calcite-label-margin-bottom: 0;'}>
+            Select tax map
+            <calcite-select disabled={_loading} afterCreate={this._selectAfterCreate.bind(this)}>
+              {_options}
+            </calcite-select>
+          </calcite-label>
+          <calcite-label hidden={!_imageLayerInfo} style="--calcite-label-margin-bottom: 0;">
+            Layer opacity
+            <calcite-slider
+              min="0.2"
+              max="1"
+              snap=""
+              step="0.1"
+              value={_opacity}
+              afterCreate={(slider: HTMLCalciteSliderElement): void => {
+                slider.addEventListener('calciteSliderInput', (): void => {
+                  this._opacity = slider.value as number;
+                });
               }}
-            >
-              View Tax Map
-            </calcite-button>
-          </div>
-          <div hidden={state !== 'error'}>An error ocurred loading tax maps.</div>
+            ></calcite-slider>
+            <div style={CSS.sliderLabels}>
+              <span>min</span>
+              <span>max</span>
+            </div>
+          </calcite-label>
         </div>
       </calcite-panel>
     );
   }
 }
 
-@subclass('cov.widgets.TaxMaps.TaxMapsPopup')
-class TaxMapsPopup extends Widget {
+/**
+ * Popup widget for tax map boundaries.
+ */
+@subclass('TaxMapPopup')
+class TaxMapPopup extends Widget {
   constructor(
     properties: esri.WidgetProperties & {
       graphic: esri.Graphic;
@@ -256,42 +317,34 @@ class TaxMapsPopup extends Widget {
     super(properties);
   }
 
-  container = document.createElement('div');
-
   graphic!: esri.Graphic;
 
   render(): tsx.JSX.Element {
     const {
       graphic: {
-        attributes: { taxmap },
+        attributes: { FILE_NAME, MAP_NAME },
       },
     } = this;
-
     return (
-      <div style="display: flex; flex-flow: row; flex-wrap: wrap; gap: 0.75rem;">
-        <calcite-link
+      <div style={CSS.popup}>
+        <calcite-button
+          icon-start="image"
+          width="full"
           onclick={(): void => {
-            this.emit('action', {
-              taxmap,
-              action: 'show',
-            });
+            this.emit('show', FILE_NAME);
           }}
         >
-          Show Tax Map
-        </calcite-link>
-        <calcite-link href={taxMapUrl(taxmap)} target="_blank">
-          View Tax Map
-        </calcite-link>
-        <calcite-link
-          onclick={(): void => {
-            this.emit('action', {
-              taxmap,
-              action: 'hide',
-            });
-          }}
+          {`Show ${MAP_NAME}`}
+        </calcite-button>
+        <calcite-button
+          appearance="outline"
+          href={`https://gis.columbiacountymaps.com/TaxMaps/${FILE_NAME}.pdf`}
+          icon-start="file-pdf"
+          target="_blank"
+          width="full"
         >
-          Hide Tax Maps
-        </calcite-link>
+          {`View ${MAP_NAME}`}
+        </calcite-button>
       </div>
     );
   }

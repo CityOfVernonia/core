@@ -243,10 +243,10 @@ export default class PhotoAttachments extends Widget {
 
     this._noticeMessage = message;
 
-    _notice.active = true;
+    _notice.hidden = true;
 
     setTimeout((): void => {
-      _notice.active = false;
+      _notice.hidden = false;
     }, 2000);
   }
 
