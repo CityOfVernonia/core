@@ -1,6 +1,6 @@
 # @vernonia/core
 
-![npm](https://img.shields.io/npm/v/@vernonia/core?style=flat-square) ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/CityOfVernonia/core/Node.js%20CI?style=flat-square)
+![npm](https://img.shields.io/npm/v/@vernonia/core?style=flat-square) ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/CityOfVernonia/core/node.js.yml?style=flat-square)
 
 City of Vernonia widgets and friends for [Esri JavaScript API](https://developers.arcgis.com/javascript/latest/) using [Calcite Design System](https://developers.arcgis.com/calcite-design-system/).
 
