@@ -83,14 +83,12 @@ export default class PrintSnapshot extends Widget {
     }
 
     if (mode === 'default' || mode === 'print') {
-      this._printer = new ((await import('@arcgis/core/widgets/Print/PrintViewModel'))
-        .default as esri.PrintViewModelConstructor)({
+      this._printer = new (await import('@arcgis/core/widgets/Print/PrintViewModel')).default({
         printServiceUrl,
         view,
       });
 
-      this._PrintTemplate = (await import('@arcgis/core/rest/support/PrintTemplate'))
-        .default as esri.PrintTemplateConstructor;
+      this._PrintTemplate = (await import('@arcgis/core/rest/support/PrintTemplate')).default;
     }
   }
 
@@ -216,8 +214,9 @@ export default class PrintSnapshot extends Widget {
       (container.querySelector('[data-print-snapshot="snapshot title"]') as HTMLCalciteInputElement).value ||
       TITLES.print;
 
-    const format = (container.querySelector('[data-print-snapshot="snapshot format"]') as HTMLCalciteRadioGroupElement)
-      .value as I['format'];
+    const format = (
+      container.querySelector('[data-print-snapshot="snapshot format"]') as HTMLCalciteSegmentedControlElement
+    ).value as I['format'];
 
     const fileName = `${title}.${format}`;
 
@@ -330,12 +329,12 @@ export default class PrintSnapshot extends Widget {
             </calcite-label>
             <calcite-label>
               Format
-              <calcite-radio-group data-print-snapshot="snapshot format">
-                <calcite-radio-group-item value="jpg" checked="">
+              <calcite-segmented-control data-print-snapshot="snapshot format">
+                <calcite-segmented-control-item value="jpg" checked="">
                   JPG
-                </calcite-radio-group-item>
-                <calcite-radio-group-item value="png">PNG</calcite-radio-group-item>
-              </calcite-radio-group>
+                </calcite-segmented-control-item>
+                <calcite-segmented-control-item value="png">PNG</calcite-segmented-control-item>
+              </calcite-segmented-control>
             </calcite-label>
             <calcite-button width="full" onclick={this._snapshot.bind(this)}>
               Snapshot

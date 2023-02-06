@@ -52,13 +52,11 @@ let PrintSnapshot = class PrintSnapshot extends Widget {
                 this._photoModal = new (yield import('./../modals/PhotoModal')).default();
             }
             if (mode === 'default' || mode === 'print') {
-                this._printer = new (yield import('@arcgis/core/widgets/Print/PrintViewModel'))
-                    .default({
+                this._printer = new (yield import('@arcgis/core/widgets/Print/PrintViewModel')).default({
                     printServiceUrl,
                     view,
                 });
-                this._PrintTemplate = (yield import('@arcgis/core/rest/support/PrintTemplate'))
-                    .default;
+                this._PrintTemplate = (yield import('@arcgis/core/rest/support/PrintTemplate')).default;
             }
         });
     }
@@ -106,8 +104,7 @@ let PrintSnapshot = class PrintSnapshot extends Widget {
             const { container, view, _snapshotResults, _photoModal } = this;
             const title = container.querySelector('[data-print-snapshot="snapshot title"]').value ||
                 TITLES.print;
-            const format = container.querySelector('[data-print-snapshot="snapshot format"]')
-                .value;
+            const format = container.querySelector('[data-print-snapshot="snapshot format"]').value;
             const fileName = `${title}.${format}`;
             const data = (yield view.takeScreenshot({
                 format,
@@ -172,9 +169,9 @@ let PrintSnapshot = class PrintSnapshot extends Widget {
                     tsx("calcite-input", { "data-print-snapshot": "snapshot title", type: "text", value: TITLES.snapshot })),
                 tsx("calcite-label", null,
                     "Format",
-                    tsx("calcite-radio-group", { "data-print-snapshot": "snapshot format" },
-                        tsx("calcite-radio-group-item", { value: "jpg", checked: "" }, "JPG"),
-                        tsx("calcite-radio-group-item", { value: "png" }, "PNG"))),
+                    tsx("calcite-segmented-control", { "data-print-snapshot": "snapshot format" },
+                        tsx("calcite-segmented-control-item", { value: "jpg", checked: "" }, "JPG"),
+                        tsx("calcite-segmented-control-item", { value: "png" }, "PNG"))),
                 tsx("calcite-button", { width: "full", onclick: this._snapshot.bind(this) }, "Snapshot"),
                 _snapshotResults.toArray())) : null));
     }
