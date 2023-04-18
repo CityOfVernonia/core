@@ -1,13 +1,55 @@
 import esri = __esri;
-export interface ImageryInfo extends Object {
+interface AddLayerInfo extends Object {
+    /**
+     * Layer index.
+     */
+    index?: number;
+    /**
+     * Additional layer properties.
+     */
+    layerProperties?: esri.LayerProperties | any;
+    /**
+     * Called when layer added.
+     */
+    add?: (layer: esri.Layer) => void;
+}
+/**
+ * Info to add layer via a portal item id.
+ */
+export interface AddPortalLayerInfo extends AddLayerInfo {
+    /**
+     * Portal item id.
+     * NOTE: loaded from default portal.
+     */
+    id: string;
+    /**
+     * Override portal item title.
+     */
+    title?: string;
+    /**
+     * Override portal item snippet.
+     */
+    snippet?: string;
+}
+/**
+ * Info to add layer via a server url.
+ */
+export interface AddServerLayerInfo extends AddLayerInfo {
+    /**
+     * Service url.
+     */
+    url: string;
+    /**
+     * Item title.
+     */
     title: string;
-    layer: esri.Layer;
+    /**
+     * Item snippet.
+     */
+    snippet: string;
 }
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
-import LayerList from '@arcgis/core/widgets/LayerList';
-import Legend from '@arcgis/core/widgets/Legend';
-import Collection from '@arcgis/core/core/Collection';
 export default class Layers extends Widget {
     constructor(properties: esri.WidgetProperties & {
         /**
@@ -15,23 +57,21 @@ export default class Layers extends Widget {
          */
         view: esri.MapView;
         /**
-         * Basemap to switch imagery.
+         * Layers available to add.
          */
-        basemap?: esri.Basemap;
-        /**
-         * Imagery layers to select from;
-         */
-        imageryInfos?: ImageryInfo[] | Collection<ImageryInfo>;
+        addLayerInfos?: (AddPortalLayerInfo | AddServerLayerInfo)[];
     });
     postInitialize(): void;
     view: esri.MapView;
-    protected basemap: esri.Basemap;
-    protected imageryInfos: Collection<ImageryInfo>;
-    protected state: 'layers' | 'legend' | 'imagery';
-    protected layers: LayerList;
-    protected legend: Legend;
-    private _radioButtonGroup;
-    private _addImageryChangeEvent;
+    addLayerInfos: (AddPortalLayerInfo | AddServerLayerInfo)[];
+    protected state: 'layers' | 'legend' | 'add';
     onHide(): void;
+    private _addLayerItems;
+    private _addLayerInfo;
+    private _addLayerFromPortalLayerInfo;
+    private _addLayerFromServerLayerInfo;
     render(): tsx.JSX.Element;
+    private _createLayerList;
+    private _createLegend;
 }
+export {};

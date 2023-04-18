@@ -182,14 +182,8 @@ calcite-shell-panel.cov-editor calcite-panel {
   display: none;
 }
 
-.cov-layers--content {
-  padding: 0.75rem 0.75rem 0;
-}
-.cov-layers--content calcite-label {
-  cursor: pointer;
-}
-.cov-layers--content p {
-  margin: 0 0 0.75rem;
+.cov-layers--notice {
+  margin: 0.5rem;
 }
 
 .cov-markup--content {

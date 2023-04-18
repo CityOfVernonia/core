@@ -1,8 +1,55 @@
 import esri = __esri;
 
-export interface ImageryInfo extends Object {
+interface AddLayerInfo extends Object {
+  /**
+   * Layer index.
+   */
+  index?: number;
+  /**
+   * Additional layer properties.
+   */
+  layerProperties?: esri.LayerProperties | any;
+  /**
+   * Called when layer added.
+   */
+  add?: (layer: esri.Layer) => void;
+}
+
+/**
+ * Info to add layer via a portal item id.
+ */
+export interface AddPortalLayerInfo extends AddLayerInfo {
+  /**
+   * Portal item id.
+   * NOTE: loaded from default portal.
+   */
+  id: string;
+  /**
+   * Override portal item title.
+   */
+  title?: string;
+  /**
+   * Override portal item snippet.
+   */
+  snippet?: string;
+}
+
+/**
+ * Info to add layer via a server url.
+ */
+export interface AddServerLayerInfo extends AddLayerInfo {
+  /**
+   * Service url.
+   */
+  url: string;
+  /**
+   * Item title.
+   */
   title: string;
-  layer: esri.Layer;
+  /**
+   * Item snippet.
+   */
+  snippet: string;
 }
 
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
@@ -11,10 +58,12 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
 import LayerList from '@arcgis/core/widgets/LayerList';
 import Legend from '@arcgis/core/widgets/Legend';
 import Collection from '@arcgis/core/core/Collection';
+import PortalItem from '@arcgis/core/portal/PortalItem';
+import Layer from '@arcgis/core/layers/Layer';
 
 const CSS = {
   base: 'cov-layers',
-  content: 'cov-layers--content',
+  notice: 'cov-layers--notice',
 };
 
 let KEY = 0;
@@ -28,79 +77,162 @@ export default class Layers extends Widget {
        */
       view: esri.MapView;
       /**
-       * Basemap to switch imagery.
+       * Layers available to add.
        */
-      basemap?: esri.Basemap;
-      /**
-       * Imagery layers to select from;
-       */
-      imageryInfos?: ImageryInfo[] | Collection<ImageryInfo>;
+      addLayerInfos?: (AddPortalLayerInfo | AddServerLayerInfo)[];
     },
   ) {
     super(properties);
   }
 
   postInitialize(): void {
-    const { id, basemap, imageryInfos } = this;
-
-    if (!basemap || !imageryInfos) return;
-
-    const currentLayer = basemap.baseLayers.getItemAt(0);
-
-    const radioButtons = imageryInfos
-      .map((imageryInfo: ImageryInfo): tsx.JSX.Element => {
-        const { title, layer } = imageryInfo;
-        const checked = currentLayer === layer;
-        const _id = `button_${id}_${KEY++}`;
-
-        return (
-          <calcite-label for={_id} layout="inline" afterCreate={this._addImageryChangeEvent.bind(this, layer)}>
-            <calcite-radio-button id={_id} checked={checked}></calcite-radio-button>
-            {title}
-          </calcite-label>
-        );
-      })
-      .toArray();
-
-    this._radioButtonGroup = <calcite-radio-button-group layout="vertical">{radioButtons}</calcite-radio-button-group>;
+    const { addLayerInfos } = this;
+    if (!addLayerInfos) return;
+    addLayerInfos.forEach(this._addLayerInfo.bind(this));
   }
 
   view!: esri.MapView;
 
-  protected basemap!: esri.Basemap;
-
-  @property({
-    type: Collection,
-  })
-  protected imageryInfos!: Collection<ImageryInfo>;
+  addLayerInfos!: (AddPortalLayerInfo | AddServerLayerInfo)[];
 
   @property()
-  protected state: 'layers' | 'legend' | 'imagery' = 'layers';
-
-  protected layers!: LayerList;
-
-  protected legend!: Legend;
-
-  @property()
-  private _radioButtonGroup: tsx.JSX.Element | null = null;
-
-  private _addImageryChangeEvent(layer: esri.Layer, label: HTMLCalciteLabelElement): void {
-    const { basemap } = this;
-
-    label.addEventListener('click', (): void => {
-      basemap.baseLayers.removeAt(0);
-      basemap.baseLayers.add(layer, 0);
-    });
-  }
+  protected state: 'layers' | 'legend' | 'add' = 'layers';
 
   onHide(): void {
     this.state = 'layers';
   }
 
-  render(): tsx.JSX.Element {
-    const { state, _radioButtonGroup } = this;
+  private _addLayerItems: esri.Collection<tsx.JSX.Element> = new Collection();
 
-    const heading = state === 'layers' ? 'Layers' : state === 'legend' ? 'Legend' : 'Imagery';
+  private async _addLayerInfo(addLayerInfo: AddPortalLayerInfo | AddServerLayerInfo, index: number): Promise<void> {
+    const { _addLayerItems } = this;
+
+    // @ts-ignore
+    const { id, url, title, snippet } = addLayerInfo;
+
+    let item = <calcite-list-item key={KEY++}></calcite-list-item>;
+
+    _addLayerItems.add(item, index);
+
+    const tooltip = (
+      <calcite-tooltip close-on-click="" label="Add layer" slot="tooltip">
+        Add layer
+      </calcite-tooltip>
+    );
+
+    if (id) {
+      const portalItem = new PortalItem({
+        id,
+      });
+
+      await portalItem.load();
+
+      item = (
+        <calcite-list-item key={KEY++} label={title || portalItem.title} description={snippet || portalItem.snippet}>
+          <calcite-action
+            slot="actions-end"
+            icon="add-layer"
+            scale="s"
+            text="Add layer"
+            afterCreate={(action: HTMLCalciteActionElement): void => {
+              action.addEventListener(
+                'click',
+                this._addLayerFromPortalLayerInfo.bind(this, portalItem, action, addLayerInfo, item),
+              );
+            }}
+          >
+            {tooltip}
+          </calcite-action>
+        </calcite-list-item>
+      );
+    } else if (url) {
+      item = (
+        <calcite-list-item key={KEY++} label={title} description={snippet}>
+          <calcite-action
+            slot="actions-end"
+            icon="add-layer"
+            scale="s"
+            text="Add layer"
+            afterCreate={(action: HTMLCalciteActionElement): void => {
+              action.addEventListener(
+                'click',
+                this._addLayerFromServerLayerInfo.bind(this, url, action, addLayerInfo, item),
+              );
+            }}
+          >
+            {tooltip}
+          </calcite-action>
+        </calcite-list-item>
+      );
+    }
+
+    _addLayerItems.splice(index, 1, item);
+  }
+
+  private _addLayerFromPortalLayerInfo(
+    portalItem: esri.PortalItem,
+    action: HTMLCalciteActionElement,
+    addLayerInfo: AddLayerInfo,
+    item: tsx.JSX.Element,
+  ): void {
+    const {
+      view: { map },
+      _addLayerItems,
+    } = this;
+    const { index, layerProperties, add } = addLayerInfo;
+
+    action.loading = true;
+    action.disabled = true;
+
+    Layer.fromPortalItem({
+      portalItem,
+    }).then((layer: esri.Layer) => {
+      for (const layerProperty in layerProperties) {
+        //@ts-ignore
+        layer[layerProperty] = layerProperties[layerProperty];
+      }
+      map.add(layer, index);
+      if (add && typeof add === 'function') {
+        add(layer);
+      }
+      _addLayerItems.remove(item);
+    });
+  }
+
+  private _addLayerFromServerLayerInfo(
+    url: string,
+    action: HTMLCalciteActionElement,
+    addLayerInfo: AddLayerInfo,
+    item: tsx.JSX.Element,
+  ): void {
+    const {
+      view: { map },
+      _addLayerItems,
+    } = this;
+    const { index, layerProperties, add } = addLayerInfo;
+
+    action.loading = true;
+    action.disabled = true;
+
+    Layer.fromArcGISServerUrl({
+      url,
+    }).then((layer: esri.Layer) => {
+      for (const layerProperty in layerProperties) {
+        //@ts-ignore
+        layer[layerProperty] = layerProperties[layerProperty];
+      }
+      map.add(layer, index);
+      if (add && typeof add === 'function') {
+        add(layer);
+      }
+      _addLayerItems.remove(item);
+    });
+  }
+
+  render(): tsx.JSX.Element {
+    const { state, addLayerInfos, _addLayerItems } = this;
+
+    const heading = state === 'layers' ? 'Layers' : state === 'legend' ? 'Legend' : 'Add Layers';
 
     return (
       <calcite-panel class={CSS.base} heading={heading}>
@@ -114,7 +246,7 @@ export default class Layers extends Widget {
             this.state = 'layers';
           }}
         >
-          <calcite-tooltip placement="bottom" slot="tooltip">
+          <calcite-tooltip close-on-click="" label="Layers" placement="bottom" slot="tooltip">
             Layers
           </calcite-tooltip>
         </calcite-action>
@@ -127,55 +259,56 @@ export default class Layers extends Widget {
             this.state = 'legend';
           }}
         >
-          <calcite-tooltip placement="bottom" slot="tooltip">
+          <calcite-tooltip close-on-click="" label="Legend" placement="bottom" slot="tooltip">
             Legend
           </calcite-tooltip>
         </calcite-action>
-        {_radioButtonGroup ? (
+        {addLayerInfos ? (
           <calcite-action
-            active={state === 'imagery'}
-            icon="layer-basemap"
+            active={state === 'add'}
+            icon="add-layer"
             slot="header-actions-end"
-            text="Imagery"
+            text="Add layers"
             onclick={(): void => {
-              this.state = 'imagery';
+              this.state = 'add';
             }}
           >
-            <calcite-tooltip placement="bottom" slot="tooltip">
-              Imagery
+            <calcite-tooltip close-on-click="" label="Add layers" placement="bottom" slot="tooltip">
+              Add layers
             </calcite-tooltip>
           </calcite-action>
         ) : null}
         {/* layers */}
-        <div
-          hidden={state !== 'layers'}
-          afterCreate={(container: HTMLDivElement): void => {
-            const { view } = this;
-            this.layers = new LayerList({
-              view,
-              container,
-            });
-          }}
-        ></div>
+        <div hidden={state !== 'layers'} afterCreate={this._createLayerList.bind(this)}></div>
         {/* legend */}
-        <div
-          hidden={state !== 'legend'}
-          afterCreate={(container: HTMLDivElement): void => {
-            const { view } = this;
-            this.legend = new Legend({
-              view,
-              container,
-            });
-          }}
-        ></div>
-        {/* imagery */}
-        {_radioButtonGroup ? (
-          <div hidden={state !== 'imagery'} class={CSS.content}>
-            <p>Select basemap imagery.</p>
-            {_radioButtonGroup}
+        <div hidden={state !== 'legend'} afterCreate={this._createLegend.bind(this)}></div>
+        {/* add layers */}
+        {addLayerInfos ? (
+          <div hidden={state !== 'add'}>
+            {_addLayerItems.length ? (
+              <calcite-list>{_addLayerItems.toArray()}</calcite-list>
+            ) : (
+              <calcite-notice class={CSS.notice} icon="information" open="">
+                <div slot="message">No layers to add</div>
+              </calcite-notice>
+            )}
           </div>
         ) : null}
       </calcite-panel>
     );
+  }
+
+  private _createLayerList(container: HTMLDivElement): void {
+    new LayerList({
+      view: this.view,
+      container,
+    });
+  }
+
+  private _createLegend(container: HTMLDivElement): void {
+    new Legend({
+      view: this.view,
+      container,
+    });
   }
 }
