@@ -9,98 +9,77 @@ import PrintViewModel from '@arcgis/core/widgets/Print/PrintViewModel';
 import PrintTemplate from '@arcgis/core/rest/support/PrintTemplate';
 
 const CSS = {
-  base: 'cov-water-meters',
-  content: 'cov-water-meters--content',
+  base: 'water-meters',
+  content: 'water-meters_content',
+  searchInput: 'water-meters_search-input',
+  table: 'esri-widget__table',
 };
 
 let KEY = 0;
 
-let PRINT_COUNT = 1;
+let PRINT_COUNT = 0;
 
-/**
- * Vernonia water meters widget.
- */
-@subclass('cov.widgets.WaterMeters')
+@subclass('WaterMeters')
 export default class WaterMeters extends Widget {
   constructor(
     properties: esri.WidgetProperties & {
-      /**
-       * Map view.
-       */
       view: esri.MapView;
-      /**
-       * Water meters feature layer.
-       */
       layer: esri.FeatureLayer;
-      /**
-       * Print service URL.
-       */
-      printServiceUrl: string;
+      printServiceUrl?: string;
     },
   ) {
     super(properties);
   }
 
   postInitialize(): void {
-    const { layer, search } = this;
-    search.sources.add(
+    const { layer, _searchViewModel } = this;
+    _searchViewModel.sources.add(
       new LayerSearchSource({
         layer,
-        searchFields: ['WSC_ID', 'ADDRESS'],
+        searchFields: ['wsc_id', 'address'],
         outFields: ['*'],
         maxSuggestions: 6,
-        suggestionTemplate: '{WSC_ID} - {ADDRESS}',
+        suggestionTemplate: '{wsc_id} - {address}',
       }),
     );
   }
 
-  protected search = new SearchViewModel({
+  private _printViewModel = new PrintViewModel();
+
+  @property({ aliasOf: '_printViewModel.view' })
+  view!: esri.MapView;
+
+  layer!: esri.FeatureLayer;
+
+  @property({ aliasOf: '_printViewModel.printServiceUrl' })
+  printServiceUrl!: string;
+
+  @property()
+  protected state: 'search' | 'print' | 'labels' = 'search';
+
+  private _searchViewModel = new SearchViewModel({
     includeDefaultSources: false,
   });
 
-  protected print = new PrintViewModel();
-
-  @property({
-    aliasOf: 'print.view',
-  })
-  view!: esri.MapView;
-
-  @property()
-  layer!: esri.FeatureLayer;
-
-  @property({
-    aliasOf: 'print.printServiceUrl',
-  })
-  printServiceUrl!: string;
-
-  protected state: 'search' | 'print' | 'labels' = 'search';
-
-  private _controller: AbortController | null = null;
+  private _searchAbortController: AbortController | null = null;
 
   private _searchResults: Collection<tsx.JSX.Element> = new Collection();
 
-  private _printResults: Collection<{
-    item: tsx.JSX.Element;
-  }> = new Collection();
+  private _createSearch(input: HTMLCalciteInputElement): void {
+    input.addEventListener('calciteInputInput', this._search.bind(this));
+  }
 
-  /**
-   * Controller abort;
-   */
   private _abortSearch(): void {
-    const { _controller } = this;
-    if (_controller) {
-      _controller.abort();
-      this._controller = null;
+    const { _searchAbortController } = this;
+    if (_searchAbortController) {
+      _searchAbortController.abort();
+      this._searchAbortController = null;
     }
   }
 
-  /**
-   * Search for features.
-   * @param evt
-   */
-  private _search(evt: Event): void {
-    const { search, _searchResults } = this;
-    const value = (evt.target as HTMLCalciteInputElement).value;
+  private _search(event: Event): void {
+    const { _searchViewModel, _searchResults } = this;
+    const value = (event.target as HTMLCalciteInputElement).value;
 
     this._abortSearch();
 
@@ -110,14 +89,14 @@ export default class WaterMeters extends Widget {
 
     const controller = new AbortController();
     const { signal } = controller;
-    this._controller = controller;
+    this._searchAbortController = controller;
 
-    search
+    _searchViewModel
       // @ts-ignore
       .suggest(value, null, { signal })
       .then((response: esri.SearchViewModelSuggestResponse) => {
-        if (this._controller !== controller) return;
-        this._controller = null;
+        if (this._searchAbortController !== controller) return;
+        this._searchAbortController = null;
 
         if (!response.numResults) return;
 
@@ -132,76 +111,44 @@ export default class WaterMeters extends Widget {
         });
       })
       .catch(() => {
-        if (this._controller !== controller) return;
-        this._controller = null;
+        if (this._searchAbortController !== controller) return;
+        this._searchAbortController = null;
       });
   }
 
-  /**
-   * Select a feature, set as popup feature and zoom to.
-   * @param result
-   */
-  private _selectFeature(result: esri.SuggestResult): void {
+  private async _selectFeature(result: esri.SuggestResult): Promise<void> {
     const {
       view,
       view: { popup },
-      search,
+      _searchViewModel,
     } = this;
 
-    search.search(result).then((response: esri.SearchViewModelSearchResponse) => {
-      const feature = response.results[0].results[0].feature;
-      popup.open({
-        features: [feature],
-      });
-      view.goTo(feature.geometry);
-      view.scale = 1200;
+    const feature = (await _searchViewModel.search(result)).results[0].results[0].feature;
+
+    popup.open({
+      features: [feature],
     });
+    view.goTo(feature.geometry);
+    view.scale = 1200;
   }
 
-  /**
-   * Set labeling to selected attribute.
-   * @param evt
-   */
-  private _setLabeling(evt: Event): void {
-    const { layer } = this;
-    const value = (evt.target as HTMLCalciteSelectElement).selectedOption.value;
-    const labelClass = layer.labelingInfo[0].clone();
+  private _printResults: Collection<tsx.JSX.Element> = new Collection();
 
-    labelClass.labelExpressionInfo.expression = `if ("${value}" == "METER_REG_SN" && $feature.${value} == null) { return "Non-radio" } else { return $feature.${value} }`;
-    layer.labelingInfo = [labelClass];
-
-    if (!layer.labelsVisible) layer.labelsVisible = true;
-  }
-
-  /**
-   * Toggle labels on and off.
-   * @param evt
-   */
-  private _toggleLabels(evt: Event): void {
-    const { layer } = this;
-    layer.labelsVisible = (evt.target as HTMLCalciteSwitchElement).checked;
-  }
-
-  /**
-   * Print the map.
-   */
   private _print(): void {
-    const { print, _printResults } = this;
-    const label = `Water Meters (${PRINT_COUNT})`;
+    const { _printViewModel, _printResults } = this;
 
-    const result = {
-      item: (
-        <calcite-value-list-item key={KEY++} label="Printing..." non-interactive="">
-          <calcite-action slot="actions-end" icon="download" disabled=""></calcite-action>
-        </calcite-value-list-item>
-      ),
-    };
+    const index = PRINT_COUNT;
+    const label = `Water Meters (${PRINT_COUNT + 1})`;
+
+    _printResults.add(
+      <calcite-value-list-item key={KEY++} label={label} description="Printing...">
+        <calcite-action slot="actions-end" loading=""></calcite-action>
+      </calcite-value-list-item>,
+    );
 
     PRINT_COUNT = PRINT_COUNT + 1;
 
-    _printResults.add(result);
-
-    print
+    _printViewModel
       .print(
         new PrintTemplate({
           format: 'pdf',
@@ -211,9 +158,9 @@ export default class WaterMeters extends Widget {
           },
         }),
       )
-      .then((response: any) => {
-        result.item = (
-          <calcite-value-list-item key={KEY++} label={label} non-interactive="">
+      .then((response: any): void => {
+        _printResults.splice(index, 1, [
+          <calcite-value-list-item key={KEY++} label={label}>
             <calcite-action
               slot="actions-end"
               icon="download"
@@ -221,133 +168,220 @@ export default class WaterMeters extends Widget {
                 window.open(response.url, '_blank');
               }}
             ></calcite-action>
-          </calcite-value-list-item>
-        );
-
-        this.scheduleRender();
+          </calcite-value-list-item>,
+        ]);
       })
-      .catch((error: esri.Error) => {
+      .catch((error: esri.Error): void => {
         console.log(error);
-
-        result.item = (
-          <calcite-value-list-item key={KEY++} label={label} description="Print error" non-interactive="">
-            <calcite-action slot="actions-end" icon="exclamation-mark-triangle" disabled=""></calcite-action>
-          </calcite-value-list-item>
-        );
-
-        this.scheduleRender();
+        _printResults.splice(index, 1, [
+          <calcite-value-list-item key={KEY++} label={label} description="Print error">
+            <calcite-action disabled="" slot="actions-end" icon="exclamation-mark-triangle"></calcite-action>
+          </calcite-value-list-item>,
+        ]);
       });
   }
 
-  render(): tsx.JSX.Element {
-    const { id, state, layer, _searchResults, _printResults } = this;
+  private _labeling(control: HTMLCalciteSegmentedControlElement): void {
+    const { layer } = this;
+    control.addEventListener('calciteSegmentedControlChange', (): void => {
+      const value = control.value;
+      const labelClass = layer.labelingInfo[0];
 
-    const ids = [0, 1, 2].map((_id: number): string => {
-      return `tt_${id}_${_id}`;
+      layer.labelsVisible = value ? true : false;
+
+      if (!value) return;
+
+      labelClass.labelExpressionInfo.expression = `$feature.${value}`;
     });
+  }
 
+  render(): tsx.JSX.Element {
+    const { state, _searchResults, _printResults } = this;
     return (
-      <calcite-panel class={CSS.base} heading="Water Meters" width-scale="m">
-        <calcite-tooltip-manager slot="header-actions-end" hidden={state === 'search'}>
+      <calcite-shell-panel class={CSS.base} detached="">
+        <calcite-panel heading="Water Meters" width-scale="m">
           <calcite-action
-            id={ids[0]}
-            text-enabled=""
-            text="Back"
-            icon="chevron-left"
-            onclick={(): void => {
-              this.state = 'search';
-            }}
-          ></calcite-action>
-        </calcite-tooltip-manager>
-        <calcite-tooltip reference-element={ids[0]} placement="bottom">
-          Back
-        </calcite-tooltip>
-
-        <calcite-tooltip-manager slot="header-actions-end" hidden={state !== 'search'}>
-          <calcite-action
-            id={ids[1]}
+            active={state === 'print'}
             icon="print"
+            slot="header-actions-end"
+            text="Print"
             onclick={(): void => {
               this.state = 'print';
             }}
-          ></calcite-action>
-        </calcite-tooltip-manager>
-        <calcite-tooltip reference-element={ids[1]} placement="bottom">
-          Print
-        </calcite-tooltip>
-
-        <calcite-tooltip-manager slot="header-actions-end" hidden={state !== 'search'}>
+          >
+            <calcite-tooltip label="Print" placement="bottom" slot="tooltip">
+              Print
+            </calcite-tooltip>
+          </calcite-action>
           <calcite-action
-            id={ids[2]}
+            active={state === 'labels'}
             icon="label"
+            slot="header-actions-end"
+            text="Labels"
             onclick={(): void => {
               this.state = 'labels';
             }}
-          ></calcite-action>
-        </calcite-tooltip-manager>
-        <calcite-tooltip reference-element={ids[2]} placement="bottom">
-          Labels
-        </calcite-tooltip>
+          >
+            <calcite-tooltip label="Labels" placement="bottom" slot="tooltip">
+              Labels
+            </calcite-tooltip>
+          </calcite-action>
 
-        <div hidden={state !== 'search'}>
-          <div class={CSS.content}>
-            <calcite-label>
-              Water meter search
-              <calcite-input
-                type="text"
-                clearable=""
-                placeholder="service id or address"
-                afterCreate={(input: HTMLCalciteInputElement) => {
-                  input.addEventListener('calciteInputInput', this._search.bind(this));
-                }}
-              ></calcite-input>
-            </calcite-label>
+          <div hidden={state !== 'search'}>
+            <calcite-input
+              class={CSS.searchInput}
+              placeholder="Search service id or address"
+              clearable=""
+              afterCreate={this._createSearch.bind(this)}
+            ></calcite-input>
+            <calcite-list>{_searchResults.toArray()}</calcite-list>
           </div>
-          <calcite-list selection-follows-focus="">{_searchResults.toArray()}</calcite-list>
-        </div>
 
-        <div hidden={state !== 'print'}>
-          <div class={CSS.content}>
-            <p>
-              Position the map to the area you wish to print and click the <i>Print Map</i> button to generate a PDF.
-            </p>
-            <calcite-button onclick={this._print.bind(this)}>Print Map</calcite-button>
+          <div hidden={state !== 'print'}>
+            <div class={CSS.content}>
+              <span>
+                Position the map to the area you wish to print and click the <i>Print Map</i> button to generate a PDF.
+              </span>
+              <calcite-button onclick={this._print.bind(this)}>Print Map</calcite-button>
+            </div>
+            <calcite-list>{_printResults.toArray()}</calcite-list>
           </div>
-          <calcite-value-list selection-follows-focus="">
-            {_printResults.toArray().map((printResult: { item: tsx.JSX.Element }) => {
-              return printResult.item;
-            })}
-          </calcite-value-list>
-        </div>
 
-        <div hidden={state !== 'labels'}>
-          <div class={CSS.content}>
-            <calcite-label layout="inline">
-              <calcite-switch
-                switched={layer.labelsVisible}
-                afterCreate={(_switch: HTMLCalciteSwitchElement) => {
-                  _switch.addEventListener('calciteSwitchChange', this._toggleLabels.bind(this));
-                }}
-              ></calcite-switch>
-              Labeling
-            </calcite-label>
-            <calcite-label>
-              Label field
-              <calcite-select
-                afterCreate={(select: HTMLCalciteSelectElement) => {
-                  select.addEventListener('calciteSelectChange', this._setLabeling.bind(this));
-                }}
-              >
-                <calcite-option value="WSC_ID">Service Id</calcite-option>
-                <calcite-option value="ADDRESS">Address</calcite-option>
-                <calcite-option value="METER_SN">Serial No.</calcite-option>
-                <calcite-option value="METER_REG_SN">Register No.</calcite-option>
-                <calcite-option value="METER_SIZE_T">Meter Size</calcite-option>
-              </calcite-select>
-            </calcite-label>
+          <div hidden={state !== 'labels'}>
+            <div class={CSS.content}>
+              <calcite-label>
+                Water meter labels
+                <calcite-segmented-control afterCreate={this._labeling.bind(this)}>
+                  <calcite-segmented-control-item value="">None</calcite-segmented-control-item>
+                  <calcite-segmented-control-item checked="" value="wsc_id">
+                    Service id
+                  </calcite-segmented-control-item>
+                  <calcite-segmented-control-item value="address">Address</calcite-segmented-control-item>
+                </calcite-segmented-control>
+              </calcite-label>
+            </div>
           </div>
-        </div>
-      </calcite-panel>
+
+          <calcite-button
+            hidden={state === 'search'}
+            appearance="outline"
+            slot={state === 'search' ? '' : 'footer-actions'}
+            width="full"
+            onclick={(): void => {
+              this.state = 'search';
+            }}
+          >
+            Back
+          </calcite-button>
+        </calcite-panel>
+      </calcite-shell-panel>
     );
+  }
+}
+
+@subclass('WaterMeterPopup')
+export class WaterMeterPopup extends Widget {
+  container = document.createElement('table');
+
+  constructor(
+    properties: esri.WidgetProperties & {
+      graphic: esri.Graphic;
+    },
+  ) {
+    super(properties);
+  }
+
+  async postInitialize(): Promise<void> {
+    const { graphic, layer, objectIdField, _rows } = this;
+
+    const objectId = graphic.attributes[objectIdField];
+
+    const notes = graphic.attributes.Notes;
+
+    const query = await layer.queryRelatedFeatures({
+      relationshipId: 0,
+      outFields: ['*'],
+      objectIds: [objectId],
+    });
+
+    const {
+      WSC_TYPE,
+      ACCT_TYPE,
+      METER_SIZE_T,
+      METER_SN,
+      METER_REG_SN,
+      METER_AGE,
+      LINE_IN_MATERIAL,
+      LINE_IN_SIZE,
+      LINE_OUT_MATERIAL,
+      LINE_OUT_SIZE,
+    } = query[objectId].features[0].attributes;
+
+    _rows.addMany([
+      <tr>
+        <th>Service type</th>
+        <td>{WSC_TYPE}</td>
+      </tr>,
+      <tr>
+        <th>Account type</th>
+        <td>{ACCT_TYPE}</td>
+      </tr>,
+      <tr>
+        <th>Meter size</th>
+        <td>{METER_SIZE_T}"</td>
+      </tr>,
+      <tr>
+        <th>Serial no.</th>
+        <td>{METER_SN}</td>
+      </tr>,
+      <tr>
+        <th>Register no.</th>
+        <td>{METER_REG_SN}</td>
+      </tr>,
+      <tr>
+        <th>Meter age</th>
+        <td>{METER_AGE} years</td>
+      </tr>,
+      <tr>
+        <th>Size in</th>
+        <td>{LINE_IN_SIZE}"</td>
+      </tr>,
+      <tr>
+        <th>Material in</th>
+        <td>{LINE_IN_MATERIAL}</td>
+      </tr>,
+      <tr>
+        <th>Size out</th>
+        <td>{LINE_OUT_SIZE}"</td>
+      </tr>,
+      <tr>
+        <th>Material out</th>
+        <td>{LINE_OUT_MATERIAL}</td>
+      </tr>,
+    ]);
+
+    if (notes) {
+      _rows.add(
+        <tr>
+          <th>Notes</th>
+          <td>{notes}</td>
+        </tr>,
+      );
+    }
+  }
+
+  graphic!: esri.Graphic;
+
+  @property({ aliasOf: 'graphic.layer' })
+  layer!: esri.FeatureLayer;
+
+  @property({ aliasOf: 'graphic.layer.objectIdField' })
+  objectIdField!: string;
+
+  private _rows: Collection<tsx.JSX.Element> = new Collection();
+
+  render(): tsx.JSX.Element {
+    const { _rows } = this;
+    return <table class={CSS.table}>{_rows.toArray()}</table>;
   }
 }

@@ -1,4 +1,4 @@
-import { __decorate } from "tslib";
+import { __awaiter, __decorate } from "tslib";
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -8,67 +8,62 @@ import LayerSearchSource from '@arcgis/core/widgets/Search/LayerSearchSource';
 import PrintViewModel from '@arcgis/core/widgets/Print/PrintViewModel';
 import PrintTemplate from '@arcgis/core/rest/support/PrintTemplate';
 const CSS = {
-    base: 'cov-water-meters',
-    content: 'cov-water-meters--content',
+    base: 'water-meters',
+    content: 'water-meters_content',
+    searchInput: 'water-meters_search-input',
+    table: 'esri-widget__table',
 };
 let KEY = 0;
-let PRINT_COUNT = 1;
-/**
- * Vernonia water meters widget.
- */
+let PRINT_COUNT = 0;
 let WaterMeters = class WaterMeters extends Widget {
     constructor(properties) {
         super(properties);
-        this.search = new SearchViewModel({
+        this._printViewModel = new PrintViewModel();
+        this.state = 'search';
+        this._searchViewModel = new SearchViewModel({
             includeDefaultSources: false,
         });
-        this.print = new PrintViewModel();
-        this.state = 'search';
-        this._controller = null;
+        this._searchAbortController = null;
         this._searchResults = new Collection();
         this._printResults = new Collection();
     }
     postInitialize() {
-        const { layer, search } = this;
-        search.sources.add(new LayerSearchSource({
+        const { layer, _searchViewModel } = this;
+        _searchViewModel.sources.add(new LayerSearchSource({
             layer,
-            searchFields: ['WSC_ID', 'ADDRESS'],
+            searchFields: ['wsc_id', 'address'],
             outFields: ['*'],
             maxSuggestions: 6,
-            suggestionTemplate: '{WSC_ID} - {ADDRESS}',
+            suggestionTemplate: '{wsc_id} - {address}',
         }));
     }
-    /**
-     * Controller abort;
-     */
+    _createSearch(input) {
+        input.addEventListener('calciteInputInput', this._search.bind(this));
+    }
     _abortSearch() {
-        const { _controller } = this;
-        if (_controller) {
-            _controller.abort();
-            this._controller = null;
+        const { _searchAbortController } = this;
+        if (_searchAbortController) {
+            _searchAbortController.abort();
+            this._searchAbortController = null;
         }
     }
-    /**
-     * Search for features.
-     * @param evt
-     */
-    _search(evt) {
-        const { search, _searchResults } = this;
-        const value = evt.target.value;
+    _search(event) {
+        const { _searchViewModel, _searchResults } = this;
+        const value = event.target.value;
         this._abortSearch();
         _searchResults.removeAll();
         if (!value)
             return;
         const controller = new AbortController();
         const { signal } = controller;
-        this._controller = controller;
-        search
+        this._searchAbortController = controller;
+        _searchViewModel
             // @ts-ignore
             .suggest(value, null, { signal })
             .then((response) => {
-            if (this._controller !== controller)
+            if (this._searchAbortController !== controller)
                 return;
-            this._controller = null;
+            this._searchAbortController = null;
             if (!response.numResults)
                 return;
             response.results[response.activeSourceIndex].results.forEach((result) => {
@@ -76,19 +71,15 @@ let WaterMeters = class WaterMeters extends Widget {
             });
         })
             .catch(() => {
-            if (this._controller !== controller)
+            if (this._searchAbortController !== controller)
                 return;
-            this._controller = null;
+            this._searchAbortController = null;
         });
     }
-    /**
-     * Select a feature, set as popup feature and zoom to.
-     * @param result
-     */
     _selectFeature(result) {
-        const { view, view: { popup }, search, } = this;
-        search.search(result).then((response) => {
-            const feature = response.results[0].results[0].feature;
+        return __awaiter(this, void 0, void 0, function* () {
+            const { view, view: { popup }, _searchViewModel, } = this;
+            const feature = (yield _searchViewModel.search(result)).results[0].results[0].feature;
             popup.open({
                 features: [feature],
             });
@@ -96,40 +87,14 @@ let WaterMeters = class WaterMeters extends Widget {
             view.scale = 1200;
         });
     }
-    /**
-     * Set labeling to selected attribute.
-     * @param evt
-     */
-    _setLabeling(evt) {
-        const { layer } = this;
-        const value = evt.target.selectedOption.value;
-        const labelClass = layer.labelingInfo[0].clone();
-        labelClass.labelExpressionInfo.expression = `if ("${value}" == "METER_REG_SN" && $feature.${value} == null) { return "Non-radio" } else { return $feature.${value} }`;
-        layer.labelingInfo = [labelClass];
-        if (!layer.labelsVisible)
-            layer.labelsVisible = true;
-    }
-    /**
-     * Toggle labels on and off.
-     * @param evt
-     */
-    _toggleLabels(evt) {
-        const { layer } = this;
-        layer.labelsVisible = evt.target.checked;
-    }
-    /**
-     * Print the map.
-     */
     _print() {
-        const { print, _printResults } = this;
-        const label = `Water Meters (${PRINT_COUNT})`;
-        const result = {
-            item: (tsx("calcite-value-list-item", { key: KEY++, label: "Printing...", "non-interactive": "" },
-                tsx("calcite-action", { slot: "actions-end", icon: "download", disabled: "" }))),
-        };
+        const { _printViewModel, _printResults } = this;
+        const index = PRINT_COUNT;
+        const label = `Water Meters (${PRINT_COUNT + 1})`;
+        _printResults.add(tsx("calcite-value-list-item", { key: KEY++, label: label, description: "Printing..." },
+            tsx("calcite-action", { slot: "actions-end", loading: "" })));
         PRINT_COUNT = PRINT_COUNT + 1;
-        _printResults.add(result);
-        print
+        _printViewModel
             .print(new PrintTemplate({
             format: 'pdf',
             layout: 'letter-ansi-a-landscape',
@@ -138,91 +103,157 @@ let WaterMeters = class WaterMeters extends Widget {
             },
         }))
             .then((response) => {
-            result.item = (tsx("calcite-value-list-item", { key: KEY++, label: label, "non-interactive": "" },
-                tsx("calcite-action", { slot: "actions-end", icon: "download", onclick: () => {
-                        window.open(response.url, '_blank');
-                    } })));
-            this.scheduleRender();
+            _printResults.splice(index, 1, [
+                tsx("calcite-value-list-item", { key: KEY++, label: label },
+                    tsx("calcite-action", { slot: "actions-end", icon: "download", onclick: () => {
+                            window.open(response.url, '_blank');
+                        } })),
+            ]);
         })
             .catch((error) => {
             console.log(error);
-            result.item = (tsx("calcite-value-list-item", { key: KEY++, label: label, description: "Print error", "non-interactive": "" },
-                tsx("calcite-action", { slot: "actions-end", icon: "exclamation-mark-triangle", disabled: "" })));
-            this.scheduleRender();
+            _printResults.splice(index, 1, [
+                tsx("calcite-value-list-item", { key: KEY++, label: label, description: "Print error" },
+                    tsx("calcite-action", { disabled: "", slot: "actions-end", icon: "exclamation-mark-triangle" })),
+            ]);
+        });
+    }
+    _labeling(control) {
+        const { layer } = this;
+        control.addEventListener('calciteSegmentedControlChange', () => {
+            const value = control.value;
+            const labelClass = layer.labelingInfo[0];
+            layer.labelsVisible = value ? true : false;
+            if (!value)
+                return;
+            labelClass.labelExpressionInfo.expression = `$feature.${value}`;
         });
     }
     render() {
-        const { id, state, layer, _searchResults, _printResults } = this;
-        const ids = [0, 1, 2].map((_id) => {
-            return `tt_${id}_${_id}`;
-        });
-        return (tsx("calcite-panel", { class: CSS.base, heading: "Water Meters", "width-scale": "m" },
-            tsx("calcite-tooltip-manager", { slot: "header-actions-end", hidden: state === 'search' },
-                tsx("calcite-action", { id: ids[0], "text-enabled": "", text: "Back", icon: "chevron-left", onclick: () => {
-                        this.state = 'search';
-                    } })),
-            tsx("calcite-tooltip", { "reference-element": ids[0], placement: "bottom" }, "Back"),
-            tsx("calcite-tooltip-manager", { slot: "header-actions-end", hidden: state !== 'search' },
-                tsx("calcite-action", { id: ids[1], icon: "print", onclick: () => {
+        const { state, _searchResults, _printResults } = this;
+        return (tsx("calcite-shell-panel", { class: CSS.base, detached: "" },
+            tsx("calcite-panel", { heading: "Water Meters", "width-scale": "m" },
+                tsx("calcite-action", { active: state === 'print', icon: "print", slot: "header-actions-end", text: "Print", onclick: () => {
                         this.state = 'print';
-                    } })),
-            tsx("calcite-tooltip", { "reference-element": ids[1], placement: "bottom" }, "Print"),
-            tsx("calcite-tooltip-manager", { slot: "header-actions-end", hidden: state !== 'search' },
-                tsx("calcite-action", { id: ids[2], icon: "label", onclick: () => {
+                    } },
+                    tsx("calcite-tooltip", { label: "Print", placement: "bottom", slot: "tooltip" }, "Print")),
+                tsx("calcite-action", { active: state === 'labels', icon: "label", slot: "header-actions-end", text: "Labels", onclick: () => {
                         this.state = 'labels';
-                    } })),
-            tsx("calcite-tooltip", { "reference-element": ids[2], placement: "bottom" }, "Labels"),
-            tsx("div", { hidden: state !== 'search' },
-                tsx("div", { class: CSS.content },
-                    tsx("calcite-label", null,
-                        "Water meter search",
-                        tsx("calcite-input", { type: "text", clearable: "", placeholder: "service id or address", afterCreate: (input) => {
-                                input.addEventListener('calciteInputInput', this._search.bind(this));
-                            } }))),
-                tsx("calcite-list", { "selection-follows-focus": "" }, _searchResults.toArray())),
-            tsx("div", { hidden: state !== 'print' },
-                tsx("div", { class: CSS.content },
-                    tsx("p", null,
-                        "Position the map to the area you wish to print and click the ",
-                        tsx("i", null, "Print Map"),
-                        " button to generate a PDF."),
-                    tsx("calcite-button", { onclick: this._print.bind(this) }, "Print Map")),
-                tsx("calcite-value-list", { "selection-follows-focus": "" }, _printResults.toArray().map((printResult) => {
-                    return printResult.item;
-                }))),
-            tsx("div", { hidden: state !== 'labels' },
-                tsx("div", { class: CSS.content },
-                    tsx("calcite-label", { layout: "inline" },
-                        tsx("calcite-switch", { switched: layer.labelsVisible, afterCreate: (_switch) => {
-                                _switch.addEventListener('calciteSwitchChange', this._toggleLabels.bind(this));
-                            } }),
-                        "Labeling"),
-                    tsx("calcite-label", null,
-                        "Label field",
-                        tsx("calcite-select", { afterCreate: (select) => {
-                                select.addEventListener('calciteSelectChange', this._setLabeling.bind(this));
-                            } },
-                            tsx("calcite-option", { value: "WSC_ID" }, "Service Id"),
-                            tsx("calcite-option", { value: "ADDRESS" }, "Address"),
-                            tsx("calcite-option", { value: "METER_SN" }, "Serial No."),
-                            tsx("calcite-option", { value: "METER_REG_SN" }, "Register No."),
-                            tsx("calcite-option", { value: "METER_SIZE_T" }, "Meter Size")))))));
+                    } },
+                    tsx("calcite-tooltip", { label: "Labels", placement: "bottom", slot: "tooltip" }, "Labels")),
+                tsx("div", { hidden: state !== 'search' },
+                    tsx("calcite-input", { class: CSS.searchInput, placeholder: "Search service id or address", clearable: "", afterCreate: this._createSearch.bind(this) }),
+                    tsx("calcite-list", null, _searchResults.toArray())),
+                tsx("div", { hidden: state !== 'print' },
+                    tsx("div", { class: CSS.content },
+                        tsx("span", null,
+                            "Position the map to the area you wish to print and click the ",
+                            tsx("i", null, "Print Map"),
+                            " button to generate a PDF."),
+                        tsx("calcite-button", { onclick: this._print.bind(this) }, "Print Map")),
+                    tsx("calcite-list", null, _printResults.toArray())),
+                tsx("div", { hidden: state !== 'labels' },
+                    tsx("div", { class: CSS.content },
+                        tsx("calcite-label", null,
+                            "Water meter labels",
+                            tsx("calcite-segmented-control", { afterCreate: this._labeling.bind(this) },
+                                tsx("calcite-segmented-control-item", { value: "" }, "None"),
+                                tsx("calcite-segmented-control-item", { checked: "", value: "wsc_id" }, "Service id"),
+                                tsx("calcite-segmented-control-item", { value: "address" }, "Address"))))),
+                tsx("calcite-button", { hidden: state === 'search', appearance: "outline", slot: state === 'search' ? '' : 'footer-actions', width: "full", onclick: () => {
+                        this.state = 'search';
+                    } }, "Back"))));
     }
 };
 __decorate([
-    property({
-        aliasOf: 'print.view',
-    })
+    property({ aliasOf: '_printViewModel.view' })
 ], WaterMeters.prototype, "view", void 0);
 __decorate([
-    property()
-], WaterMeters.prototype, "layer", void 0);
-__decorate([
-    property({
-        aliasOf: 'print.printServiceUrl',
-    })
+    property({ aliasOf: '_printViewModel.printServiceUrl' })
 ], WaterMeters.prototype, "printServiceUrl", void 0);
+__decorate([
+    property()
+], WaterMeters.prototype, "state", void 0);
 WaterMeters = __decorate([
-    subclass('cov.widgets.WaterMeters')
+    subclass('WaterMeters')
 ], WaterMeters);
 export default WaterMeters;
+let WaterMeterPopup = class WaterMeterPopup extends Widget {
+    constructor(properties) {
+        super(properties);
+        this.container = document.createElement('table');
+        this._rows = new Collection();
+    }
+    postInitialize() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { graphic, layer, objectIdField, _rows } = this;
+            const objectId = graphic.attributes[objectIdField];
+            const notes = graphic.attributes.Notes;
+            const query = yield layer.queryRelatedFeatures({
+                relationshipId: 0,
+                outFields: ['*'],
+                objectIds: [objectId],
+            });
+            const { WSC_TYPE, ACCT_TYPE, METER_SIZE_T, METER_SN, METER_REG_SN, METER_AGE, LINE_IN_MATERIAL, LINE_IN_SIZE, LINE_OUT_MATERIAL, LINE_OUT_SIZE, } = query[objectId].features[0].attributes;
+            _rows.addMany([
+                tsx("tr", null,
+                    tsx("th", null, "Service type"),
+                    tsx("td", null, WSC_TYPE)),
+                tsx("tr", null,
+                    tsx("th", null, "Account type"),
+                    tsx("td", null, ACCT_TYPE)),
+                tsx("tr", null,
+                    tsx("th", null, "Meter size"),
+                    tsx("td", null,
+                        METER_SIZE_T,
+                        "\"")),
+                tsx("tr", null,
+                    tsx("th", null, "Serial no."),
+                    tsx("td", null, METER_SN)),
+                tsx("tr", null,
+                    tsx("th", null, "Register no."),
+                    tsx("td", null, METER_REG_SN)),
+                tsx("tr", null,
+                    tsx("th", null, "Meter age"),
+                    tsx("td", null,
+                        METER_AGE,
+                        " years")),
+                tsx("tr", null,
+                    tsx("th", null, "Size in"),
+                    tsx("td", null,
+                        LINE_IN_SIZE,
+                        "\"")),
+                tsx("tr", null,
+                    tsx("th", null, "Material in"),
+                    tsx("td", null, LINE_IN_MATERIAL)),
+                tsx("tr", null,
+                    tsx("th", null, "Size out"),
+                    tsx("td", null,
+                        LINE_OUT_SIZE,
+                        "\"")),
+                tsx("tr", null,
+                    tsx("th", null, "Material out"),
+                    tsx("td", null, LINE_OUT_MATERIAL)),
+            ]);
+            if (notes) {
+                _rows.add(tsx("tr", null,
+                    tsx("th", null, "Notes"),
+                    tsx("td", null, notes)));
+            }
+        });
+    }
+    render() {
+        const { _rows } = this;
+        return tsx("table", { class: CSS.table }, _rows.toArray());
+    }
+};
+__decorate([
+    property({ aliasOf: 'graphic.layer' })
+], WaterMeterPopup.prototype, "layer", void 0);
+__decorate([
+    property({ aliasOf: 'graphic.layer.objectIdField' })
+], WaterMeterPopup.prototype, "objectIdField", void 0);
+WaterMeterPopup = __decorate([
+    subclass('WaterMeterPopup')
+], WaterMeterPopup);
+export { WaterMeterPopup };

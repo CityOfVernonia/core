@@ -461,18 +461,15 @@ calcite-shell-panel.cov-editor calcite-panel {
   display: none;
 }
 
-.cov-water-meters {
-  border-radius: var(--calcite-border-radius);
+.water-meters_content {
+  display: flex;
+  flex-flow: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
 }
 
-.cov-water-meters--content {
-  padding: 0.75rem 0.75rem 0;
-}
-.cov-water-meters--content p {
-  margin: 0 0 0.75rem;
-}
-.cov-water-meters--content calcite-button {
-  margin-bottom: 0.75rem;
+.water-meters_search-input {
+  padding: 0.375rem;
 }
 
 /*# sourceMappingURL=cov.css.map */
