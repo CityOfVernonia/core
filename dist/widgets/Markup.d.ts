@@ -1,18 +1,46 @@
-declare global {
-    interface Window {
-        PouchDB: any;
-    }
-}
 import esri = __esri;
+interface I {
+    layers: 'point' | 'polyline' | 'polygon' | 'text';
+    tool: 'point' | 'polyline' | 'polygon' | 'rectangle' | 'circle' | 'text';
+    offset: 'both' | 'left' | 'right';
+}
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import { SimpleMarkerSymbol, TextSymbol } from '@arcgis/core/symbols';
 export default class Markup extends Widget {
     constructor(properties: esri.WidgetProperties & {
         /**
-         * Map view.
+         * Map view to mark up.
          */
         view: esri.MapView;
+        /**
+         * Default length unit.
+         * Should probably be a `lengthUnits` key.
+         */
+        lengthUnit?: string;
+        /**
+         * Available length units.
+         * Should probably be `esri.LinearUnits`.
+         */
+        lengthUnits?: {
+            [key: string]: string;
+        };
+        /**
+         * Default buffer distance.
+         */
+        bufferDistance?: number;
+        /**
+         * Default offset distance.
+         */
+        offsetDistance?: number;
+        /**
+         * Default offset direction.
+         */
+        offsetDirection?: I['offset'];
+        /**
+         * Projection to use for offset.
+         */
+        offsetProjectionWkid: number;
     });
     postInitialize(): Promise<void>;
     view: esri.MapView;
@@ -23,80 +51,106 @@ export default class Markup extends Widget {
         kilometers: string;
         miles: string;
     };
-    length: number;
-    offset: number;
-    offsetDirection: 'both' | 'left' | 'right';
+    bufferDistance: number;
+    offsetDistance: number;
+    offsetDirection: I['offset'];
     offsetProjectionWkid: number;
-    pouchdbVersion: string;
-    /**
-     * Sketch VM for draw operations.
-     */
-    protected sketch: esri.SketchViewModel;
+    onHide(): void;
+    private _sketch;
     protected pointSymbol: SimpleMarkerSymbol | TextSymbol;
     protected polylineSymbol: esri.SimpleLineSymbol;
     protected polygonSymbol: esri.SimpleFillSymbol;
     protected textSymbol: esri.TextSymbol;
-    protected point: esri.GraphicsLayer;
-    protected polyline: esri.GraphicsLayer;
-    protected polygon: esri.GraphicsLayer;
-    protected text: esri.GraphicsLayer;
-    protected layers: esri.GroupLayer;
-    protected state: 'ready' | 'point' | 'polyline' | 'polygon' | 'rectangle' | 'circle' | 'text';
-    protected viewState: 'markup' | 'buffer' | 'offset' | 'save';
-    protected saveViewState: 'default' | 'new';
-    private _selectedFeature;
-    private _selectedMarkup;
-    private _savesLoadCount;
-    private _savesDb;
-    private _saves;
-    private _save;
-    private _confirmationModal;
-    private _messageModal;
-    /**
-     * Convenience method for widget control widgets.
-     */
-    onHide(): void;
+    private _activeLineSymbol;
+    private _activeVertexSymbol;
+    private _vertexSymbol;
+    private _activeFillSymbol;
     /**
      * Add layer as snapping source.
      * @param layer
      */
     private _addSnappingLayer;
-    private _markupEvent;
+    protected point: esri.GraphicsLayer;
+    protected polyline: esri.GraphicsLayer;
+    protected polygon: esri.GraphicsLayer;
+    protected text: esri.GraphicsLayer;
+    protected layers: esri.GroupLayer;
+    private _pointView;
+    private _polylineView;
+    private _polygonView;
+    private _textView;
+    private _drawState;
+    private _newTextInput;
+    private _newTextGraphic;
     private _reset;
-    private _markup;
+    private _draw;
     private _createEvent;
-    private _addMarkup;
-    private _edit;
+    private _newText;
+    private _addGeometry;
+    private _editGeometry;
     private _updateEvent;
     private _delete;
-    private _move;
-    private _addFeature;
-    private _addVertices;
+    private _symbolEditorContainer;
+    private _symbolEditor;
+    /**
+     * Select variables and methods
+     */
+    private _selectState;
+    private _selectHandle;
+    private _selectedGraphic;
+    private _selectedGraphicsItems;
+    private _selectReset;
+    private _clearSelection;
+    private _textClearSelection;
+    private _select;
+    private _selectGraphic;
+    private _highlightedGraphic;
+    private _highlightSelected;
+    private _unhighlightSelected;
     private _buffer;
+    private _cancelBufferOffset;
     private _offset;
-    private _queryFeatureGeometry;
-    private _initSavesDB;
-    private _initSaves;
-    private _createSave;
-    private _confirmLoadSave;
-    private _loadSave;
-    private _updateSave;
-    private _confirmDeleteSave;
-    private _deleteSave;
-    private _closeSave;
+    private _selectedPopupFeature;
+    private _addSelectedPopupFeature;
+    private _addVertices;
     /**
-     * Get all markup graphics by type.
-     * @returns
+     * Number of markup graphics
      */
-    private _getGraphics;
-    private _getGraphicCount;
+    private _graphicsCount;
+    /**
+     * Set `_graphicsCount` property
+     */
+    private _countGraphics;
+    /**
+     * Can sketch view model undo
+     */
+    _canUndo: boolean;
+    /**
+     * Can sketch view model redo
+     */
+    _canRedo: boolean;
+    /**
+     * Set `_canUndo` and `_canRedo` properties
+     */
+    private _undoRedo;
+    /**
+     * For displaying content and buttons; and otherwise controlling various UI components
+     */
+    private _viewState;
     render(): tsx.JSX.Element;
-    /**
-     * Render unit select options.
-     * @param units
-     * @param defaultUnit
-     * @returns
-     */
+    private _newTextAfterCreate;
+    private _bufferDistanceAfterCreate;
+    private _offsetDistanceAfterCreate;
+    private _offsetDirectionAfterCreate;
+    private _unitSelectAfterCreate;
     private _renderUnitOptions;
-    private _renderSaves;
+    /**
+     * Return tooltip target id
+     */
+    private _tt;
+    /**
+     * Return tooltip reference id
+     */
+    private _ttr;
 }
+export {};

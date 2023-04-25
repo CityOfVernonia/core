@@ -1,44 +1,36 @@
+
 .cov-markup--content {
-  display: flex;
-  flex-flow: column;
-  gap: 0.75rem;
   padding: 0.75rem;
-
-  &[hidden=""] {
-    display: none;
-  }
-
-  calcite-label {
-    margin-bottom: -0.75rem;
-  }
 }
 
-.cov-markup--flex-row {
+.cov-markup--row-heading {
+  margin: 0.5rem 0 0.25rem;
+  // font-size: var(--calcite-font-size--2);
+}
+
+.cov-markup--button-row {
   display: flex;
   flex-flow: row;
   flex-wrap: wrap;
-  gap: 0.125rem;
-  width: 100%;
-}
-
-.cov-markup--popover {
-  padding: 0.75rem 0.75rem 0;
-}
-
-.cov-markup--symbol-editor {
-  padding: 0 0.25rem;
-}
-
-.cov-markup--symbol-editor--row {
-  display: flex;
-  flex-flow: row;
-  gap: 0.75rem;
-
-  calcite-label {
-    width: 100%;
+  &[hidden=""] {
+    display: none;
+  }
+  calcite-button {
+    &[appearance=""] {
+      opacity: 0.6;
+    }
   }
 }
 
+.cov-markup--offset-button {
+  transform: rotate(90deg);
+}
+
+.cov-markup--selection-notice {
+  margin: 0.25rem 0.5rem;
+}
+
+// symbol editor
 .cov-markup--symbol-editor--slider-labels {
   display: flex;
   flex-flow: row;
