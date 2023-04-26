@@ -1,3 +1,3 @@
-import FeaturePopup from './FeaturePopup';
-declare const _default: FeaturePopup;
+import esri = __esri;
+declare const _default: esri.PopupTemplate;
 export default _default;
