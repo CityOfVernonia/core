@@ -65,6 +65,8 @@ export default class Markup extends Widget {
     private _activeVertexSymbol;
     private _vertexSymbol;
     private _activeFillSymbol;
+    private _featureSnapping;
+    private _drawingGuides;
     /**
      * Add layer as snapping source.
      * @param layer
@@ -92,9 +94,6 @@ export default class Markup extends Widget {
     private _delete;
     private _symbolEditorContainer;
     private _symbolEditor;
-    /**
-     * Select variables and methods
-     */
     private _selectState;
     private _selectHandle;
     private _selectedGraphic;
@@ -113,6 +112,13 @@ export default class Markup extends Widget {
     private _selectedPopupFeature;
     private _addSelectedPopupFeature;
     private _addVertices;
+    private _confirmLoadModal;
+    private _confirmLoadModalHandle;
+    private _save;
+    private _allGraphicsJson;
+    private _layerGraphicsJson;
+    private _load;
+    private _loadGraphics;
     /**
      * Number of markup graphics
      */
@@ -139,6 +145,8 @@ export default class Markup extends Widget {
     private _viewState;
     render(): tsx.JSX.Element;
     private _newTextAfterCreate;
+    private _featureSnappingAfterCreate;
+    private _drawingGuidesAfterCreate;
     private _bufferDistanceAfterCreate;
     private _offsetDistanceAfterCreate;
     private _offsetDirectionAfterCreate;

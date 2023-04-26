@@ -19,6 +19,8 @@ const CSS = {
     buttonRow: 'cov-markup--button-row',
     offsetButton: 'cov-markup--offset-button',
     selectionNotice: 'cov-markup--selection-notice',
+    topMargin: 'cov-markup--top-margin',
+    tabs: 'cov-markup--tabs',
 };
 let KEY = 0;
 let TT_ID = '';
@@ -173,9 +175,9 @@ let Markup = class Markup extends Widget {
         // Draw variables and methods
         /////////////////////////////////////////////////////////////////////////////////////////////////
         this._drawState = 'ready';
-        /**
-         * Select variables and methods
-         */
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        // Select variables and methods
+        /////////////////////////////////////////////////////////////////////////////////////////////////
         this._selectState = false;
         this._selectHandle = null;
         this._selectedGraphic = null;
@@ -234,7 +236,12 @@ let Markup = class Markup extends Widget {
             // update event
             this.addHandles(_sketch.on('update', this._updateEvent.bind(this)));
             // undo/redo events
-            this.addHandles([_sketch.on('create', this._undoRedo.bind(this)), _sketch.on('update', this._undoRedo.bind(this))]);
+            this.addHandles([
+                _sketch.on('create', this._undoRedo.bind(this)),
+                _sketch.on('update', this._undoRedo.bind(this)),
+                _sketch.on('redo', this._undoRedo.bind(this)),
+                _sketch.on('undo', this._undoRedo.bind(this)),
+            ]);
             // selected popup feature
             this.addHandles(this.watch(['view.popup.visible', 'view.popup.selectedFeature'], () => {
                 const { popup: { visible, selectedFeature }, } = view;
@@ -615,6 +622,91 @@ let Markup = class Markup extends Widget {
                 });
         });
     }
+    _save(event) {
+        var _a;
+        event.preventDefault();
+        const fileName = `${((_a = event.target.querySelector('calcite-input')) === null || _a === void 0 ? void 0 : _a.value) || 'my-markup'}.mjson`;
+        const json = JSON.stringify({
+            graphics: this._allGraphicsJson(),
+        });
+        const a = document.createElement('a');
+        a.setAttribute('href', `data:text/json;charset=utf-8,${encodeURIComponent(json)}`);
+        a.setAttribute('download', fileName);
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        this._viewState = 'markup';
+    }
+    _allGraphicsJson() {
+        const { text, point, polyline, polygon } = this;
+        return [
+            ...this._layerGraphicsJson(text),
+            ...this._layerGraphicsJson(point),
+            ...this._layerGraphicsJson(polyline),
+            ...this._layerGraphicsJson(polygon),
+        ];
+    }
+    _layerGraphicsJson(layer) {
+        return layer.graphics.toArray().map((graphic) => {
+            return graphic.toJSON();
+        });
+    }
+    _load(event) {
+        return __awaiter(this, void 0, void 0, function* () {
+            event.preventDefault();
+            const { _graphicsCount, _confirmLoadModal, _confirmLoadModalHandle } = this;
+            const input = event.target.querySelector('calcite-input');
+            input.status = 'idle';
+            if (!input.files) {
+                input.status = 'invalid';
+                input.setFocus();
+                return;
+            }
+            if (_graphicsCount && !_confirmLoadModal) {
+                this._confirmLoadModal = new (yield import('./Markup/ConfirmLoadModal')).default();
+            }
+            if (_graphicsCount) {
+                this._confirmLoadModal.container.open = true;
+                if (_confirmLoadModalHandle)
+                    _confirmLoadModalHandle.remove();
+                this._confirmLoadModalHandle = this._confirmLoadModal.on('confirmed', (confirmed) => {
+                    confirmed ? this._loadGraphics(input) : (this._confirmLoadModal.container.open = false);
+                });
+                return;
+            }
+            this._loadGraphics(input);
+        });
+    }
+    _loadGraphics(input) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { view, text, point, polyline, polygon } = this;
+            if (!input.files)
+                return;
+            const graphics = [];
+            const file = yield input.files[0].text();
+            const json = JSON.parse(file);
+            text.graphics.removeAll();
+            point.graphics.removeAll();
+            polyline.graphics.removeAll();
+            polygon.graphics.removeAll();
+            json.graphics.forEach((graphicJson) => {
+                const graphic = Graphic.fromJSON(graphicJson);
+                graphics.push(graphic);
+                if (graphic.symbol.type === 'text') {
+                    text.add(graphic);
+                }
+                else {
+                    const type = graphic.geometry.type;
+                    this[type].add(graphic);
+                }
+            });
+            this._viewState = 'markup';
+            view.goTo(graphics);
+            input.files = undefined;
+            input.value = '';
+        });
+    }
     /**
      * Set `_graphicsCount` property
      */
@@ -632,9 +724,13 @@ let Markup = class Markup extends Widget {
         this._canRedo = _sketch.canRedo();
     }
     render() {
-        const { id, _sketch, _graphicsCount, _canUndo, _canRedo, _drawState, _selectState, _selectedGraphic, _selectedPopupFeature, _selectedGraphicsItems, _viewState, } = this;
+        const { id, _sketch, _graphicsCount, _canUndo, _canRedo, _featureSnapping, _drawingGuides, _drawState, _selectState, _selectedGraphic, _selectedPopupFeature, _selectedGraphicsItems, _viewState, } = this;
         const newTextId = `new_text_${id}`;
         return (tsx("calcite-panel", { heading: "Markup" },
+            tsx("calcite-action", { hidden: _viewState !== 'markup', id: this._tt(), icon: "save", slot: _viewState === 'markup' ? 'header-actions-end' : '', text: "Save/Load", onclick: () => {
+                    this._viewState = 'save';
+                } }),
+            tsx("calcite-tooltip", { "close-on-click": "", placement: "bottom", "reference-element": this._ttr() }, "Save/Load"),
             tsx("div", { hidden: _viewState !== 'markup', class: CSS.content },
                 tsx("div", { class: CSS.buttonRow },
                     tsx("calcite-button", { id: this._tt(), appearance: _selectState ? '' : 'transparent', disabled: _graphicsCount === 0, "icon-start": "cursor", onclick: this._select.bind(this) }),
@@ -651,6 +747,18 @@ let Markup = class Markup extends Widget {
                     tsx("calcite-tooltip", { "close-on-click": "", placement: "bottom", "reference-element": this._ttr() }, "Draw circle"),
                     tsx("calcite-button", { id: this._tt(), appearance: _drawState === 'text' ? '' : 'transparent', "icon-start": "text-large", onclick: this._draw.bind(this, 'text') }),
                     tsx("calcite-tooltip", { "close-on-click": "", placement: "bottom", "reference-element": this._ttr() }, "Draw text")),
+                tsx("div", { class: CSS.topMargin, hidden: _viewState === 'markup' && _drawState === 'ready' },
+                    tsx("div", { class: CSS.buttonRow },
+                        tsx("calcite-button", { id: this._tt(), disabled: !_canUndo, appearance: "transparent", "icon-start": "undo", onclick: _sketch.undo.bind(_sketch) }),
+                        tsx("calcite-tooltip", { "close-on-click": "", placement: "bottom", "reference-element": this._ttr() }, "Undo"),
+                        tsx("calcite-button", { id: this._tt(), disabled: !_canRedo, appearance: "transparent", "icon-start": "redo", onclick: _sketch.redo.bind(_sketch) }),
+                        tsx("calcite-tooltip", { "close-on-click": "", placement: "bottom", "reference-element": this._ttr() }, "Redo")),
+                    tsx("calcite-label", { class: CSS.topMargin, layout: "inline" },
+                        tsx("calcite-switch", { checked: _featureSnapping, afterCreate: this._featureSnappingAfterCreate.bind(this) }),
+                        "Feature snapping"),
+                    tsx("calcite-label", { layout: "inline", style: "--calcite-label-margin-bottom: 0;" },
+                        tsx("calcite-switch", { checked: _drawingGuides, afterCreate: this._drawingGuidesAfterCreate.bind(this) }),
+                        "Drawing guides")),
                 tsx("div", { hidden: !_selectedPopupFeature, class: CSS.rowHeading }, "Selected feature options"),
                 tsx("div", { hidden: !_selectedPopupFeature, class: CSS.buttonRow },
                     tsx("calcite-button", { id: this._tt(), appearance: "transparent", "icon-start": "add-layer", onclick: this._addSelectedPopupFeature.bind(this) }),
@@ -723,7 +831,27 @@ let Markup = class Markup extends Widget {
                         tsx("calcite-segmented-control-item", { value: "left" }, "Left"),
                         tsx("calcite-segmented-control-item", { value: "right" }, "Right")))),
             tsx("calcite-button", { hidden: _viewState !== 'offset', slot: _viewState === 'offset' ? 'footer-actions' : null, width: "full", onclick: this._offset.bind(this) }, "Offset"),
-            tsx("calcite-button", { appearance: "outline", hidden: _viewState !== 'offset', slot: _viewState === 'offset' ? 'footer-actions' : null, width: "full", onclick: this._cancelBufferOffset.bind(this) }, "Cancel")));
+            tsx("calcite-button", { appearance: "outline", hidden: _viewState !== 'offset', slot: _viewState === 'offset' ? 'footer-actions' : null, width: "full", onclick: this._cancelBufferOffset.bind(this) }, "Cancel"),
+            tsx("div", { hidden: _viewState !== 'save' },
+                tsx("calcite-tabs", { class: CSS.tabs },
+                    tsx("calcite-tab-nav", { slot: "title-group" },
+                        tsx("calcite-tab-title", { selected: "" }, "Save"),
+                        tsx("calcite-tab-title", null, "Load")),
+                    tsx("calcite-tab", { selected: "" },
+                        tsx("form", { onsubmit: this._save.bind(this) },
+                            tsx("calcite-label", null,
+                                "File name",
+                                tsx("calcite-input", { disabled: _graphicsCount === 0, type: "text", "suffix-text": ".mjson", value: "my-markup" })),
+                            tsx("calcite-button", { disabled: _graphicsCount === 0, type: "submit" }, "Save"))),
+                    tsx("calcite-tab", null,
+                        tsx("form", { onsubmit: this._load.bind(this) },
+                            tsx("calcite-label", null,
+                                ".mjson file",
+                                tsx("calcite-input", { type: "file", accept: ".mjson" })),
+                            tsx("calcite-button", { type: "submit" }, "Load"))))),
+            tsx("calcite-button", { appearance: "outline", hidden: _viewState !== 'save', slot: _viewState === 'save' ? 'footer-actions' : null, width: "full", onclick: () => {
+                    this._viewState = 'markup';
+                } }, "Done")));
     }
     /////////////////////////////////////////////////////////////////////////////////////////////////
     // Render support methods
@@ -748,6 +876,16 @@ let Markup = class Markup extends Widget {
                 _newTextGraphic.symbol = symbol;
             }
         }));
+    }
+    _featureSnappingAfterCreate(_switch) {
+        _switch.addEventListener('calciteSwitchChange', () => {
+            this._featureSnapping = _switch.checked;
+        });
+    }
+    _drawingGuidesAfterCreate(_switch) {
+        _switch.addEventListener('calciteSwitchChange', () => {
+            this._drawingGuides = _switch.checked;
+        });
     }
     _bufferDistanceAfterCreate(input) {
         input.value = this.bufferDistance.toString();
@@ -823,6 +961,12 @@ __decorate([
 __decorate([
     property({ aliasOf: '_sketch.activeFillSymbol' })
 ], Markup.prototype, "_activeFillSymbol", void 0);
+__decorate([
+    property({ aliasOf: '_sketch.snappingOptions.featureEnabled' })
+], Markup.prototype, "_featureSnapping", void 0);
+__decorate([
+    property({ aliasOf: '_sketch.snappingOptions.selfEnabled' })
+], Markup.prototype, "_drawingGuides", void 0);
 __decorate([
     property()
 ], Markup.prototype, "_drawState", void 0);

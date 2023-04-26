@@ -214,6 +214,14 @@ calcite-shell-panel.cov-editor calcite-panel {
   margin: 0.25rem 0.5rem;
 }
 
+.cov-markup--top-margin {
+  margin-top: 0.5rem;
+}
+
+.cov-markup--tabs {
+  margin: 0 0.5rem;
+}
+
 .cov-markup--symbol-editor--slider-labels {
   display: flex;
   flex-flow: row;

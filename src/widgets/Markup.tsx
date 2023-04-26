@@ -6,6 +6,8 @@ interface I {
   offset: 'both' | 'left' | 'right';
 }
 
+import type ConfirmLoadModal from './Markup/ConfirmLoadModal';
+
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -27,6 +29,8 @@ const CSS = {
   buttonRow: 'cov-markup--button-row',
   offsetButton: 'cov-markup--offset-button',
   selectionNotice: 'cov-markup--selection-notice',
+  topMargin: 'cov-markup--top-margin',
+  tabs: 'cov-markup--tabs',
 };
 
 let KEY = 0;
@@ -140,7 +144,12 @@ export default class Markup extends Widget {
     this.addHandles(_sketch.on('update', this._updateEvent.bind(this)));
 
     // undo/redo events
-    this.addHandles([_sketch.on('create', this._undoRedo.bind(this)), _sketch.on('update', this._undoRedo.bind(this))]);
+    this.addHandles([
+      _sketch.on('create', this._undoRedo.bind(this)),
+      _sketch.on('update', this._undoRedo.bind(this)),
+      _sketch.on('redo', this._undoRedo.bind(this)),
+      _sketch.on('undo', this._undoRedo.bind(this)),
+    ]);
 
     // selected popup feature
     this.addHandles(
@@ -340,6 +349,16 @@ export default class Markup extends Widget {
       width: 2,
     },
   });
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Snapping variables and methods
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  @property({ aliasOf: '_sketch.snappingOptions.featureEnabled' })
+  private _featureSnapping!: boolean;
+
+  @property({ aliasOf: '_sketch.snappingOptions.selfEnabled' })
+  private _drawingGuides!: boolean;
+
   /**
    * Add layer as snapping source.
    * @param layer
@@ -487,9 +506,10 @@ export default class Markup extends Widget {
   private _symbolEditorContainer!: HTMLDivElement;
 
   private _symbolEditor!: SymbolEditor;
-  /**
-   * Select variables and methods
-   */
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Select variables and methods
+  /////////////////////////////////////////////////////////////////////////////////////////////////
   @property()
   private _selectState = false;
 
@@ -799,6 +819,97 @@ export default class Markup extends Widget {
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Save/load variables and methods
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  private _confirmLoadModal!: ConfirmLoadModal;
+
+  private _confirmLoadModalHandle!: IHandle;
+
+  private _save(event: Event): void {
+    event.preventDefault();
+    const fileName = `${(event.target as HTMLFormElement).querySelector('calcite-input')?.value || 'my-markup'}.mjson`;
+    const json = JSON.stringify({
+      graphics: this._allGraphicsJson(),
+    });
+    const a = document.createElement('a');
+    a.setAttribute('href', `data:text/json;charset=utf-8,${encodeURIComponent(json)}`);
+    a.setAttribute('download', fileName);
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    this._viewState = 'markup';
+  }
+
+  private _allGraphicsJson(): any[] {
+    const { text, point, polyline, polygon } = this;
+    return [
+      ...this._layerGraphicsJson(text),
+      ...this._layerGraphicsJson(point),
+      ...this._layerGraphicsJson(polyline),
+      ...this._layerGraphicsJson(polygon),
+    ];
+  }
+
+  private _layerGraphicsJson(layer: esri.GraphicsLayer): any[] {
+    return layer.graphics.toArray().map((graphic: esri.Graphic): any => {
+      return graphic.toJSON();
+    });
+  }
+
+  private async _load(event: Event): Promise<void> {
+    event.preventDefault();
+    const { _graphicsCount, _confirmLoadModal, _confirmLoadModalHandle } = this;
+    const input = (event.target as HTMLFormElement).querySelector('calcite-input') as HTMLCalciteInputElement;
+    input.status = 'idle';
+    if (!input.files) {
+      input.status = 'invalid';
+      input.setFocus();
+      return;
+    }
+    if (_graphicsCount && !_confirmLoadModal) {
+      this._confirmLoadModal = new (await import('./Markup/ConfirmLoadModal')).default();
+    }
+    if (_graphicsCount) {
+      this._confirmLoadModal.container.open = true;
+
+      if (_confirmLoadModalHandle) _confirmLoadModalHandle.remove();
+
+      this._confirmLoadModalHandle = this._confirmLoadModal.on('confirmed', (confirmed: boolean): void => {
+        confirmed ? this._loadGraphics(input) : (this._confirmLoadModal.container.open = false);
+      });
+      return;
+    }
+    this._loadGraphics(input);
+  }
+
+  private async _loadGraphics(input: HTMLCalciteInputElement): Promise<void> {
+    const { view, text, point, polyline, polygon } = this;
+    if (!input.files) return;
+    const graphics: esri.Graphic[] = [];
+    const file = await input.files[0].text();
+    const json = JSON.parse(file) as { graphics: any[] };
+    text.graphics.removeAll();
+    point.graphics.removeAll();
+    polyline.graphics.removeAll();
+    polygon.graphics.removeAll();
+    json.graphics.forEach((graphicJson: any): void => {
+      const graphic = Graphic.fromJSON(graphicJson);
+      graphics.push(graphic);
+      if (graphic.symbol.type === 'text') {
+        text.add(graphic);
+      } else {
+        const type = graphic.geometry.type as 'point' | 'polyline' | 'polygon';
+        this[type].add(graphic);
+      }
+    });
+    this._viewState = 'markup';
+    view.goTo(graphics);
+    input.files = undefined;
+    input.value = '';
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
   // View state variables and methods for rendering
   /////////////////////////////////////////////////////////////////////////////////////////////////
   /**
@@ -841,7 +952,7 @@ export default class Markup extends Widget {
    * For displaying content and buttons; and otherwise controlling various UI components
    */
   @property()
-  private _viewState: 'markup' | 'text' | 'features' | 'feature' | 'buffer' | 'offset' = 'markup';
+  private _viewState: 'markup' | 'text' | 'features' | 'feature' | 'buffer' | 'offset' | 'save' = 'markup';
 
   render(): tsx.JSX.Element {
     const {
@@ -850,6 +961,8 @@ export default class Markup extends Widget {
       _graphicsCount,
       _canUndo,
       _canRedo,
+      _featureSnapping,
+      _drawingGuides,
       _drawState,
       _selectState,
       _selectedGraphic,
@@ -862,6 +975,20 @@ export default class Markup extends Widget {
 
     return (
       <calcite-panel heading="Markup">
+        <calcite-action
+          hidden={_viewState !== 'markup'}
+          id={this._tt()}
+          icon="save"
+          slot={_viewState === 'markup' ? 'header-actions-end' : ''}
+          text="Save/Load"
+          onclick={(): void => {
+            this._viewState = 'save';
+          }}
+        ></calcite-action>
+        <calcite-tooltip close-on-click="" placement="bottom" reference-element={this._ttr()}>
+          Save/Load
+        </calcite-tooltip>
+
         {/* markup view state */}
         <div hidden={_viewState !== 'markup'} class={CSS.content}>
           {/* draw buttons */}
@@ -930,6 +1057,51 @@ export default class Markup extends Widget {
             <calcite-tooltip close-on-click="" placement="bottom" reference-element={this._ttr()}>
               Draw text
             </calcite-tooltip>
+          </div>
+          {/* active draw controls */}
+          <div class={CSS.topMargin} hidden={_viewState === 'markup' && _drawState === 'ready'}>
+            <div class={CSS.buttonRow}>
+              <calcite-button
+                id={this._tt()}
+                disabled={!_canUndo}
+                appearance="transparent"
+                icon-start="undo"
+                onclick={_sketch.undo.bind(_sketch)}
+              ></calcite-button>
+              <calcite-tooltip close-on-click="" placement="bottom" reference-element={this._ttr()}>
+                Undo
+              </calcite-tooltip>
+              <calcite-button
+                id={this._tt()}
+                disabled={!_canRedo}
+                appearance="transparent"
+                icon-start="redo"
+                onclick={_sketch.redo.bind(_sketch)}
+              ></calcite-button>
+              <calcite-tooltip close-on-click="" placement="bottom" reference-element={this._ttr()}>
+                Redo
+              </calcite-tooltip>
+              {/* <calcite-button id={this._tt()} appearance="transparent" icon-start="x" onclick={this._reset.bind(this)}>
+                Cancel
+              </calcite-button>
+              <calcite-tooltip close-on-click="" placement="bottom" reference-element={this._ttr()}>
+                Cancel draw
+              </calcite-tooltip> */}
+            </div>
+            <calcite-label class={CSS.topMargin} layout="inline">
+              <calcite-switch
+                checked={_featureSnapping}
+                afterCreate={this._featureSnappingAfterCreate.bind(this)}
+              ></calcite-switch>
+              Feature snapping
+            </calcite-label>
+            <calcite-label layout="inline" style="--calcite-label-margin-bottom: 0;">
+              <calcite-switch
+                checked={_drawingGuides}
+                afterCreate={this._drawingGuidesAfterCreate.bind(this)}
+              ></calcite-switch>
+              Drawing guides
+            </calcite-label>
           </div>
           {/* selected feature buttons */}
           <div hidden={!_selectedPopupFeature} class={CSS.rowHeading}>
@@ -1168,6 +1340,52 @@ export default class Markup extends Widget {
         >
           Cancel
         </calcite-button>
+
+        {/* save/load view state */}
+        <div hidden={_viewState !== 'save'}>
+          <calcite-tabs class={CSS.tabs}>
+            <calcite-tab-nav slot="title-group">
+              <calcite-tab-title selected="">Save</calcite-tab-title>
+              <calcite-tab-title>Load</calcite-tab-title>
+            </calcite-tab-nav>
+            <calcite-tab selected="">
+              <form onsubmit={this._save.bind(this)}>
+                <calcite-label>
+                  File name
+                  <calcite-input
+                    disabled={_graphicsCount === 0}
+                    type="text"
+                    suffix-text=".mjson"
+                    value="my-markup"
+                  ></calcite-input>
+                </calcite-label>
+                <calcite-button disabled={_graphicsCount === 0} type="submit">
+                  Save
+                </calcite-button>
+              </form>
+            </calcite-tab>
+            <calcite-tab>
+              <form onsubmit={this._load.bind(this)}>
+                <calcite-label>
+                  .mjson file
+                  <calcite-input type="file" accept=".mjson"></calcite-input>
+                </calcite-label>
+                <calcite-button type="submit">Load</calcite-button>
+              </form>
+            </calcite-tab>
+          </calcite-tabs>
+        </div>
+        <calcite-button
+          appearance="outline"
+          hidden={_viewState !== 'save'}
+          slot={_viewState === 'save' ? 'footer-actions' : null}
+          width="full"
+          onclick={(): void => {
+            this._viewState = 'markup';
+          }}
+        >
+          Done
+        </calcite-button>
       </calcite-panel>
     );
   }
@@ -1196,6 +1414,18 @@ export default class Markup extends Widget {
         }
       }),
     );
+  }
+
+  private _featureSnappingAfterCreate(_switch: HTMLCalciteSwitchElement): void {
+    _switch.addEventListener('calciteSwitchChange', (): void => {
+      this._featureSnapping = _switch.checked;
+    });
+  }
+
+  private _drawingGuidesAfterCreate(_switch: HTMLCalciteSwitchElement): void {
+    _switch.addEventListener('calciteSwitchChange', (): void => {
+      this._drawingGuides = _switch.checked;
+    });
   }
 
   private _bufferDistanceAfterCreate(input: HTMLCalciteInputElement): void {
