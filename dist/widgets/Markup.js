@@ -727,10 +727,10 @@ let Markup = class Markup extends Widget {
         const { id, _sketch, _graphicsCount, _canUndo, _canRedo, _featureSnapping, _drawingGuides, _drawState, _selectState, _selectedGraphic, _selectedPopupFeature, _selectedGraphicsItems, _viewState, } = this;
         const newTextId = `new_text_${id}`;
         return (tsx("calcite-panel", { heading: "Markup" },
-            tsx("calcite-action", { hidden: _viewState !== 'markup', id: this._tt(), icon: "save", slot: _viewState === 'markup' ? 'header-actions-end' : '', text: "Save/Load", onclick: () => {
+            tsx("calcite-action", { hidden: _viewState !== 'markup', icon: "save", slot: _viewState === 'markup' ? 'header-actions-end' : '', text: "Save/Load", onclick: () => {
                     this._viewState = 'save';
-                } }),
-            tsx("calcite-tooltip", { "close-on-click": "", placement: "bottom", "reference-element": this._ttr() }, "Save/Load"),
+                } },
+                tsx("calcite-tooltip", { "close-on-click": "", placement: "bottom", slot: "tooltip" }, "Save/Load")),
             tsx("div", { hidden: _viewState !== 'markup', class: CSS.content },
                 tsx("div", { class: CSS.buttonRow },
                     tsx("calcite-button", { id: this._tt(), appearance: _selectState ? '' : 'transparent', disabled: _graphicsCount === 0, "icon-start": "cursor", onclick: this._select.bind(this) }),
@@ -778,7 +778,7 @@ let Markup = class Markup extends Widget {
                     tsx("calcite-label", null,
                         "Add text",
                         tsx("calcite-input", { type: "text", value: "New text", afterCreate: this._newTextAfterCreate.bind(this) })))),
-            tsx("calcite-button", { form: newTextId, hidden: _viewState !== 'text', slot: _viewState === 'text' ? 'footer-actions' : null, type: "submit", width: "full" }, "Done"),
+            tsx("calcite-button", { appearance: "outline", form: newTextId, hidden: _viewState !== 'text', slot: _viewState === 'text' ? 'footer-actions' : null, type: "submit", width: "full" }, "Done"),
             tsx("div", { hidden: _viewState !== 'features' },
                 tsx("calcite-notice", { class: CSS.selectionNotice, open: "", scale: "s" },
                     tsx("div", { slot: "message" },
@@ -807,7 +807,7 @@ let Markup = class Markup extends Widget {
                 tsx("div", { afterCreate: (div) => {
                         this._symbolEditorContainer = div;
                     } })),
-            tsx("calcite-button", { hidden: _viewState !== 'feature', slot: _viewState === 'feature' ? 'footer-actions' : null, width: "full", onclick: this._clearSelection.bind(this) }, "Done"),
+            tsx("calcite-button", { appearance: "outline", hidden: _viewState !== 'feature', slot: _viewState === 'feature' ? 'footer-actions' : null, width: "full", onclick: this._clearSelection.bind(this) }, "Done"),
             tsx("div", { hidden: _viewState !== 'buffer', class: CSS.content },
                 tsx("calcite-label", null,
                     "Distance",
@@ -842,13 +842,13 @@ let Markup = class Markup extends Widget {
                             tsx("calcite-label", null,
                                 "File name",
                                 tsx("calcite-input", { disabled: _graphicsCount === 0, type: "text", "suffix-text": ".mjson", value: "my-markup" })),
-                            tsx("calcite-button", { disabled: _graphicsCount === 0, type: "submit" }, "Save"))),
+                            tsx("calcite-button", { disabled: _graphicsCount === 0, type: "submit" }, "Save Markup"))),
                     tsx("calcite-tab", null,
                         tsx("form", { onsubmit: this._load.bind(this) },
                             tsx("calcite-label", null,
                                 ".mjson file",
                                 tsx("calcite-input", { type: "file", accept: ".mjson" })),
-                            tsx("calcite-button", { type: "submit" }, "Load"))))),
+                            tsx("calcite-button", { type: "submit" }, "Load Markup"))))),
             tsx("calcite-button", { appearance: "outline", hidden: _viewState !== 'save', slot: _viewState === 'save' ? 'footer-actions' : null, width: "full", onclick: () => {
                     this._viewState = 'markup';
                 } }, "Done")));

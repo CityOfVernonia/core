@@ -977,17 +977,17 @@ export default class Markup extends Widget {
       <calcite-panel heading="Markup">
         <calcite-action
           hidden={_viewState !== 'markup'}
-          id={this._tt()}
           icon="save"
           slot={_viewState === 'markup' ? 'header-actions-end' : ''}
           text="Save/Load"
           onclick={(): void => {
             this._viewState = 'save';
           }}
-        ></calcite-action>
-        <calcite-tooltip close-on-click="" placement="bottom" reference-element={this._ttr()}>
-          Save/Load
-        </calcite-tooltip>
+        >
+          <calcite-tooltip close-on-click="" placement="bottom" slot="tooltip">
+            Save/Load
+          </calcite-tooltip>
+        </calcite-action>
 
         {/* markup view state */}
         <div hidden={_viewState !== 'markup'} class={CSS.content}>
@@ -1168,6 +1168,7 @@ export default class Markup extends Widget {
           </form>
         </div>
         <calcite-button
+          appearance="outline"
           form={newTextId}
           hidden={_viewState !== 'text'}
           slot={_viewState === 'text' ? 'footer-actions' : null}
@@ -1263,6 +1264,7 @@ export default class Markup extends Widget {
           ></div>
         </div>
         <calcite-button
+          appearance="outline"
           hidden={_viewState !== 'feature'}
           slot={_viewState === 'feature' ? 'footer-actions' : null}
           width="full"
@@ -1360,7 +1362,7 @@ export default class Markup extends Widget {
                   ></calcite-input>
                 </calcite-label>
                 <calcite-button disabled={_graphicsCount === 0} type="submit">
-                  Save
+                  Save Markup
                 </calcite-button>
               </form>
             </calcite-tab>
@@ -1370,7 +1372,7 @@ export default class Markup extends Widget {
                   .mjson file
                   <calcite-input type="file" accept=".mjson"></calcite-input>
                 </calcite-label>
-                <calcite-button type="submit">Load</calcite-button>
+                <calcite-button type="submit">Load Markup</calcite-button>
               </form>
             </calcite-tab>
           </calcite-tabs>

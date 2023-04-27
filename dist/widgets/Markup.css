@@ -33,6 +33,9 @@
 .cov-markup--tabs {
   margin: 0 0.5rem;
 }
+.cov-markup--tabs calcite-tab {
+  padding: 0.5rem;
+}
 
 .cov-markup--symbol-editor--slider-labels {
   display: flex;
