@@ -12,11 +12,9 @@ import PopupTemplate from '@arcgis/core/PopupTemplate';
 import { DateTime } from 'luxon';
 
 const CSS = {
-  base: 'cov-survey-search',
   content: 'cov-survey-search--content',
+  contentSearching: 'cov-survey-search--content-searching',
   table: 'esri-widget__table',
-  th: 'esri-feature__field-header',
-  td: 'esri-feature__field-data',
 };
 
 // colors for results `Candy Shop`
@@ -43,6 +41,10 @@ export default class SurveySearch extends Widget {
        * Surveys layer.
        */
       surveys: esri.FeatureLayer;
+      /**
+       * Base URL for surveys.
+       */
+      baseUrl?: string;
     },
   ) {
     super(properties);
@@ -56,7 +58,7 @@ export default class SurveySearch extends Widget {
     // add graphics layer
     map.add(_graphics);
     // enable search when tax lot is selected feature of popup
-    this.own(
+    this.addHandles(
       this.watch(['state', '_visible', '_selectedFeature'], (): void => {
         const { taxLots, state, _visible, _selectedFeature } = this;
         if (state === 'results' || state === 'searching' || state === 'error') return;
@@ -65,65 +67,31 @@ export default class SurveySearch extends Widget {
     );
   }
 
-  /**
-   * Map view.
-   */
   view!: esri.MapView;
 
-  /**
-   * Tax lots layer.
-   */
   taxLots!: esri.FeatureLayer;
 
-  /**
-   * Surveys layer.
-   */
   surveys!: esri.FeatureLayer;
 
-  /**
-   * View state of widget.
-   */
+  baseUrl = 'https://cityofvernonia.github.io/vernonia-surveys/surveys/';
+
   @property()
   protected state: 'ready' | 'selected' | 'searching' | 'results' | 'error' = 'ready';
 
-  /**
-   * Popup visibility for watching.
-   */
-  @property({
-    aliasOf: 'view.popup.visible',
-  })
+  @property({ aliasOf: 'view.popup.visible' })
   private _visible!: boolean;
 
-  /**
-   * Popup selected feature for watching.
-   */
-  @property({
-    aliasOf: 'view.popup.selectedFeature',
-  })
+  @property({ aliasOf: 'view.popup.selectedFeature' })
   private _selectedFeature!: esri.Graphic;
 
-  /**
-   * Result list items.
-   */
   private _results: Collection<tsx.JSX.Element> = new Collection();
 
-  /**
-   * Graphics layer for result geometry.
-   */
-  private _graphics = new GraphicsLayer({
-    listMode: 'hide',
-  });
+  private _graphics = new GraphicsLayer({ listMode: 'hide' });
 
-  /**
-   * Convenience on hide method.
-   */
   onHide(): void {
     this._clear();
   }
 
-  /**
-   * Clear/reset.
-   */
   private _clear(): void {
     const { _results, _graphics } = this;
     _results.removeAll();
@@ -131,33 +99,30 @@ export default class SurveySearch extends Widget {
     this.state = 'ready';
   }
 
-  /**
-   * Search surveys.
-   */
   private async _search(): Promise<void> {
     const {
       view,
-      view: { spatialReference },
+      view: { popup, spatialReference },
       taxLots,
       taxLots: { objectIdField },
       surveys,
+      baseUrl,
       _selectedFeature,
       _results,
       _graphics,
     } = this;
-    // clear
     _results.removeAll();
     _graphics.removeAll();
     this.state = 'searching';
-    // query feature
+
     const featureQuery = await (taxLots.queryFeatures({
       where: `${objectIdField} = ${_selectedFeature.attributes[objectIdField]}`,
       returnGeometry: true,
       outSpatialReference: spatialReference,
     }) as Promise<esri.FeatureSet>);
-    // feature
+
     const feature = featureQuery.features[0];
-    // handle error
+
     if (!feature) {
       this.state = 'error';
       return;
@@ -179,19 +144,6 @@ export default class SurveySearch extends Widget {
     }
     // sort by date
     features.sort((a: any, b: any) => (a.attributes.SurveyDate > b.attributes.SurveyDate ? -1 : 1));
-    // add clear
-    _results.add(
-      <calcite-list-item key={KEY++} non-interactive="">
-        <calcite-action
-          slot="actions-start"
-          scale="s"
-          text="Clear"
-          text-enabled=""
-          icon="x"
-          onclick={this._clear.bind(this)}
-        ></calcite-action>
-      </calcite-list-item>,
-    );
     // handle results
     features.forEach((feature: esri.Graphic): void => {
       const {
@@ -203,7 +155,10 @@ export default class SurveySearch extends Widget {
         ? DateTime.fromMillis(SurveyDate).toUTC().toLocaleString(DateTime.DATE_SHORT)
         : 'Unknown date';
       const title = SurveyType === 'Subdivision' ? Subdivisio : SURVEYID;
-      const url = `https://gis.columbiacountymaps.com/Surveys/${SVY_IMAGE}`;
+      const url = `${baseUrl}${SVY_IMAGE.replace('.tif', '.pdf')
+        .replace('.tiff', '.pdf')
+        .replace('.jpg', '.pdf')
+        .replace('.jpeg', '.pdf')}`;
       // colors
       const color = new Color(COLORS[Math.floor(Math.random() * COLORS.length)]);
       const fillColor = color.clone();
@@ -231,6 +186,7 @@ export default class SurveySearch extends Widget {
         content: (event: { graphic: esri.Graphic }): HTMLElement => {
           const popup = new PopupContent({
             graphic: event.graphic,
+            baseUrl,
             container: document.createElement('table'),
           });
           return popup.container as HTMLElement;
@@ -240,41 +196,36 @@ export default class SurveySearch extends Widget {
       _graphics.add(feature);
       // add result item
       _results.add(
-        <calcite-list-item key={KEY++} label={title} description={`${type} - ${date}`} non-interactive="">
+        <calcite-list-item
+          key={KEY++}
+          label={title}
+          description={`${type} - ${date}`}
+          afterCreate={(listItem: HTMLCalciteListItemElement): void => {
+            listItem.addEventListener('calciteListItemSelect', (): void => {
+              popup.clear();
+              popup.close();
+              popup.open({
+                features: [feature],
+              });
+              view.goTo(feature);
+            });
+          }}
+        >
           <calcite-action
             slot="actions-end"
-            icon="flash"
-            scale="s"
-            afterCreate={(action: HTMLCalciteActionElement): void => {
-              action.addEventListener('click', this._flash.bind(this, feature));
-            }}
-          ></calcite-action>
-          <calcite-action
-            slot="actions-end"
-            icon="download"
-            scale="s"
+            icon="file-pdf"
+            text="View PDF"
             afterCreate={(action: HTMLCalciteActionElement): void => {
               action.addEventListener('click', (): void => {
                 window.open(url, '_blank');
               });
             }}
-          ></calcite-action>
+          >
+            <calcite-tooltip slot="tooltip">View PDF</calcite-tooltip>
+          </calcite-action>
         </calcite-list-item>,
       );
     });
-    // add clear
-    _results.add(
-      <calcite-list-item key={KEY++} non-interactive="">
-        <calcite-action
-          slot="actions-start"
-          scale="s"
-          text="Clear"
-          text-enabled=""
-          icon="x"
-          onclick={this._clear.bind(this)}
-        ></calcite-action>
-      </calcite-list-item>,
-    );
     // zoom to features
     view.goTo(_graphics.graphics);
     // set state
@@ -283,108 +234,94 @@ export default class SurveySearch extends Widget {
     }, 1000);
   }
 
-  /**
-   * Flash feature.
-   * @param feature
-   */
-  private _flash(feature: esri.Graphic): void {
-    const { view } = this;
-    // symbols
-    const symbol = (feature.symbol as SimpleFillSymbol).clone();
-    const flashSymbol = symbol.clone();
-    flashSymbol.color.a = 0.25;
-    // set flash symbol
-    feature.symbol = flashSymbol;
-    // zoom to feature
-    view.goTo((feature.geometry as esri.Polygon).extent.expand(1.5));
-    // revert to original symbol
-    setTimeout((): void => {
-      feature.symbol = symbol;
-    }, 1250);
-  }
-
-  /**
-   * Render the widget.
-   * @returns
-   */
   render(): tsx.JSX.Element {
-    const { state, _results } = this;
+    const { state, _selectedFeature, _results } = this;
     return (
-      <calcite-panel class={CSS.base} heading="Survey Search">
+      <calcite-panel heading="Survey Search">
         <div class={CSS.content} hidden={state !== 'ready'}>
-          Select a tax lot in the map to search for related surveys and plats.
+          <calcite-notice icon="information" open="">
+            <div slot="message">Select a tax lot in the map to search for related surveys and plats.</div>
+          </calcite-notice>
         </div>
         <div class={CSS.content} hidden={state !== 'selected'}>
-          <calcite-button width="full" onclick={this._search.bind(this)}>
-            Search
-          </calcite-button>
+          {_selectedFeature ? (
+            <calcite-notice icon="search" open="">
+              <div slot="message">{_selectedFeature.attributes.TAXLOT_ID}</div>
+              <calcite-link onclick={this._search.bind(this)} slot="link">
+                Search surveys
+              </calcite-link>
+            </calcite-notice>
+          ) : null}
         </div>
-        <div class={CSS.content} hidden={state !== 'searching'}>
+        <div class={CSS.contentSearching} hidden={state !== 'searching'}>
           <calcite-progress text="Searching related surveys" type="indeterminate"></calcite-progress>
         </div>
         <div hidden={state !== 'results'}>
           <calcite-list>{_results.toArray()}</calcite-list>
         </div>
         <div class={CSS.content} hidden={state !== 'error'}>
-          <p>An error occurred searching surveys.</p>
-          <calcite-button width="full" onclick={this._clear.bind(this)}>
-            Reset
-          </calcite-button>
+          <calcite-notice icon="exclamation-mark-circle" kind="danger" open="">
+            <div slot="message">An error occurred searching surveys.</div>
+            <calcite-link onclick={this._clear.bind(this)} slot="link">
+              Try again
+            </calcite-link>
+          </calcite-notice>
         </div>
+        <calcite-fab
+          hidden={state !== 'results'}
+          icon="x"
+          slot={state === 'results' ? 'fab' : null}
+          text="Clear"
+          text-enabled=""
+          onclick={this._clear.bind(this)}
+        ></calcite-fab>
       </calcite-panel>
     );
   }
 }
 
-/**
- * Survey popup content.
- */
-@subclass('cov.widgets.SurveySearch.PopupContent')
+@subclass('PopupContent')
 class PopupContent extends Widget {
-  constructor(properties: esri.WidgetProperties & { graphic: esri.Graphic }) {
+  constructor(properties: esri.WidgetProperties & { graphic: esri.Graphic; baseUrl: string }) {
     super(properties);
   }
 
-  /**
-   * Graphic of interest.
-   */
   graphic!: esri.Graphic;
 
-  /**
-   * Render the widget.
-   * @returns
-   */
+  baseUrl!: string;
+
   render(): tsx.JSX.Element {
     const {
       graphic: {
         attributes: { SurveyType, Client, Firm, SurveyDate, SVY_IMAGE },
       },
+      baseUrl,
     } = this;
     return (
       <table class={CSS.table}>
         <tr>
-          <th class={CSS.th}>Type</th>
-          <td class={CSS.td}>{SurveyType[0].toUpperCase() + SurveyType.slice(1).toLowerCase()}</td>
+          <th>Type</th>
+          <td>{SurveyType[0].toUpperCase() + SurveyType.slice(1).toLowerCase()}</td>
         </tr>
         <tr>
-          <th class={CSS.th}>Date</th>
-          <td class={CSS.td}>
+          <th>Date</th>
+          <td>
             {SurveyDate ? DateTime.fromMillis(SurveyDate).toUTC().toLocaleString(DateTime.DATE_SHORT) : 'Unknown date'}
           </td>
         </tr>
         <tr>
-          <th class={CSS.th}>Client</th>
-          <td class={CSS.td}>{Client}</td>
+          <th>Client</th>
+          <td>{Client}</td>
         </tr>
         <tr>
-          <th class={CSS.th}>Surveyor</th>
-          <td class={CSS.td}>{Firm}</td>
+          <th>Surveyor</th>
+          <td>{Firm}</td>
         </tr>
         <tr>
-          <th class={CSS.th}>&nbsp;</th>
-          <td class={CSS.td}>
-            <calcite-link href={`https://gis.columbiacountymaps.com/Surveys/${SVY_IMAGE}`} target="_blank">
-              Download Survey
+          <th>&nbsp;</th>
+          <td>
+            <calcite-link href={`${baseUrl}${SVY_IMAGE}`} target="_blank">
+              View PDF
             </calcite-link>
           </td>
         </tr>

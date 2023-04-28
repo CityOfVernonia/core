@@ -441,8 +441,9 @@ calcite-shell-panel.cov-editor calcite-panel {
 .cov-survey-search--content {
   padding: 0.75rem;
 }
-.cov-survey-search--content p {
-  margin: 0 0 0.75rem;
+
+.cov-survey-search--content-searching {
+  padding: 3rem 3rem 2rem;
 }
 
 .cov-tax-lot-buffer {
