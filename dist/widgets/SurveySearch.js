@@ -191,6 +191,10 @@ let PopupContent = class PopupContent extends Widget {
     }
     render() {
         const { graphic: { attributes: { SurveyType, Client, Firm, SurveyDate, SVY_IMAGE }, }, baseUrl, } = this;
+        const url = `${baseUrl}${SVY_IMAGE.replace('.tif', '.pdf')
+            .replace('.tiff', '.pdf')
+            .replace('.jpg', '.pdf')
+            .replace('.jpeg', '.pdf')}`;
         return (tsx("table", { class: CSS.table },
             tsx("tr", null,
                 tsx("th", null, "Type"),
@@ -207,7 +211,7 @@ let PopupContent = class PopupContent extends Widget {
             tsx("tr", null,
                 tsx("th", null, "\u00A0"),
                 tsx("td", null,
-                    tsx("calcite-link", { href: `${baseUrl}${SVY_IMAGE}`, target: "_blank" }, "View PDF")))));
+                    tsx("calcite-link", { href: url, target: "_blank" }, "View PDF")))));
     }
 };
 PopupContent = __decorate([

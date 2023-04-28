@@ -297,6 +297,10 @@ class PopupContent extends Widget {
       },
       baseUrl,
     } = this;
+    const url = `${baseUrl}${SVY_IMAGE.replace('.tif', '.pdf')
+      .replace('.tiff', '.pdf')
+      .replace('.jpg', '.pdf')
+      .replace('.jpeg', '.pdf')}`;
     return (
       <table class={CSS.table}>
         <tr>
@@ -320,7 +324,7 @@ class PopupContent extends Widget {
         <tr>
           <th>&nbsp;</th>
           <td>
-            <calcite-link href={`${baseUrl}${SVY_IMAGE}`} target="_blank">
+            <calcite-link href={url} target="_blank">
               View PDF
             </calcite-link>
           </td>
