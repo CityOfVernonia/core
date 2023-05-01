@@ -7,14 +7,9 @@ import { SimpleFillSymbol } from '@arcgis/core/symbols';
 import Graphic from '@arcgis/core/Graphic';
 import { geodesicBuffer } from '@arcgis/core/geometry/geometryEngine';
 import { unparse } from 'papaparse';
-import { propertyInfoUrl } from './../support/AssessorURLs';
-import PrintViewModel from '@arcgis/core/widgets/Print/PrintViewModel';
-import PrintTemplate from '@arcgis/core/rest/support/PrintTemplate';
 
 const CSS = {
-  base: 'cov-tax-lot-buffer',
   content: 'cov-tax-lot-buffer--content',
-  innerContent: 'cov-tax-lot-buffer--inner-content',
 };
 
 /**
@@ -26,7 +21,6 @@ export default class TaxLotBuffer extends Widget {
     properties: esri.WidgetProperties & {
       view: esri.MapView;
       layer: esri.FeatureLayer;
-      printServiceUrl?: string;
     },
   ) {
     super(properties);
@@ -34,35 +28,24 @@ export default class TaxLotBuffer extends Widget {
 
   async postInitialize(): Promise<void> {
     const {
-      view,
       view: { map },
       _graphics,
-      printServiceUrl,
     } = this;
 
     map.add(_graphics);
 
-    const state = this.watch(['state', '_visible', '_selectedFeature'], (): void => {
-      const { state, _visible, _selectedFeature } = this;
-      if (state === 'buffered') return;
-      this.state = _visible && _selectedFeature ? 'selected' : 'ready';
-    });
-
-    this.own(state);
-
-    if (printServiceUrl) {
-      this._printer = new PrintViewModel({
-        view,
-        printServiceUrl,
-      });
-    }
+    this.addHandles(
+      this.watch(['state', '_visible', '_selectedFeature'], (): void => {
+        const { state, _visible, _selectedFeature } = this;
+        if (state === 'buffered') return;
+        this.state = _visible && _selectedFeature ? 'selected' : 'ready';
+      }),
+    );
   }
 
   view!: esri.MapView;
 
   layer!: esri.FeatureLayer;
-
-  printServiceUrl!: string;
 
   @property()
   protected state: 'ready' | 'selected' | 'buffering' | 'buffered' | 'error' = 'ready';
@@ -111,8 +94,6 @@ export default class TaxLotBuffer extends Widget {
   private _id = '';
 
   private _results: esri.FeatureSet['features'] | [] = [];
-
-  private _printer!: PrintViewModel;
 
   onHide(): void {
     this._clear();
@@ -217,19 +198,16 @@ export default class TaxLotBuffer extends Widget {
 
     const json = _results.map((feature: Graphic) => {
       const { attributes } = feature;
-
       // just need one account link in download
       const accounts = attributes.ACCOUNT_IDS.split(',').map((account: string) => {
-        return propertyInfoUrl(account, 2022);
+        return `https://propertyquery.columbiacountyor.gov/columbiaat/MainQueryDetails.aspx?AccountID=${account}&QueryYear=2023&Roll=R`;
       });
-
       const result = {
         'Tax Lot': attributes.TAXLOT_ID,
         Owner: attributes.OWNER,
         Address: attributes.ADDRESS,
         Account: accounts[0] || ' ',
       };
-
       return result;
     });
 
@@ -242,87 +220,70 @@ export default class TaxLotBuffer extends Widget {
     document.body.removeChild(a);
   }
 
-  private _print(event: Event): void {
-    const { _printer, _id, _distance } = this;
-
-    const button = event.target as HTMLCalciteButtonElement;
-
-    button.loading = true;
-
-    _printer
-      .print(
-        new PrintTemplate({
-          format: 'pdf',
-          layout: 'letter-ansi-a-landscape',
-          layoutOptions: {
-            titleText: `${_id} ${_distance}' Buffer`,
-          },
-        }),
-      )
-      .then((result: any): void => {
-        window.open(result.url, '_blank');
-
-        button.loading = false;
-      })
-      .catch((error: esri.Error): void => {
-        console.log(error);
-
-        window.alert('A print error occurred.');
-
-        button.loading = false;
-      });
-  }
-
   render(): tsx.JSX.Element {
-    const { printServiceUrl, state, _distance, _id, _results } = this;
+    const { id, state, _distance, _id, _results } = this;
+
+    const form = `buffer_form_${id}`;
 
     return (
-      <calcite-panel class={CSS.base} width-scale="m" height-scale="l" heading="Tax Lot Buffer">
-        <div class={CSS.content}>
-          {/* ready */}
-          <div hidden={state !== 'ready'}>Select a tax lot in the map.</div>
-          {/* selected */}
-          <form
-            hidden={state !== 'selected'}
-            afterCreate={(form: HTMLFormElement): void => {
-              form.addEventListener('submit', this._buffer.bind(this));
-            }}
-          >
-            <calcite-label>
+      <calcite-panel heading="Tax Lot Buffer">
+        <div class={CSS.content} hidden={state !== 'ready'}>
+          <calcite-notice icon="information" open="">
+            <div slot="message">Select a tax lot in the map to buffer.</div>
+          </calcite-notice>
+        </div>
+        <div class={CSS.content} hidden={state !== 'selected'}>
+          <form id={form} onsubmit={this._buffer.bind(this)}>
+            <calcite-label style="--calcite-label-margin-bottom: 0;">
               Buffer distance (feet)
-              <calcite-input type="number" min="10" max="5000" step="10" value="250" bind={this}></calcite-input>
+              <calcite-input type="number" min="10" max="5000" step="10" value="250"></calcite-input>
             </calcite-label>
-            <calcite-button type="submit">Buffer</calcite-button>
           </form>
-          {/* buffering */}
-          <div class={CSS.innerContent} hidden={state !== 'buffering'}>
-            <span>Buffering...</span>
-            <calcite-progress type="indeterminate"></calcite-progress>
-          </div>
-          {/* buffered */}
-          <div class={CSS.innerContent} hidden={state !== 'buffered'}>
-            <span>
+        </div>
+        <calcite-button
+          form={form}
+          hidden={state !== 'selected'}
+          slot={state === 'selected' ? 'footer-actions' : null}
+          type="submit"
+          width="full"
+        >
+          Buffer
+        </calcite-button>
+        <div class={CSS.content} hidden={state !== 'buffering'}>
+          <calcite-progress text="Buffering" type="indeterminate"></calcite-progress>
+        </div>
+        <div class={CSS.content} hidden={state !== 'buffered'}>
+          <calcite-notice icon="information" open="">
+            <div slot="message">
               {_results.length} tax lots within {_distance} feet of tax lot {_id}.
-            </span>
-            <calcite-button width="full" icon-start="file-csv" onclick={this._download.bind(this)}>
-              Download CSV
-            </calcite-button>
-            {printServiceUrl ? (
-              <calcite-button width="full" icon-start="print" onclick={this._print.bind(this)}>
-                Print Map
-              </calcite-button>
-            ) : null}
-            <calcite-button appearance="outline" width="full" onclick={this._clear.bind(this)}>
-              Clear
-            </calcite-button>
-          </div>
-          {/* error */}
-          <div class={CSS.innerContent} hidden={state !== 'error'}>
-            <span>Something went wrong.</span>
-            <calcite-button appearance="outline" width="full" onclick={this._clear.bind(this)}>
+            </div>
+          </calcite-notice>
+        </div>
+        <calcite-button
+          hidden={state !== 'buffered'}
+          icon-start="file-csv"
+          slot={state === 'buffered' ? 'footer-actions' : null}
+          width="full"
+          onclick={this._download.bind(this)}
+        >
+          Download
+        </calcite-button>
+        <calcite-button
+          appearance="outline"
+          hidden={state !== 'buffered'}
+          slot={state === 'buffered' ? 'footer-actions' : null}
+          width="full"
+          onclick={this._clear.bind(this)}
+        >
+          Clear
+        </calcite-button>
+        <div class={CSS.content} hidden={state !== 'error'}>
+          <calcite-notice icon="exclamation-mark-circle" kind="danger" open="">
+            <div slot="message">An error has occurred.</div>
+            <calcite-link slot="link" onclick={this._clear.bind(this)}>
               Try again
-            </calcite-button>
-          </div>
+            </calcite-link>
+          </calcite-notice>
         </div>
       </calcite-panel>
     );

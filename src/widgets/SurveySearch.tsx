@@ -36,11 +36,11 @@ export default class SurveySearch extends Widget {
       /**
        * Tax lots layer.
        */
-      taxLots: esri.FeatureLayer | esri.GeoJSONLayer;
+      taxLots: esri.FeatureLayer;
       /**
        * Surveys layer.
        */
-      surveys: esri.FeatureLayer;
+      surveys: esri.FeatureLayer | esri.GeoJSONLayer;
       /**
        * Base URL for surveys.
        */
