@@ -13,7 +13,7 @@ export default class SurveySearch extends Widget {
         /**
          * Tax lots layer.
          */
-        taxLots: esri.FeatureLayer;
+        taxLots: esri.FeatureLayer | esri.GeoJSONLayer;
         /**
          * Surveys layer.
          */
@@ -26,7 +26,7 @@ export default class SurveySearch extends Widget {
     postInitialize(): void;
     view: esri.MapView;
     taxLots: esri.FeatureLayer;
-    surveys: esri.FeatureLayer;
+    surveys: esri.FeatureLayer | esri.GeoJSONLayer;
     baseUrl: string;
     protected state: 'ready' | 'selected' | 'searching' | 'results' | 'error';
     private _visible;

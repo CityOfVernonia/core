@@ -36,7 +36,7 @@ export default class SurveySearch extends Widget {
       /**
        * Tax lots layer.
        */
-      taxLots: esri.FeatureLayer;
+      taxLots: esri.FeatureLayer | esri.GeoJSONLayer;
       /**
        * Surveys layer.
        */
@@ -71,7 +71,7 @@ export default class SurveySearch extends Widget {
 
   taxLots!: esri.FeatureLayer;
 
-  surveys!: esri.FeatureLayer;
+  surveys!: esri.FeatureLayer | esri.GeoJSONLayer;
 
   baseUrl = 'https://cityofvernonia.github.io/vernonia-surveys/surveys/';
 
