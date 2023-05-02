@@ -239,7 +239,7 @@ export default class SurveySearch extends Widget {
     return (
       <calcite-panel heading="Survey Search">
         <div class={CSS.content} hidden={state !== 'ready'}>
-          <calcite-notice icon="information" open="">
+          <calcite-notice icon="cursor-click" open="">
             <div slot="message">Select a tax lot in the map to search for related surveys and plats.</div>
           </calcite-notice>
         </div>

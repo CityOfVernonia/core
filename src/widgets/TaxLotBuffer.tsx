@@ -228,7 +228,7 @@ export default class TaxLotBuffer extends Widget {
     return (
       <calcite-panel heading="Tax Lot Buffer">
         <div class={CSS.content} hidden={state !== 'ready'}>
-          <calcite-notice icon="information" open="">
+          <calcite-notice icon="cursor-click" open="">
             <div slot="message">Select a tax lot in the map to buffer.</div>
           </calcite-notice>
         </div>

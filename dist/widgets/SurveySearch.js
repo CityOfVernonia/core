@@ -156,7 +156,7 @@ let SurveySearch = class SurveySearch extends Widget {
         const { state, _selectedFeature, _results } = this;
         return (tsx("calcite-panel", { heading: "Survey Search" },
             tsx("div", { class: CSS.content, hidden: state !== 'ready' },
-                tsx("calcite-notice", { icon: "information", open: "" },
+                tsx("calcite-notice", { icon: "cursor-click", open: "" },
                     tsx("div", { slot: "message" }, "Select a tax lot in the map to search for related surveys and plats."))),
             tsx("div", { class: CSS.content, hidden: state !== 'selected' }, _selectedFeature ? (tsx("calcite-notice", { icon: "search", open: "" },
                 tsx("div", { slot: "message" }, _selectedFeature.attributes.TAXLOT_ID),

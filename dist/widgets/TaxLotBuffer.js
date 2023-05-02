@@ -149,7 +149,7 @@ let TaxLotBuffer = class TaxLotBuffer extends Widget {
         const form = `buffer_form_${id}`;
         return (tsx("calcite-panel", { heading: "Tax Lot Buffer" },
             tsx("div", { class: CSS.content, hidden: state !== 'ready' },
-                tsx("calcite-notice", { icon: "information", open: "" },
+                tsx("calcite-notice", { icon: "cursor-click", open: "" },
                     tsx("div", { slot: "message" }, "Select a tax lot in the map to buffer."))),
             tsx("div", { class: CSS.content, hidden: state !== 'selected' },
                 tsx("form", { id: form, onsubmit: this._buffer.bind(this) },
