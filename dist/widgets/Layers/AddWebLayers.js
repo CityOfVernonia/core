@@ -63,6 +63,14 @@ let AddWebLayers = class AddWebLayers extends Widget {
                     })
                         .then((layer) => {
                         loaded(layer);
+                        if (layer.type === 'feature') {
+                            layer.popupEnabled = true;
+                        }
+                        if (layer.type === 'map-image') {
+                            layer.sublayers.forEach((sublayer) => {
+                                sublayer.popupEnabled = true;
+                            });
+                        }
                     })
                         .catch((_error) => {
                         console.log(_error);
@@ -77,6 +85,7 @@ let AddWebLayers = class AddWebLayers extends Widget {
                         .load()
                         .then(() => {
                         loaded(layer);
+                        layer.popupEnabled = true;
                     })
                         .catch((_error) => {
                         console.log(_error);

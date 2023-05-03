@@ -86,6 +86,14 @@ export default class AddWebLayers extends Widget {
         })
           .then((layer: esri.Layer): void => {
             loaded(layer);
+            if (layer.type === 'feature') {
+              (layer as esri.FeatureLayer).popupEnabled = true;
+            }
+            if (layer.type === 'map-image') {
+              (layer as esri.MapImageLayer).sublayers.forEach((sublayer: esri.Sublayer): void => {
+                sublayer.popupEnabled = true;
+              });
+            }
           })
           .catch((_error: esri.Error): void => {
             console.log(_error);
@@ -100,6 +108,7 @@ export default class AddWebLayers extends Widget {
           .load()
           .then((): void => {
             loaded(layer);
+            layer.popupEnabled = true;
           })
           .catch((_error: esri.Error): void => {
             console.log(_error);
