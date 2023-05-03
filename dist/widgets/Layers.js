@@ -15,6 +15,7 @@ let KEY = 0;
 let Layers = class Layers extends Widget {
     constructor(properties) {
         super(properties);
+        this.addWebLayers = false;
         this.state = 'layers';
         this._addLayerItems = new Collection();
     }
@@ -92,8 +93,19 @@ let Layers = class Layers extends Widget {
             _addLayerItems.remove(item);
         });
     }
+    _showAddWebLayers() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { _addWebLayers } = this;
+            if (!_addWebLayers) {
+                this._addWebLayers = new (yield import('./Layers/AddWebLayers')).default({
+                    view: this.view,
+                });
+            }
+            this._addWebLayers.container.open = true;
+        });
+    }
     render() {
-        const { state, addLayerInfos, _addLayerItems } = this;
+        const { state, addLayerInfos, addWebLayers, _addLayerItems } = this;
         const heading = state === 'layers' ? 'Layers' : state === 'legend' ? 'Legend' : 'Add Layers';
         return (tsx("calcite-panel", { class: CSS.base, heading: heading },
             tsx("calcite-action", { active: state === 'layers', icon: "layers", slot: "header-actions-end", text: "Layers", onclick: () => {
@@ -111,7 +123,8 @@ let Layers = class Layers extends Widget {
             tsx("div", { hidden: state !== 'layers', afterCreate: this._createLayerList.bind(this) }),
             tsx("div", { hidden: state !== 'legend', afterCreate: this._createLegend.bind(this) }),
             addLayerInfos ? (tsx("div", { hidden: state !== 'add' }, _addLayerItems.length ? (tsx("calcite-list", null, _addLayerItems.toArray())) : (tsx("calcite-notice", { class: CSS.notice, icon: "information", open: "" },
-                tsx("div", { slot: "message" }, "No layers to add"))))) : null));
+                tsx("div", { slot: "message" }, "No layers to add"))))) : null,
+            addWebLayers ? (tsx("calcite-fab", { hidden: state !== 'add', icon: "layer-service", slot: state === 'add' ? 'fab' : null, text: "Add Web Layers", "text-enabled": "", onclick: this._showAddWebLayers.bind(this) })) : null));
     }
     _createLayerList(container) {
         new LayerList({

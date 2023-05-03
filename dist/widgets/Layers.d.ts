@@ -60,16 +60,23 @@ export default class Layers extends Widget {
          * Layers available to add.
          */
         addLayerInfos?: (AddPortalLayerInfo | AddServerLayerInfo)[];
+        /**
+         * Include `Add Web Layers` fab.
+         */
+        addWebLayers?: boolean;
     });
     postInitialize(): void;
     view: esri.MapView;
     addLayerInfos: (AddPortalLayerInfo | AddServerLayerInfo)[];
+    addWebLayers: boolean;
     protected state: 'layers' | 'legend' | 'add';
     onHide(): void;
     private _addLayerItems;
     private _addLayerInfo;
     private _addLayerFromPortalLayerInfo;
     private _addLayerFromServerLayerInfo;
+    private _addWebLayers;
+    private _showAddWebLayers;
     render(): tsx.JSX.Element;
     private _createLayerList;
     private _createLegend;

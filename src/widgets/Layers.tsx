@@ -52,6 +52,7 @@ export interface AddServerLayerInfo extends AddLayerInfo {
   snippet: string;
 }
 
+import type AddWebLayers from './Layers/AddWebLayers';
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -80,6 +81,10 @@ export default class Layers extends Widget {
        * Layers available to add.
        */
       addLayerInfos?: (AddPortalLayerInfo | AddServerLayerInfo)[];
+      /**
+       * Include `Add Web Layers` fab.
+       */
+      addWebLayers?: boolean;
     },
   ) {
     super(properties);
@@ -94,6 +99,8 @@ export default class Layers extends Widget {
   view!: esri.MapView;
 
   addLayerInfos!: (AddPortalLayerInfo | AddServerLayerInfo)[];
+
+  addWebLayers = false;
 
   @property()
   protected state: 'layers' | 'legend' | 'add' = 'layers';
@@ -229,11 +236,21 @@ export default class Layers extends Widget {
     });
   }
 
+  private _addWebLayers!: AddWebLayers;
+
+  private async _showAddWebLayers(): Promise<void> {
+    const { _addWebLayers } = this;
+    if (!_addWebLayers) {
+      this._addWebLayers = new (await import('./Layers/AddWebLayers')).default({
+        view: this.view,
+      });
+    }
+    this._addWebLayers.container.open = true;
+  }
+
   render(): tsx.JSX.Element {
-    const { state, addLayerInfos, _addLayerItems } = this;
-
+    const { state, addLayerInfos, addWebLayers, _addLayerItems } = this;
     const heading = state === 'layers' ? 'Layers' : state === 'legend' ? 'Legend' : 'Add Layers';
-
     return (
       <calcite-panel class={CSS.base} heading={heading}>
         {/* header action switch between layers and legend and imagery */}
@@ -293,6 +310,16 @@ export default class Layers extends Widget {
               </calcite-notice>
             )}
           </div>
+        ) : null}
+        {addWebLayers ? (
+          <calcite-fab
+            hidden={state !== 'add'}
+            icon="layer-service"
+            slot={state === 'add' ? 'fab' : null}
+            text="Add Web Layers"
+            text-enabled=""
+            onclick={this._showAddWebLayers.bind(this)}
+          ></calcite-fab>
         ) : null}
       </calcite-panel>
     );
