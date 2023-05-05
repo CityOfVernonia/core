@@ -38,15 +38,18 @@ let TaxMaps = class TaxMaps extends Widget {
     }
     postInitialize() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { view, view: { popup }, layer, _imageLayerInfos, _options, } = this;
+            const { view, view: { popup }, layer, titleAttributeField, fileAttributeField, urlAttributeField, _imageLayerInfos, _options, } = this;
             layer.popupTemplate = new PopupTemplate({
                 outFields: ['*'],
-                title: '{MAP_NAME}',
+                title: `{${titleAttributeField}}`,
                 content: (event) => {
                     const container = document.createElement('div');
                     const taxMapPopup = new TaxMapPopup({
                         graphic: event.graphic,
                         container,
+                        fileAttributeField,
+                        titleAttributeField,
+                        urlAttributeField,
                     });
                     taxMapPopup.on('show', (fileName) => {
                         this._show(fileName);
@@ -63,13 +66,15 @@ let TaxMaps = class TaxMaps extends Widget {
                 returnGeometry: true,
                 outSpatialReference: view.spatialReference,
             });
+            query.features.sort((a, b) => (a.attributes.name < b.attributes.name ? -1 : 1));
             query.features.forEach((feature) => {
-                const { attributes: { FILE_NAME, MAP_NAME }, } = feature;
+                const { titleAttributeField, fileAttributeField } = this;
+                const { attributes } = feature;
                 _imageLayerInfos.push({
                     feature,
-                    fileName: FILE_NAME,
+                    fileName: attributes[fileAttributeField],
                 });
-                _options.push(tsx("calcite-option", { key: KEY++, value: FILE_NAME }, MAP_NAME));
+                _options.push(tsx("calcite-option", { key: KEY++, value: attributes[fileAttributeField] }, attributes[titleAttributeField]));
             });
             this.scheduleRender();
             this.own(this.watch('_opacity', (opacity) => {
@@ -114,11 +119,11 @@ let TaxMaps = class TaxMaps extends Widget {
      */
     _load(imageLayerInfo) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { view, _opacity } = this;
-            const { feature, feature: { attributes: { FILE_NAME, MAP_NAME }, }, } = imageLayerInfo;
-            const layer = yield imageMediaLayer(`https://cityofvernonia.github.io/vernonia-tax-maps/tax-maps/jpg/${FILE_NAME}.jpg`, {
+            const { view, imageUrlTemplate, fileAttributeField, titleAttributeField, _opacity } = this;
+            const { feature, feature: { attributes }, } = imageLayerInfo;
+            const layer = yield imageMediaLayer(imageUrlTemplate.replace(`{${fileAttributeField}}`, attributes[fileAttributeField]), {
                 opacity: _opacity,
-                title: `Tax Map ${MAP_NAME}`,
+                title: `Tax Map ${titleAttributeField}`,
             });
             imageLayerInfo.layer = layer;
             this._imageLayerInfo = imageLayerInfo;
@@ -144,9 +149,9 @@ let TaxMaps = class TaxMaps extends Widget {
     // Render and rendering methods
     //////////////////////////////////////
     render() {
-        const { layer, showSwitch, _imageLayerInfo, _opacity, _options, _loading } = this;
+        const { layer, titleAttributeField, urlAttributeField, showSwitch, _imageLayerInfo, _opacity, _options, _loading } = this;
         return (tsx("calcite-panel", { heading: "Tax Maps" },
-            _imageLayerInfo ? (tsx("calcite-button", { appearance: "outline", href: `https://gis.columbiacountymaps.com/TaxMaps/${_imageLayerInfo.feature.attributes.FILE_NAME}.pdf`, "icon-start": "file-pdf", slot: "footer-actions", target: "_blank", width: "full" }, `View ${_imageLayerInfo.feature.attributes.MAP_NAME}`)) : null,
+            _imageLayerInfo ? (tsx("calcite-button", { appearance: "outline", href: _imageLayerInfo.feature.attributes[urlAttributeField], "icon-start": "file-pdf", slot: "footer-actions", target: "_blank", width: "full" }, `View ${_imageLayerInfo.feature.attributes[titleAttributeField]}`)) : null,
             tsx("div", { style: CSS.content },
                 showSwitch ? (tsx("calcite-label", { layout: "inline" },
                     tsx("calcite-switch", { checked: layer.visible, afterCreate: (_switch) => {
@@ -191,12 +196,12 @@ let TaxMapPopup = class TaxMapPopup extends Widget {
         super(properties);
     }
     render() {
-        const { graphic: { attributes: { FILE_NAME, MAP_NAME }, }, } = this;
+        const { graphic: { attributes }, fileAttributeField, titleAttributeField, urlAttributeField, } = this;
         return (tsx("div", { style: CSS.popup },
             tsx("calcite-button", { "icon-start": "image", width: "full", onclick: () => {
-                    this.emit('show', FILE_NAME);
-                } }, `Show ${MAP_NAME}`),
-            tsx("calcite-button", { appearance: "outline", href: `https://gis.columbiacountymaps.com/TaxMaps/${FILE_NAME}.pdf`, "icon-start": "file-pdf", target: "_blank", width: "full" }, `View ${MAP_NAME}`)));
+                    this.emit('show', attributes[fileAttributeField]);
+                } }, `Show ${attributes[titleAttributeField]}`),
+            tsx("calcite-button", { appearance: "outline", href: attributes[urlAttributeField], "icon-start": "file-pdf", target: "_blank", width: "full" }, `View ${attributes[titleAttributeField]}`)));
     }
 };
 TaxMapPopup = __decorate([

@@ -15,6 +15,23 @@ export default class TaxMaps extends Widget {
          */
         layer: esri.GeoJSONLayer;
         /**
+         * URL template for image and georeference files with field in curly braces, e.g. `{taxmap}`.
+         * Should probably be `fileAttributeField`. ;)
+         */
+        imageUrlTemplate: string;
+        /**
+         * Attribute field containing filename.
+         */
+        fileAttributeField: string;
+        /**
+         * Attribute field for titles, buttons, options, etc.
+         */
+        titleAttributeField: string;
+        /**
+         * URL attribute field containing pdf url.
+         */
+        urlAttributeField: string;
+        /**
          * Display boundaries layer visibility switch.
          * @default true
          */
@@ -23,6 +40,10 @@ export default class TaxMaps extends Widget {
     postInitialize(): Promise<void>;
     view: esri.MapView;
     layer: esri.GeoJSONLayer;
+    imageUrlTemplate: string;
+    fileAttributeField: string;
+    titleAttributeField: string;
+    urlAttributeField: string;
     showSwitch: boolean;
     private _imageLayerInfos;
     private _imageLayerInfo;

@@ -60,6 +60,23 @@ export default class TaxMaps extends Widget {
        */
       layer: esri.GeoJSONLayer;
       /**
+       * URL template for image and georeference files with field in curly braces, e.g. `{taxmap}`.
+       * Should probably be `fileAttributeField`. ;)
+       */
+      imageUrlTemplate: string;
+      /**
+       * Attribute field containing filename.
+       */
+      fileAttributeField: string;
+      /**
+       * Attribute field for titles, buttons, options, etc.
+       */
+      titleAttributeField: string;
+      /**
+       * URL attribute field containing pdf url.
+       */
+      urlAttributeField: string;
+      /**
        * Display boundaries layer visibility switch.
        * @default true
        */
@@ -74,19 +91,25 @@ export default class TaxMaps extends Widget {
       view,
       view: { popup },
       layer,
+      titleAttributeField,
+      fileAttributeField,
+      urlAttributeField,
       _imageLayerInfos,
       _options,
     } = this;
 
     layer.popupTemplate = new PopupTemplate({
       outFields: ['*'],
-      title: '{MAP_NAME}',
+      title: `{${titleAttributeField}}`,
       content: (event: { graphic: esri.Graphic }): HTMLDivElement => {
         const container = document.createElement('div');
 
         const taxMapPopup = new TaxMapPopup({
           graphic: event.graphic,
           container,
+          fileAttributeField,
+          titleAttributeField,
+          urlAttributeField,
         });
 
         taxMapPopup.on('show', (fileName: string) => {
@@ -108,19 +131,20 @@ export default class TaxMaps extends Widget {
       outSpatialReference: view.spatialReference,
     });
 
+    query.features.sort((a: any, b: any) => (a.attributes.name < b.attributes.name ? -1 : 1));
+
     query.features.forEach((feature: esri.Graphic): void => {
-      const {
-        attributes: { FILE_NAME, MAP_NAME },
-      } = feature;
+      const { titleAttributeField, fileAttributeField } = this;
+      const { attributes } = feature;
 
       _imageLayerInfos.push({
         feature,
-        fileName: FILE_NAME,
+        fileName: attributes[fileAttributeField],
       });
 
       _options.push(
-        <calcite-option key={KEY++} value={FILE_NAME}>
-          {MAP_NAME}
+        <calcite-option key={KEY++} value={attributes[fileAttributeField]}>
+          {attributes[titleAttributeField]}
         </calcite-option>,
       );
     });
@@ -143,6 +167,14 @@ export default class TaxMaps extends Widget {
   view!: esri.MapView;
 
   layer!: esri.GeoJSONLayer;
+
+  imageUrlTemplate!: string;
+
+  fileAttributeField!: string;
+
+  titleAttributeField!: string;
+
+  urlAttributeField!: string;
 
   showSwitch = true;
 
@@ -199,19 +231,17 @@ export default class TaxMaps extends Widget {
    * @param imageLayerInfo
    */
   private async _load(imageLayerInfo: ImageLayerInfo): Promise<void> {
-    const { view, _opacity } = this;
+    const { view, imageUrlTemplate, fileAttributeField, titleAttributeField, _opacity } = this;
     const {
       feature,
-      feature: {
-        attributes: { FILE_NAME, MAP_NAME },
-      },
+      feature: { attributes },
     } = imageLayerInfo;
 
     const layer = await imageMediaLayer(
-      `https://cityofvernonia.github.io/vernonia-tax-maps/tax-maps/jpg/${FILE_NAME}.jpg`,
+      imageUrlTemplate.replace(`{${fileAttributeField}}`, attributes[fileAttributeField]),
       {
         opacity: _opacity,
-        title: `Tax Map ${MAP_NAME}`,
+        title: `Tax Map ${titleAttributeField}`,
       },
     );
 
@@ -244,19 +274,20 @@ export default class TaxMaps extends Widget {
   // Render and rendering methods
   //////////////////////////////////////
   render(): tsx.JSX.Element {
-    const { layer, showSwitch, _imageLayerInfo, _opacity, _options, _loading } = this;
+    const { layer, titleAttributeField, urlAttributeField, showSwitch, _imageLayerInfo, _opacity, _options, _loading } =
+      this;
     return (
       <calcite-panel heading="Tax Maps">
         {_imageLayerInfo ? (
           <calcite-button
             appearance="outline"
-            href={`https://gis.columbiacountymaps.com/TaxMaps/${_imageLayerInfo.feature.attributes.FILE_NAME}.pdf`}
+            href={_imageLayerInfo.feature.attributes[urlAttributeField]}
             icon-start="file-pdf"
             slot="footer-actions"
             target="_blank"
             width="full"
           >
-            {`View ${_imageLayerInfo.feature.attributes.MAP_NAME}`}
+            {`View ${_imageLayerInfo.feature.attributes[titleAttributeField]}`}
           </calcite-button>
         ) : null}
         <div style={CSS.content}>
@@ -312,6 +343,18 @@ class TaxMapPopup extends Widget {
   constructor(
     properties: esri.WidgetProperties & {
       graphic: esri.Graphic;
+      /**
+       * Attribute field containing filename.
+       */
+      fileAttributeField: string;
+      /**
+       * Attribute field for titles, buttons, options, etc.
+       */
+      titleAttributeField: string;
+      /**
+       * URL attribute field containing pdf url.
+       */
+      urlAttributeField: string;
     },
   ) {
     super(properties);
@@ -319,11 +362,18 @@ class TaxMapPopup extends Widget {
 
   graphic!: esri.Graphic;
 
+  fileAttributeField!: string;
+
+  titleAttributeField!: string;
+
+  urlAttributeField!: string;
+
   render(): tsx.JSX.Element {
     const {
-      graphic: {
-        attributes: { FILE_NAME, MAP_NAME },
-      },
+      graphic: { attributes },
+      fileAttributeField,
+      titleAttributeField,
+      urlAttributeField,
     } = this;
     return (
       <div style={CSS.popup}>
@@ -331,19 +381,19 @@ class TaxMapPopup extends Widget {
           icon-start="image"
           width="full"
           onclick={(): void => {
-            this.emit('show', FILE_NAME);
+            this.emit('show', attributes[fileAttributeField]);
           }}
         >
-          {`Show ${MAP_NAME}`}
+          {`Show ${attributes[titleAttributeField]}`}
         </calcite-button>
         <calcite-button
           appearance="outline"
-          href={`https://gis.columbiacountymaps.com/TaxMaps/${FILE_NAME}.pdf`}
+          href={attributes[urlAttributeField]}
           icon-start="file-pdf"
           target="_blank"
           width="full"
         >
-          {`View ${MAP_NAME}`}
+          {`View ${attributes[titleAttributeField]}`}
         </calcite-button>
       </div>
     );
