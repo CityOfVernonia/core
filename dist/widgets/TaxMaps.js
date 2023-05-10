@@ -123,7 +123,7 @@ let TaxMaps = class TaxMaps extends Widget {
             const { feature, feature: { attributes }, } = imageLayerInfo;
             const layer = yield imageMediaLayer(imageUrlTemplate.replace(`{${fileAttributeField}}`, attributes[fileAttributeField]), {
                 opacity: _opacity,
-                title: `Tax Map ${titleAttributeField}`,
+                title: `Tax Map ${attributes[titleAttributeField]}`,
             });
             imageLayerInfo.layer = layer;
             this._imageLayerInfo = imageLayerInfo;

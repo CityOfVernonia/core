@@ -241,7 +241,7 @@ export default class TaxMaps extends Widget {
       imageUrlTemplate.replace(`{${fileAttributeField}}`, attributes[fileAttributeField]),
       {
         opacity: _opacity,
-        title: `Tax Map ${titleAttributeField}`,
+        title: `Tax Map ${attributes[titleAttributeField]}`,
       },
     );
 
