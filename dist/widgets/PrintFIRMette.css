@@ -1,0 +1,15 @@
+.cov-printfirmette-content {
+  padding: 0.75rem;
+}
+
+.cov-printfirmette-switch {
+  margin-top: 0.25rem;
+  --calcite-label-margin-bottom: 0;
+}
+
+.cov-printfirmette-error {
+  color: var(--calcite-ui-danger);
+  padding: 0 0.75rem;
+}
+
+/*# sourceMappingURL=PrintFIRMette.css.map */
