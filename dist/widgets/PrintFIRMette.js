@@ -124,6 +124,7 @@ let PrintFIRMette = class PrintFIRMette extends Widget {
             element: (tsx("calcite-list-item", { key: KEY++, label: `FIRMette ${item.count}`, description: "Print error" },
                 tsx("calcite-icon", { class: CSS.error, icon: "exclamation-mark-circle", slot: "actions-end" }))),
         });
+        this._printing = false;
     }
     render() {
         const { _layerVisible, _listItems } = this;

@@ -188,6 +188,7 @@ export default class PrintFIRMette extends Widget {
         </calcite-list-item>
       ),
     });
+    this._printing = false;
   }
 
   render(): tsx.JSX.Element {
