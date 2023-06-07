@@ -606,7 +606,7 @@ export default class Markup extends Widget {
                 label={title.charAt(0).toUpperCase() + title.slice(1)}
                 onclick={this._selectGraphic.bind(this, graphic)}
                 onmouseenter={this._highlightSelected.bind(this, graphic)}
-                onmouseleave={this._unhighlightSelected.bind(this, graphic)}
+                onmouseleave={this._unhighlightSelected.bind(this)}
               >
                 <calcite-icon icon={icon} scale="s" slot="content-end"></calcite-icon>
               </calcite-list-item>

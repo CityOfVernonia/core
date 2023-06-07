@@ -131,7 +131,7 @@ let WaterMeters = class WaterMeters extends Widget {
     }
     render() {
         const { state, _searchResults, _printResults } = this;
-        return (tsx("calcite-shell-panel", { class: CSS.base, detached: "" },
+        return (tsx("calcite-shell-panel", { class: CSS.base, "display-mode": "float" },
             tsx("calcite-panel", { heading: "Water Meters", "width-scale": "m" },
                 tsx("calcite-action", { active: state === 'print', icon: "print", slot: "header-actions-end", text: "Print", onclick: () => {
                         this.state = 'print';
@@ -178,7 +178,7 @@ WaterMeters = __decorate([
     subclass('WaterMeters')
 ], WaterMeters);
 export default WaterMeters;
-let WaterMeterPopup = class WaterMeterPopup extends Widget {
+export let WaterMeterPopup = class WaterMeterPopup extends Widget {
     constructor(properties) {
         super(properties);
         this.container = document.createElement('table');
@@ -256,4 +256,3 @@ __decorate([
 WaterMeterPopup = __decorate([
     subclass('WaterMeterPopup')
 ], WaterMeterPopup);
-export { WaterMeterPopup };

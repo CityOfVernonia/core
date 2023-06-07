@@ -198,7 +198,7 @@ export default class WaterMeters extends Widget {
   render(): tsx.JSX.Element {
     const { state, _searchResults, _printResults } = this;
     return (
-      <calcite-shell-panel class={CSS.base} detached="">
+      <calcite-shell-panel class={CSS.base} display-mode="float">
         <calcite-panel heading="Water Meters" width-scale="m">
           <calcite-action
             active={state === 'print'}

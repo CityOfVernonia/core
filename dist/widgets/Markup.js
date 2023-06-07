@@ -445,7 +445,7 @@ let Markup = class Markup extends Widget {
                             : geometryType === 'polyline'
                                 ? 'line'
                                 : 'polygon-vertices';
-                    return (tsx("calcite-list-item", { key: KEY++, label: title.charAt(0).toUpperCase() + title.slice(1), onclick: this._selectGraphic.bind(this, graphic), onmouseenter: this._highlightSelected.bind(this, graphic), onmouseleave: this._unhighlightSelected.bind(this, graphic) },
+                    return (tsx("calcite-list-item", { key: KEY++, label: title.charAt(0).toUpperCase() + title.slice(1), onclick: this._selectGraphic.bind(this, graphic), onmouseenter: this._highlightSelected.bind(this, graphic), onmouseleave: this._unhighlightSelected.bind(this) },
                         tsx("calcite-icon", { icon: icon, scale: "s", slot: "content-end" })));
                 }));
                 this._viewState = 'features';
