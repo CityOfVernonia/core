@@ -14,6 +14,6 @@ export const propertyInfoUrl = (accountId: number | string, year: number): strin
  * @param fileType
  * @returns tax map url string
  */
-export const taxMapUrl = (mapId: string, fileType?: 'pdf' | 'tiff'): string => {
-  return `https://gis.columbiacountymaps.com/TaxMaps/${mapId}.${fileType || 'pdf'}`;
+export const taxMapUrl = (mapId: string): string => {
+  return `https://gis.columbiacountymaps.com/TaxMaps/${mapId}.pdf`;
 };
