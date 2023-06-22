@@ -110,8 +110,11 @@ export default class Markup extends Widget {
     private _cancelBufferOffset;
     private _offset;
     private _selectedPopupFeature;
+    private _confirmVerticesModal;
+    private _confirmVerticesModalHandle;
     private _addSelectedPopupFeature;
     private _addVertices;
+    private __addVertices;
     private _confirmLoadModal;
     private _confirmLoadModalHandle;
     private _save;

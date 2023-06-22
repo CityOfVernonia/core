@@ -5,6 +5,7 @@ export declare const queryFeatureGeometry: (options: {
     graphic: esri.Graphic;
     outSpatialReference?: esri.SpatialReference;
 }) => Promise<esri.Geometry>;
+export declare const numberOfVertices: (geometry: esri.Polyline | esri.Polygon) => number;
 export declare const polylineVertices: (polyline: esri.Polyline, spatialReference: esri.SpatialReference) => esri.Point[];
 export declare const polygonVertices: (polygon: esri.Polygon, spatialReference: esri.SpatialReference) => esri.Point[];
 export declare const buffer: (geometry: esri.Geometry, distance: number, unit: esri.LinearUnits) => esri.Geometry;

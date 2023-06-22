@@ -10,6 +10,27 @@ export const queryFeatureGeometry = (options) => __awaiter(void 0, void 0, void 
         outSpatialReference: outSpatialReference || layer.spatialReference,
     })).features[0].geometry;
 });
+export const numberOfVertices = (geometry) => {
+    const { type } = geometry;
+    let count = 0;
+    if (type === 'polyline') {
+        geometry.paths.forEach((path) => {
+            path.forEach(() => {
+                ++count;
+            });
+        });
+    }
+    if (type === 'polygon') {
+        geometry.rings.forEach((ring) => {
+            ring.forEach((vertex, index) => {
+                if (index + 1 < ring.length) {
+                    ++count;
+                }
+            });
+        });
+    }
+    return count;
+};
 export const polylineVertices = (polyline, spatialReference) => {
     const vertices = [];
     polyline.paths.forEach((path) => {

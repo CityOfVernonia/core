@@ -11,7 +11,7 @@ import Graphic from '@arcgis/core/Graphic';
 import Color from '@arcgis/core/Color';
 import { CIMSymbol, SimpleFillSymbol, SimpleLineSymbol, SimpleMarkerSymbol, TextSymbol } from '@arcgis/core/symbols';
 import SymbolEditor from './Markup/SymbolEditor';
-import { queryFeatureGeometry, polylineVertices, polygonVertices, buffer, offset } from './Markup/geometry';
+import { queryFeatureGeometry, numberOfVertices, polylineVertices, polygonVertices, buffer, offset, } from './Markup/geometry';
 const CSS = {
     base: 'cov-markup',
     content: 'cov-markup--content',
@@ -597,7 +597,7 @@ let Markup = class Markup extends Widget {
     }
     _addVertices() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { view: { spatialReference }, _selectedGraphic, _selectedPopupFeature, } = this;
+            const { view: { spatialReference }, _selectedGraphic, _selectedPopupFeature, _confirmVerticesModal, _confirmVerticesModalHandle, } = this;
             const graphic = _selectedGraphic || _selectedPopupFeature;
             if (!graphic)
                 return;
@@ -614,15 +614,33 @@ let Markup = class Markup extends Widget {
                     graphic,
                     outSpatialReference: spatialReference,
                 });
-            if (geometry.type === 'polyline')
-                polylineVertices(geometry, spatialReference).forEach((point) => {
-                    this._addGeometry(point);
+            const count = numberOfVertices(geometry);
+            if (count > 500 && !_confirmVerticesModal) {
+                this._confirmVerticesModal = new (yield import('./Markup/ConfirmVerticesModal')).default();
+            }
+            if (count > 500) {
+                this._confirmVerticesModal.container.open = true;
+                if (_confirmVerticesModalHandle)
+                    _confirmVerticesModalHandle.remove();
+                this._confirmVerticesModalHandle = this._confirmVerticesModal.on('confirmed', (confirmed) => {
+                    if (confirmed)
+                        this.__addVertices(geometry, spatialReference);
                 });
-            if (geometry.type === 'polygon')
-                polygonVertices(geometry, spatialReference).forEach((point) => {
-                    this._addGeometry(point);
-                });
+            }
+            else {
+                this.__addVertices(geometry, spatialReference);
+            }
         });
+    }
+    __addVertices(geometry, spatialReference) {
+        if (geometry.type === 'polyline')
+            polylineVertices(geometry, spatialReference).forEach((point) => {
+                this._addGeometry(point);
+            });
+        if (geometry.type === 'polygon')
+            polygonVertices(geometry, spatialReference).forEach((point) => {
+                this._addGeometry(point);
+            });
     }
     _save(event) {
         var _a;

@@ -7,6 +7,7 @@ interface I {
 }
 
 import type ConfirmLoadModal from './Markup/ConfirmLoadModal';
+import type ConfirmVerticesModal from './Markup/ConfirmVerticesModal';
 
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
@@ -20,7 +21,14 @@ import Graphic from '@arcgis/core/Graphic';
 import Color from '@arcgis/core/Color';
 import { CIMSymbol, SimpleFillSymbol, SimpleLineSymbol, SimpleMarkerSymbol, TextSymbol } from '@arcgis/core/symbols';
 import SymbolEditor from './Markup/SymbolEditor';
-import { queryFeatureGeometry, polylineVertices, polygonVertices, buffer, offset } from './Markup/geometry';
+import {
+  queryFeatureGeometry,
+  numberOfVertices,
+  polylineVertices,
+  polygonVertices,
+  buffer,
+  offset,
+} from './Markup/geometry';
 
 const CSS = {
   base: 'cov-markup',
@@ -767,6 +775,10 @@ export default class Markup extends Widget {
   @property()
   private _selectedPopupFeature: esri.Graphic | null = null;
 
+  private _confirmVerticesModal!: ConfirmVerticesModal;
+
+  private _confirmVerticesModalHandle!: IHandle;
+
   private async _addSelectedPopupFeature(): Promise<void> {
     const {
       view: { popup, spatialReference },
@@ -794,6 +806,8 @@ export default class Markup extends Widget {
       view: { spatialReference },
       _selectedGraphic,
       _selectedPopupFeature,
+      _confirmVerticesModal,
+      _confirmVerticesModalHandle,
     } = this;
     const graphic = _selectedGraphic || _selectedPopupFeature;
     if (!graphic) return;
@@ -808,6 +822,22 @@ export default class Markup extends Widget {
         graphic,
         outSpatialReference: spatialReference,
       });
+    const count = numberOfVertices(geometry as esri.Polyline | esri.Polygon);
+    if (count > 500 && !_confirmVerticesModal) {
+      this._confirmVerticesModal = new (await import('./Markup/ConfirmVerticesModal')).default();
+    }
+    if (count > 500) {
+      this._confirmVerticesModal.container.open = true;
+      if (_confirmVerticesModalHandle) _confirmVerticesModalHandle.remove();
+      this._confirmVerticesModalHandle = this._confirmVerticesModal.on('confirmed', (confirmed: boolean): void => {
+        if (confirmed) this.__addVertices(geometry as esri.Polyline | esri.Polygon, spatialReference);
+      });
+    } else {
+      this.__addVertices(geometry as esri.Polyline | esri.Polygon, spatialReference);
+    }
+  }
+
+  private __addVertices(geometry: esri.Polyline | esri.Polygon, spatialReference: esri.SpatialReference): void {
     if (geometry.type === 'polyline')
       polylineVertices(geometry as esri.Polyline, spatialReference).forEach((point: esri.Point): void => {
         this._addGeometry(point);

@@ -23,6 +23,28 @@ export const queryFeatureGeometry = async (options: {
   ).features[0].geometry;
 };
 
+export const numberOfVertices = (geometry: esri.Polyline | esri.Polygon): number => {
+  const { type } = geometry;
+  let count = 0;
+  if (type === 'polyline') {
+    geometry.paths.forEach((path: number[][]): void => {
+      path.forEach((): void => {
+        ++count;
+      });
+    });
+  }
+  if (type === 'polygon') {
+    geometry.rings.forEach((ring: number[][]): void => {
+      ring.forEach((vertex: number[], index: number): void => {
+        if (index + 1 < ring.length) {
+          ++count;
+        }
+      });
+    });
+  }
+  return count;
+};
+
 export const polylineVertices = (polyline: esri.Polyline, spatialReference: esri.SpatialReference): esri.Point[] => {
   const vertices: esri.Point[] = [];
   polyline.paths.forEach((path: number[][]): void => {
