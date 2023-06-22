@@ -312,7 +312,8 @@ let Markup = class Markup extends Widget {
     _reset() {
         const { view: { popup }, _sketch, } = this;
         popup.close();
-        popup.clear();
+        if (popup.clear && typeof popup.clear === 'function')
+            popup.clear();
         _sketch.cancel();
         this._drawState = 'ready';
         this._selectReset();
@@ -419,7 +420,8 @@ let Markup = class Markup extends Widget {
             return;
         }
         popup.close();
-        popup.clear();
+        if (popup.clear && typeof popup.clear === 'function')
+            popup.clear();
         this._selectHandle = view.on('click', (event) => __awaiter(this, void 0, void 0, function* () {
             event.stopPropagation();
             if (this.hasHandles(HANDLES.SELECTED))

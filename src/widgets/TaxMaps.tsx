@@ -115,7 +115,7 @@ export default class TaxMaps extends Widget {
         taxMapPopup.on('show', (fileName: string) => {
           this._show(fileName);
           popup.close();
-          popup.clear();
+          if (popup.clear && typeof popup.clear === 'function') popup.clear();
         });
 
         return container;

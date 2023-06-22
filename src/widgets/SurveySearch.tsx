@@ -202,7 +202,7 @@ export default class SurveySearch extends Widget {
           description={`${type} - ${date}`}
           afterCreate={(listItem: HTMLCalciteListItemElement): void => {
             listItem.addEventListener('calciteListItemSelect', (): void => {
-              popup.clear();
+              if (popup.clear && typeof popup.clear === 'function') popup.clear();
               popup.close();
               popup.open({
                 features: [feature],

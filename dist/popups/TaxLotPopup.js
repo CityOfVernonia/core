@@ -1,4 +1,5 @@
 import PopupTemplate from '@arcgis/core/PopupTemplate';
+import { propertyInfoUrl, taxMapUrl } from './../support/AssessorURLs';
 export default new PopupTemplate({
     title: '{TAXLOT_ID}',
     content: (event) => {
@@ -13,7 +14,7 @@ export default new PopupTemplate({
             : '';
         const accounts = ACCOUNT_IDS.split(',').map((account) => {
             return `
-          <calcite-link href="https://propertyquery.columbiacountyor.gov/columbiaat/MainQueryDetails.aspx?AccountID=${account}&QueryYear=2023&Roll=R" target="_blank">${account}</calcite-link>
+          <calcite-link href="${propertyInfoUrl(account, 2023)}" target="_blank">${account}</calcite-link>
         `;
         });
         const el = new DOMParser().parseFromString(`<table class="esri-widget__table">
@@ -26,7 +27,7 @@ export default new PopupTemplate({
           <tr>
             <th>Tax map</th>
             <td>
-              <calcite-link href="https://gis.columbiacountymaps.com/TaxMaps/${TAXMAP}.pdf" target="_blank">${TAXMAP}</calcite-link>
+              <calcite-link href="${taxMapUrl(TAXMAP)}" target="_blank">${TAXMAP}</calcite-link>
             </td>
           </tr>
           <tr>

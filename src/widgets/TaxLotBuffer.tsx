@@ -105,7 +105,7 @@ export default class TaxLotBuffer extends Widget {
       _graphics,
     } = this;
 
-    popup.clear();
+    if (popup.clear && typeof popup.clear === 'function') popup.clear();
     popup.close();
 
     this.state = 'ready';

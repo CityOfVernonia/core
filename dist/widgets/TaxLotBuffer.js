@@ -63,7 +63,8 @@ let TaxLotBuffer = class TaxLotBuffer extends Widget {
     }
     _clear() {
         const { view: { popup }, _graphics, } = this;
-        popup.clear();
+        if (popup.clear && typeof popup.clear === 'function')
+            popup.clear();
         popup.close();
         this.state = 'ready';
         _graphics.removeAll();

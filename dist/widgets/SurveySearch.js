@@ -129,7 +129,8 @@ let SurveySearch = class SurveySearch extends Widget {
                 // add result item
                 _results.add(tsx("calcite-list-item", { key: KEY++, label: title, description: `${type} - ${date}`, afterCreate: (listItem) => {
                         listItem.addEventListener('calciteListItemSelect', () => {
-                            popup.clear();
+                            if (popup.clear && typeof popup.clear === 'function')
+                                popup.clear();
                             popup.close();
                             popup.open({
                                 features: [feature],

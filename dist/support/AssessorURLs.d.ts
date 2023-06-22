@@ -11,4 +11,4 @@ export declare const propertyInfoUrl: (accountId: number | string, year: number)
  * @param fileType
  * @returns tax map url string
  */
-export declare const taxMapUrl: (mapId: string, fileType?: 'pdf' | 'tiff') => string;
+export declare const taxMapUrl: (mapId: string) => string;

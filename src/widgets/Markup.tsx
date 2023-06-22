@@ -413,7 +413,7 @@ export default class Markup extends Widget {
       _sketch,
     } = this;
     popup.close();
-    popup.clear();
+    if (popup.clear && typeof popup.clear === 'function') popup.clear();
     _sketch.cancel();
     this._drawState = 'ready';
     this._selectReset();
@@ -567,7 +567,7 @@ export default class Markup extends Widget {
       return;
     }
     popup.close();
-    popup.clear();
+    if (popup.clear && typeof popup.clear === 'function') popup.clear();
     this._selectHandle = view.on('click', async (event: esri.ViewClickEvent): Promise<void> => {
       event.stopPropagation();
       if (this.hasHandles(HANDLES.SELECTED)) this.removeHandles(HANDLES.SELECTED);
