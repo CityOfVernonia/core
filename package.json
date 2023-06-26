@@ -1,6 +1,6 @@
 {
   "name": "@vernonia/core",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "City of Vernonia widgets and friends for Esri JavaScript API using Calcite.",
   "type": "module",
   "scripts": {
@@ -27,7 +27,7 @@
     "@types/papaparse": "^5.3.7",
     "@types/sortablejs": "^1.15.1",
     "@typescript-eslint/eslint-plugin": "^5.60.0",
-    "@typescript-eslint/parser": "^5.60.0",
+    "@typescript-eslint/parser": "^5.60.1",
     "@vernonia/map-application": "^1.0.18",
     "eslint": "^8.43.0",
     "eslint-config-prettier": "^8.8.0",
@@ -40,7 +40,7 @@
     "vite": "^4.3.9"
   },
   "dependencies": {
-    "@arcgis/core": "^4.27.3",
+    "@arcgis/core": "^4.27.6",
     "@esri/calcite-components": "^1.4.2",
     "@vernonia/georeferenced-media": "^1.0.3",
     "js-cookie": "^3.0.5",
