@@ -1,6 +1,6 @@
 import esri = __esri;
 
-export interface LayerInfoProperties extends Object {
+export interface LayerInfoProperties {
   /**
    * Editable feature layer.
    */

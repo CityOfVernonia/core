@@ -72,7 +72,7 @@ interface MeasureProperties extends esri.WidgetProperties {
      */
     localeFormat?: boolean;
 }
-interface MeasureState extends Object {
+interface MeasureState {
     /**
      * Operational state of the widget.
      */

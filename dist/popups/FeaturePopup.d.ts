@@ -1,5 +1,5 @@
 import esri = __esri;
-interface DisplayInfo extends Object {
+interface DisplayInfo {
     /**
      * Field name or expression name.
      */

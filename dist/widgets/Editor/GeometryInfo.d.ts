@@ -2,7 +2,7 @@ import esri = __esri;
 export interface GeometryInfoProperties extends esri.WidgetProperties {
     layer: esri.FeatureLayer;
 }
-interface Info extends Object {
+interface Info {
     length: number;
     area: number;
     type: string;

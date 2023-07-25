@@ -4,7 +4,7 @@ export interface PhotoAttachmentsProperties extends esri.WidgetProperties {
   layer: esri.FeatureLayer;
 }
 
-interface Attachment extends Object {
+interface Attachment {
   id: number;
   name: string;
   url: string;

@@ -1,6 +1,6 @@
 import esri = __esri;
 
-interface DisplayInfo extends Object {
+interface DisplayInfo {
   /**
    * Field name or expression name.
    */
@@ -80,7 +80,7 @@ interface DisplayInfo extends Object {
   ) => string;
 }
 
-interface _DisplayInfo extends Object {
+interface _DisplayInfo {
   label: string;
   value: any;
   isUrl?: boolean;

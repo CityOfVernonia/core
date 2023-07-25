@@ -66,7 +66,7 @@ interface MeasureProperties extends esri.WidgetProperties {
   localeFormat?: boolean;
 }
 
-interface MeasureState extends Object {
+interface MeasureState {
   /**
    * Operational state of the widget.
    */
@@ -136,7 +136,7 @@ interface MeasureState extends Object {
   profileGeometry: Polyline | null;
 }
 
-interface SettingsInfo extends Object {
+interface SettingsInfo {
   snapping: boolean;
   labels: boolean;
   labelUnits: boolean;

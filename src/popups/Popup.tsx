@@ -98,7 +98,7 @@ export interface FieldInfo {
   ) => string;
 }
 
-interface RowInfo extends Object {
+interface RowInfo {
   label: string;
   value: any;
   isUrl: boolean;

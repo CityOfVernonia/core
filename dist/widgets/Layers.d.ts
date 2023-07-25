@@ -1,5 +1,5 @@
 import esri = __esri;
-interface AddLayerInfo extends Object {
+interface AddLayerInfo {
     /**
      * Layer index.
      */
