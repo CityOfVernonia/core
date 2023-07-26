@@ -1,7 +1,4 @@
 import { __decorate } from "tslib";
-//////////////////////////////////////
-// Interfaces and module imports
-//////////////////////////////////////
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -9,12 +6,16 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
  * Modal widget for viewing and downloading images.
  */
 let PhotoModal = class PhotoModal extends Widget {
-    constructor() {
-        super();
+    constructor(properties) {
+        super(properties);
         //////////////////////////////////////
         // Lifecycle
         //////////////////////////////////////
         this.container = document.createElement('calcite-modal');
+        //////////////////////////////////////
+        // Properties
+        //////////////////////////////////////
+        this.showDownload = true;
         //////////////////////////////////////
         // Variables
         //////////////////////////////////////
@@ -63,12 +64,12 @@ let PhotoModal = class PhotoModal extends Widget {
     // Render and rendering methods
     //////////////////////////////////////
     render() {
-        const { _fileName, _url } = this;
+        const { showDownload, _fileName, _url } = this;
         return (tsx("calcite-modal", null,
             tsx("div", { slot: "header" }, _fileName),
             tsx("div", { slot: "content" },
                 tsx("img", { style: "width: 100%;", src: _url })),
-            tsx("calcite-button", { appearance: "outline", slot: "secondary", width: "full", onclick: this.download.bind(this, _fileName, _url) }, "Download"),
+            showDownload ? (tsx("calcite-button", { appearance: "outline", slot: "secondary", width: "full", onclick: this.download.bind(this, _fileName, _url) }, "Download")) : null,
             tsx("calcite-button", { slot: "primary", width: "full", onclick: this._close.bind(this) }, "Close")));
     }
 };

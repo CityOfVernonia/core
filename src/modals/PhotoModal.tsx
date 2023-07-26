@@ -1,6 +1,7 @@
 //////////////////////////////////////
 // Interfaces and module imports
 //////////////////////////////////////
+import esri = __esri;
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -15,10 +16,23 @@ export default class PhotoModal extends Widget {
   //////////////////////////////////////
   container = document.createElement('calcite-modal');
 
-  constructor() {
-    super();
+  constructor(
+    properties?: esri.WidgetProperties & {
+      /**
+       * Show download button.
+       * @default true
+       */
+      showDownload?: boolean;
+    },
+  ) {
+    super(properties);
     document.body.append(this.container);
   }
+
+  //////////////////////////////////////
+  // Properties
+  //////////////////////////////////////
+  showDownload = true;
 
   //////////////////////////////////////
   // Public methods
@@ -73,21 +87,23 @@ export default class PhotoModal extends Widget {
   // Render and rendering methods
   //////////////////////////////////////
   render(): tsx.JSX.Element {
-    const { _fileName, _url } = this;
+    const { showDownload, _fileName, _url } = this;
     return (
       <calcite-modal>
         <div slot="header">{_fileName}</div>
         <div slot="content">
           <img style="width: 100%;" src={_url}></img>
         </div>
-        <calcite-button
-          appearance="outline"
-          slot="secondary"
-          width="full"
-          onclick={this.download.bind(this, _fileName, _url)}
-        >
-          Download
-        </calcite-button>
+        {showDownload ? (
+          <calcite-button
+            appearance="outline"
+            slot="secondary"
+            width="full"
+            onclick={this.download.bind(this, _fileName, _url)}
+          >
+            Download
+          </calcite-button>
+        ) : null}
         <calcite-button slot="primary" width="full" onclick={this._close.bind(this)}>
           Close
         </calcite-button>

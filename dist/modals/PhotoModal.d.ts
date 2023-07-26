@@ -1,4 +1,5 @@
 /// <reference types="@esri/calcite-components" />
+import esri = __esri;
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 /**
@@ -6,7 +7,14 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
  */
 export default class PhotoModal extends Widget {
     container: HTMLCalciteModalElement;
-    constructor();
+    constructor(properties?: esri.WidgetProperties & {
+        /**
+         * Show download button.
+         * @default true
+         */
+        showDownload?: boolean;
+    });
+    showDownload: boolean;
     /**
      * Download an image (or any data url file).
      * @param fileName File name to be downloaded
