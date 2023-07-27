@@ -69,8 +69,8 @@ export default class PhotoModal extends Widget {
    */
   show(fileName: string, url: string): void {
     this._fileName = fileName;
+    if (this._url !== url) this._loading = true;
     this._url = url;
-    this._loading = true;
     this.container.open = true;
   }
 

@@ -57,8 +57,9 @@ let PhotoModal = class PhotoModal extends Widget {
      */
     show(fileName, url) {
         this._fileName = fileName;
+        if (this._url !== url)
+            this._loading = true;
         this._url = url;
-        this._loading = true;
         this.container.open = true;
     }
     //////////////////////////////////////
