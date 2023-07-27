@@ -6,6 +6,10 @@ import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 
+const URL_REG_EXP = new RegExp(
+  /https:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/,
+);
+
 /**
  * Modal widget for viewing and downloading images.
  */
@@ -42,9 +46,14 @@ export default class PhotoModal extends Widget {
    * @param fileName File name to be downloaded
    * @param url Data url
    */
-  download(fileName: string, url: string): void {
+  async download(fileName: string, url: string): Promise<void> {
+    let _url = url;
+    if (url.match(URL_REG_EXP)) {
+      const blob = await (await fetch(url)).blob();
+      _url = URL.createObjectURL(blob);
+    }
     const a = Object.assign(document.createElement('a'), {
-      href: url,
+      href: _url,
       download: fileName,
       style: 'display: none;',
     });
@@ -61,6 +70,7 @@ export default class PhotoModal extends Widget {
   show(fileName: string, url: string): void {
     this._fileName = fileName;
     this._url = url;
+    this._loading = true;
     this.container.open = true;
   }
 
@@ -72,6 +82,9 @@ export default class PhotoModal extends Widget {
 
   @property()
   private _url = '';
+
+  @property()
+  private _loading = false;
 
   //////////////////////////////////////
   // Private methods
@@ -92,7 +105,15 @@ export default class PhotoModal extends Widget {
       <calcite-modal>
         <div slot="header">{_fileName}</div>
         <div slot="content">
-          <img style="width: 100%;" src={_url}></img>
+          <img
+            style="width: 100%; min-height: 300px;"
+            src={_url}
+            afterCreate={(img: HTMLImageElement): void => {
+              img.addEventListener('load', (): void => {
+                this._loading = false;
+              });
+            }}
+          ></img>
         </div>
         {showDownload ? (
           <calcite-button

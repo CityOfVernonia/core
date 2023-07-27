@@ -20,7 +20,7 @@ export default class PhotoModal extends Widget {
      * @param fileName File name to be downloaded
      * @param url Data url
      */
-    download(fileName: string, url: string): void;
+    download(fileName: string, url: string): Promise<void>;
     /**
      * Show image in modal.
      * @param fileName File name of image
@@ -29,6 +29,7 @@ export default class PhotoModal extends Widget {
     show(fileName: string, url: string): void;
     private _fileName;
     private _url;
+    private _loading;
     /**
      * Close modal.
      */
