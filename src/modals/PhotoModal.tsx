@@ -100,11 +100,12 @@ export default class PhotoModal extends Widget {
   // Render and rendering methods
   //////////////////////////////////////
   render(): tsx.JSX.Element {
-    const { showDownload, _fileName, _url } = this;
+    const { showDownload, _fileName, _url, _loading } = this;
     return (
-      <calcite-modal>
+      <calcite-modal style="--calcite-modal-content-padding: 0;">
         <div slot="header">{_fileName}</div>
         <div slot="content">
+          <calcite-scrim hidden={!_loading} loading=""></calcite-scrim>
           <img
             style="width: 100%; min-height: 300px;"
             src={_url}

@@ -74,10 +74,11 @@ let PhotoModal = class PhotoModal extends Widget {
     // Render and rendering methods
     //////////////////////////////////////
     render() {
-        const { showDownload, _fileName, _url } = this;
-        return (tsx("calcite-modal", null,
+        const { showDownload, _fileName, _url, _loading } = this;
+        return (tsx("calcite-modal", { style: "--calcite-modal-content-padding: 0;" },
             tsx("div", { slot: "header" }, _fileName),
             tsx("div", { slot: "content" },
+                tsx("calcite-scrim", { hidden: !_loading, loading: "" }),
                 tsx("img", { style: "width: 100%; min-height: 300px;", src: _url, afterCreate: (img) => {
                         img.addEventListener('load', () => {
                             this._loading = false;
