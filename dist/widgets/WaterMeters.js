@@ -160,7 +160,7 @@ let WaterMeters = class WaterMeters extends Widget {
                                 tsx("calcite-segmented-control-item", { value: "" }, "None"),
                                 tsx("calcite-segmented-control-item", { checked: "", value: "wsc_id" }, "Service id"),
                                 tsx("calcite-segmented-control-item", { value: "address" }, "Address"))))),
-                tsx("calcite-button", { hidden: state === 'search', appearance: "outline", slot: state === 'search' ? '' : 'footer-actions', width: "full", onclick: () => {
+                tsx("calcite-button", { hidden: state === 'search', appearance: "outline", slot: state === 'search' ? '' : 'footer', width: "full", onclick: () => {
                         this.state = 'search';
                     } }, "Back"))));
     }

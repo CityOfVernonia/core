@@ -265,7 +265,7 @@ export default class WaterMeters extends Widget {
           <calcite-button
             hidden={state === 'search'}
             appearance="outline"
-            slot={state === 'search' ? '' : 'footer-actions'}
+            slot={state === 'search' ? '' : 'footer'}
             width="full"
             onclick={(): void => {
               this.state = 'search';

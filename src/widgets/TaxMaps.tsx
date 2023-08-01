@@ -283,7 +283,7 @@ export default class TaxMaps extends Widget {
             appearance="outline"
             href={_imageLayerInfo.feature.attributes[urlAttributeField]}
             icon-start="file-pdf"
-            slot="footer-actions"
+            slot="footer"
             target="_blank"
             width="full"
           >

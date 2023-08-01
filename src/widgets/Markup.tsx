@@ -1201,7 +1201,7 @@ export default class Markup extends Widget {
           appearance="outline"
           form={newTextId}
           hidden={_viewState !== 'text'}
-          slot={_viewState === 'text' ? 'footer-actions' : null}
+          slot={_viewState === 'text' ? 'footer' : null}
           type="submit"
           width="full"
         >
@@ -1296,7 +1296,7 @@ export default class Markup extends Widget {
         <calcite-button
           appearance="outline"
           hidden={_viewState !== 'feature'}
-          slot={_viewState === 'feature' ? 'footer-actions' : null}
+          slot={_viewState === 'feature' ? 'footer' : null}
           width="full"
           onclick={this._clearSelection.bind(this)}
         >
@@ -1318,7 +1318,7 @@ export default class Markup extends Widget {
         </div>
         <calcite-button
           hidden={_viewState !== 'buffer'}
-          slot={_viewState === 'buffer' ? 'footer-actions' : null}
+          slot={_viewState === 'buffer' ? 'footer' : null}
           width="full"
           onclick={this._buffer.bind(this)}
         >
@@ -1327,7 +1327,7 @@ export default class Markup extends Widget {
         <calcite-button
           appearance="outline"
           hidden={_viewState !== 'buffer'}
-          slot={_viewState === 'buffer' ? 'footer-actions' : null}
+          slot={_viewState === 'buffer' ? 'footer' : null}
           width="full"
           onclick={this._cancelBufferOffset.bind(this)}
         >
@@ -1357,7 +1357,7 @@ export default class Markup extends Widget {
         </div>
         <calcite-button
           hidden={_viewState !== 'offset'}
-          slot={_viewState === 'offset' ? 'footer-actions' : null}
+          slot={_viewState === 'offset' ? 'footer' : null}
           width="full"
           onclick={this._offset.bind(this)}
         >
@@ -1366,7 +1366,7 @@ export default class Markup extends Widget {
         <calcite-button
           appearance="outline"
           hidden={_viewState !== 'offset'}
-          slot={_viewState === 'offset' ? 'footer-actions' : null}
+          slot={_viewState === 'offset' ? 'footer' : null}
           width="full"
           onclick={this._cancelBufferOffset.bind(this)}
         >
@@ -1410,7 +1410,7 @@ export default class Markup extends Widget {
         <calcite-button
           appearance="outline"
           hidden={_viewState !== 'save'}
-          slot={_viewState === 'save' ? 'footer-actions' : null}
+          slot={_viewState === 'save' ? 'footer' : null}
           width="full"
           onclick={(): void => {
             this._viewState = 'markup';

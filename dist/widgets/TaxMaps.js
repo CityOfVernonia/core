@@ -152,7 +152,7 @@ let TaxMaps = class TaxMaps extends Widget {
     render() {
         const { layer, titleAttributeField, urlAttributeField, showSwitch, _imageLayerInfo, _opacity, _options, _loading } = this;
         return (tsx("calcite-panel", { heading: "Tax Maps" },
-            _imageLayerInfo ? (tsx("calcite-button", { appearance: "outline", href: _imageLayerInfo.feature.attributes[urlAttributeField], "icon-start": "file-pdf", slot: "footer-actions", target: "_blank", width: "full" }, `View ${_imageLayerInfo.feature.attributes[titleAttributeField]}`)) : null,
+            _imageLayerInfo ? (tsx("calcite-button", { appearance: "outline", href: _imageLayerInfo.feature.attributes[urlAttributeField], "icon-start": "file-pdf", slot: "footer", target: "_blank", width: "full" }, `View ${_imageLayerInfo.feature.attributes[titleAttributeField]}`)) : null,
             tsx("div", { style: CSS.content },
                 showSwitch ? (tsx("calcite-label", { layout: "inline" },
                     tsx("calcite-switch", { checked: layer.visible, afterCreate: (_switch) => {

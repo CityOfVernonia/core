@@ -243,7 +243,7 @@ export default class TaxLotBuffer extends Widget {
         <calcite-button
           form={form}
           hidden={state !== 'selected'}
-          slot={state === 'selected' ? 'footer-actions' : null}
+          slot={state === 'selected' ? 'footer' : null}
           type="submit"
           width="full"
         >
@@ -262,7 +262,7 @@ export default class TaxLotBuffer extends Widget {
         <calcite-button
           hidden={state !== 'buffered'}
           icon-start="file-csv"
-          slot={state === 'buffered' ? 'footer-actions' : null}
+          slot={state === 'buffered' ? 'footer' : null}
           width="full"
           onclick={this._download.bind(this)}
         >
@@ -271,7 +271,7 @@ export default class TaxLotBuffer extends Widget {
         <calcite-button
           appearance="outline"
           hidden={state !== 'buffered'}
-          slot={state === 'buffered' ? 'footer-actions' : null}
+          slot={state === 'buffered' ? 'footer' : null}
           width="full"
           onclick={this._clear.bind(this)}
         >
