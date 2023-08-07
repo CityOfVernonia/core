@@ -31,6 +31,9 @@ export default class PhotoModal extends Widget {
   ) {
     super(properties);
     document.body.append(this.container);
+    this.container.addEventListener('calciteModalClose', (): void => {
+      this._url = '';
+    });
   }
 
   //////////////////////////////////////

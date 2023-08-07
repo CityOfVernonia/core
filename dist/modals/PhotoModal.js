@@ -24,6 +24,9 @@ let PhotoModal = class PhotoModal extends Widget {
         this._url = '';
         this._loading = false;
         document.body.append(this.container);
+        this.container.addEventListener('calciteModalClose', () => {
+            this._url = '';
+        });
     }
     //////////////////////////////////////
     // Public methods
