@@ -443,11 +443,11 @@ calcite-shell-panel.cov-editor calcite-panel {
   box-shadow: none !important;
 }
 
-.cov-survey-search--content {
+.cov-widgets--survey-search_content {
   padding: 0.75rem;
 }
 
-.cov-survey-search--content-searching {
+.cov-widgets--survey-search_content-searching {
   padding: 3rem 3rem 2rem;
 }
 
