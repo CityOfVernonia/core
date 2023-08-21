@@ -1,8 +1,19 @@
+//////////////////////////////////////
+// Interfaces
+//////////////////////////////////////
 import esri = __esri;
-import PopupTemplate from '@arcgis/core/PopupTemplate';
-import { propertyInfoUrl, taxMapUrl } from './../support/AssessorURLs';
 
+//////////////////////////////////////
+// Modules
+//////////////////////////////////////
+import PopupTemplate from '@arcgis/core/PopupTemplate';
+import { propertyInfoUrl, taxMapUrl } from '../support/assessorURLs';
+
+/**
+ * Vernonia tax lot popup.
+ */
 export default new PopupTemplate({
+  outFields: ['*'],
   title: '{TAXLOT_ID}',
   content: (event: { graphic: esri.Graphic }): HTMLElement => {
     const { TAXLOT_ID, ACCOUNT_IDS, TAXMAP, ADDRESS, OWNER, ACRES, SQ_FEET } = event.graphic.attributes;

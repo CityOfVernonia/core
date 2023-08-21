@@ -75,7 +75,7 @@ export default class Layers extends Widget {
     private _addLayerInfo;
     private _addLayerFromPortalLayerInfo;
     private _addLayerFromServerLayerInfo;
-    private _addWebLayers;
+    private _addWebLayersModal;
     private _showAddWebLayers;
     render(): tsx.JSX.Element;
     private _createLayerList;

@@ -1,4 +1,22 @@
+//////////////////////////////////////
+// Interfaces
+//////////////////////////////////////
 import esri = __esri;
+
+export interface TaxLotBufferProperties extends esri.WidgetProperties {
+  /**
+   * Tax lot layer.
+   */
+  layer: esri.FeatureLayer;
+  /**
+   * Map view.
+   */
+  view: esri.MapView;
+}
+
+//////////////////////////////////////
+// Modules
+//////////////////////////////////////
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -8,21 +26,22 @@ import Graphic from '@arcgis/core/Graphic';
 import { geodesicBuffer } from '@arcgis/core/geometry/geometryEngine';
 import { unparse } from 'papaparse';
 
+//////////////////////////////////////
+// Constants
+//////////////////////////////////////
 const CSS = {
-  content: 'cov-tax-lot-buffer--content',
+  content: 'cov-widgets--tax-lot-buffer_content',
 };
 
 /**
- * Buffer a tax lot.
+ * A widget for buffering a tax lot and downloading results.
  */
-@subclass('TaxLotBuffer')
+@subclass('cov.widgets.TaxLotBuffer')
 export default class TaxLotBuffer extends Widget {
-  constructor(
-    properties: esri.WidgetProperties & {
-      view: esri.MapView;
-      layer: esri.FeatureLayer;
-    },
-  ) {
+  //////////////////////////////////////
+  // Lifecycle
+  //////////////////////////////////////
+  constructor(properties: TaxLotBufferProperties) {
     super(properties);
   }
 
@@ -35,35 +54,24 @@ export default class TaxLotBuffer extends Widget {
     map.add(_graphics);
 
     this.addHandles(
-      this.watch(['state', '_visible', '_selectedFeature'], (): void => {
-        const { state, _visible, _selectedFeature } = this;
-        if (state === 'buffered') return;
-        this.state = _visible && _selectedFeature ? 'selected' : 'ready';
+      this.watch(['_viewState', '_visible', '_selectedFeature'], (): void => {
+        const { _viewState, _visible, _selectedFeature } = this;
+        if (_viewState === 'buffered') return;
+        this._viewState = _visible && _selectedFeature ? 'selected' : 'ready';
       }),
     );
   }
 
-  view!: esri.MapView;
-
+  //////////////////////////////////////
+  // Properties
+  //////////////////////////////////////
   layer!: esri.FeatureLayer;
 
-  @property()
-  protected state: 'ready' | 'selected' | 'buffering' | 'buffered' | 'error' = 'ready';
+  view!: esri.MapView;
 
-  @property({
-    aliasOf: 'view.popup.visible',
-  })
-  private _visible!: boolean;
-
-  @property({
-    aliasOf: 'view.popup.selectedFeature',
-  })
-  private _selectedFeature!: esri.Graphic;
-
-  private _graphics = new GraphicsLayer({
-    listMode: 'hide',
-  });
-
+  //////////////////////////////////////
+  // Variables
+  //////////////////////////////////////
   private _bufferSymbol = new SimpleFillSymbol({
     color: [0, 0, 0, 0],
     outline: {
@@ -73,6 +81,8 @@ export default class TaxLotBuffer extends Widget {
     },
   });
 
+  private _distance = 0;
+
   private _featureSymbol = new SimpleFillSymbol({
     color: [20, 158, 206, 0.1],
     outline: {
@@ -80,6 +90,14 @@ export default class TaxLotBuffer extends Widget {
       width: 1.5,
     },
   });
+
+  private _graphics = new GraphicsLayer({
+    listMode: 'hide',
+  });
+
+  private _id = '';
+
+  private _results: esri.FeatureSet['features'] | [] = [];
 
   private _resultSymbol = new SimpleFillSymbol({
     color: [237, 81, 81, 0.1],
@@ -89,27 +107,37 @@ export default class TaxLotBuffer extends Widget {
     },
   });
 
-  private _distance = 0;
+  @property({
+    aliasOf: 'view.popup.selectedFeature',
+  })
+  private _selectedFeature!: esri.Graphic;
 
-  private _id = '';
+  @property()
+  protected _viewState: 'ready' | 'selected' | 'buffering' | 'buffered' | 'error' = 'ready';
 
-  private _results: esri.FeatureSet['features'] | [] = [];
+  @property({
+    aliasOf: 'view.popup.visible',
+  })
+  private _visible!: boolean;
 
+  //////////////////////////////////////
+  // Public methods
+  //////////////////////////////////////
   onHide(): void {
     this._clear();
   }
 
+  //////////////////////////////////////
+  // Private methods
+  //////////////////////////////////////
   private _clear(): void {
     const {
       view: { popup },
       _graphics,
     } = this;
-
     if (popup.clear && typeof popup.clear === 'function') popup.clear();
     popup.close();
-
-    this.state = 'ready';
-
+    this._viewState = 'ready';
     _graphics.removeAll();
   }
 
@@ -128,7 +156,7 @@ export default class TaxLotBuffer extends Widget {
 
     event.preventDefault();
 
-    this.state = 'buffering';
+    this._viewState = 'buffering';
 
     const result = (await layer.queryFeatures({
       objectIds: [_selectedFeature.attributes[objectIdField]],
@@ -139,13 +167,13 @@ export default class TaxLotBuffer extends Widget {
 
     // handle error
     if (!result.features && !result.features[0]) {
-      this.state = 'error';
+      this._viewState = 'error';
       return;
     }
 
     const { geometry, attributes } = result.features[0];
 
-    this._distance = parseInt((event.target as HTMLFormElement).querySelector('calcite-input')?.value || '10');
+    this._distance = parseInt((event.target as HTMLFormElement).querySelector('calcite-input-number')?.value || '10');
 
     this._id = attributes.TAXLOT_ID;
 
@@ -161,7 +189,7 @@ export default class TaxLotBuffer extends Widget {
 
     // handle error
     if (!bufferResults.features) {
-      this.state = 'error';
+      this._viewState = 'error';
       return;
     }
 
@@ -171,24 +199,21 @@ export default class TaxLotBuffer extends Widget {
       graphic.symbol = _resultSymbol;
       _graphics.add(graphic);
     });
-
     _graphics.add(
       new Graphic({
         geometry,
         symbol: _featureSymbol,
       }),
     );
-
     _graphics.add(
       new Graphic({
         geometry: buffer,
         symbol: _bufferSymbol,
       }),
     );
-
+    view.closePopup();
     view.goTo(this._results);
-
-    this.state = 'buffered';
+    this._viewState = 'buffered';
   }
 
   private _download(): void {
@@ -211,73 +236,89 @@ export default class TaxLotBuffer extends Widget {
       return result;
     });
 
-    const a = document.createElement('a');
-    a.setAttribute('href', `data:text/csv;charset=utf-8,${encodeURIComponent(unparse(json))}`);
-    a.setAttribute('download', `${_id}_${_distance}_buffer_results.csv`);
-    a.style.display = 'none';
+    const a = Object.assign(document.createElement('a'), {
+      href: `data:text/csv;charset=utf-8,${encodeURIComponent(unparse(json))}`,
+      download: `${_id}_${_distance}_buffer_results.csv`,
+      style: {
+        display: 'none',
+      },
+    });
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
   }
 
+  //////////////////////////////////////
+  // Render and rendering methods
+  //////////////////////////////////////
   render(): tsx.JSX.Element {
-    const { id, state, _distance, _id, _results } = this;
+    const { id, _viewState, _distance, _id, _results } = this;
 
     const form = `buffer_form_${id}`;
 
     return (
       <calcite-panel heading="Tax Lot Buffer">
-        <div class={CSS.content} hidden={state !== 'ready'}>
+        {/* ready state */}
+        <div class={CSS.content} hidden={_viewState !== 'ready'}>
           <calcite-notice icon="cursor-click" open="">
             <div slot="message">Select a tax lot in the map to buffer.</div>
           </calcite-notice>
         </div>
-        <div class={CSS.content} hidden={state !== 'selected'}>
+
+        {/* selected state */}
+        <div class={CSS.content} hidden={_viewState !== 'selected'}>
           <form id={form} onsubmit={this._buffer.bind(this)}>
             <calcite-label style="--calcite-label-margin-bottom: 0;">
-              Buffer distance (feet)
-              <calcite-input type="number" min="10" max="5000" step="10" value="250"></calcite-input>
+              Distance
+              <calcite-input-number min="10" max="5000" step="10" suffix-text="feet" value="250"></calcite-input-number>
             </calcite-label>
           </form>
         </div>
         <calcite-button
           form={form}
-          hidden={state !== 'selected'}
-          slot={state === 'selected' ? 'footer' : null}
+          hidden={_viewState !== 'selected'}
+          slot={_viewState === 'selected' ? 'footer' : null}
           type="submit"
           width="full"
         >
           Buffer
         </calcite-button>
-        <div class={CSS.content} hidden={state !== 'buffering'}>
+
+        {/* buffering state */}
+        <div class={CSS.content} hidden={_viewState !== 'buffering'}>
           <calcite-progress text="Buffering" type="indeterminate"></calcite-progress>
         </div>
-        <div class={CSS.content} hidden={state !== 'buffered'}>
+
+        {/* buffered state */}
+        <div class={CSS.content} hidden={_viewState !== 'buffered'}>
           <calcite-notice icon="information" open="">
+            <div slot="title">{_id}</div>
             <div slot="message">
-              {_results.length} tax lots within {_distance} feet of tax lot {_id}.
+              {_results.length} tax lots within {_distance} feet.
             </div>
           </calcite-notice>
         </div>
         <calcite-button
-          hidden={state !== 'buffered'}
-          icon-start="file-csv"
-          slot={state === 'buffered' ? 'footer' : null}
-          width="full"
-          onclick={this._download.bind(this)}
-        >
-          Download
-        </calcite-button>
-        <calcite-button
           appearance="outline"
-          hidden={state !== 'buffered'}
-          slot={state === 'buffered' ? 'footer' : null}
+          hidden={_viewState !== 'buffered'}
+          slot={_viewState === 'buffered' ? 'footer' : null}
           width="full"
           onclick={this._clear.bind(this)}
         >
           Clear
         </calcite-button>
-        <div class={CSS.content} hidden={state !== 'error'}>
+        <calcite-button
+          hidden={_viewState !== 'buffered'}
+          icon-start="file-csv"
+          slot={_viewState === 'buffered' ? 'footer' : null}
+          width="full"
+          onclick={this._download.bind(this)}
+        >
+          Download
+        </calcite-button>
+
+        {/* error state */}
+        <div class={CSS.content} hidden={_viewState !== 'error'}>
           <calcite-notice icon="exclamation-mark-circle" kind="danger" open="">
             <div slot="message">An error has occurred.</div>
             <calcite-link slot="link" onclick={this._clear.bind(this)}>

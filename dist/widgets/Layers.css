@@ -1,46 +1,46 @@
-.cov-layers .esri-layer-list {
+.cov-widgets--layers .esri-layer-list {
   padding: 0;
 }
-.cov-layers .esri-layer-list__list {
+.cov-widgets--layers .esri-layer-list__list {
   padding: 0;
 }
-.cov-layers .esri-layer-list__item {
+.cov-widgets--layers .esri-layer-list__item {
   margin: 0;
 }
-.cov-layers .esri-layer-list__item:last-child {
+.cov-widgets--layers .esri-layer-list__item:last-child {
   border-bottom: none;
 }
-.cov-layers .esri-legend {
+.cov-widgets--layers .esri-legend {
   padding: 0;
 }
-.cov-layers .esri-legend * {
+.cov-widgets--layers .esri-legend * {
   pointer-events: none;
 }
-.cov-layers .esri-legend * {
+.cov-widgets--layers .esri-legend * {
   font-size: var(--calcite-font-size--2);
   font-weight: 100;
 }
-.cov-layers .esri-legend .esri-legend__service {
+.cov-widgets--layers .esri-legend .esri-legend__service {
   padding: 6px 7.5px;
 }
-.cov-layers .esri-legend .esri-legend__layer-table {
+.cov-widgets--layers .esri-legend .esri-legend__layer-table {
   margin-bottom: 4px;
 }
-.cov-layers .esri-legend .esri-legend__layer-cell--symbols {
+.cov-widgets--layers .esri-legend .esri-legend__layer-cell--symbols {
   padding: 0;
 }
-.cov-layers .esri-legend .esri-legend__symbol svg {
+.cov-widgets--layers .esri-legend .esri-legend__symbol svg {
   transform: scale(75%);
 }
-.cov-layers .esri-legend .esri-widget__heading {
+.cov-widgets--layers .esri-legend .esri-widget__heading {
   margin-bottom: 0.25rem;
 }
-.cov-layers .esri-layer-list[hidden=""],
-.cov-layers .esri.esri-legend[hidden=""] {
+.cov-widgets--layers .esri-layer-list[hidden=""],
+.cov-widgets--layers .esri.esri-legend[hidden=""] {
   display: none;
 }
 
-.cov-layers--notice {
+.cov-widgets--layers_notice {
   margin: 0.5rem;
 }
 

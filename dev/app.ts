@@ -1,22 +1,17 @@
 import './main.scss';
 
 import esriConfig from '@arcgis/core/config';
-import Map from '@arcgis/core/Map';
+import WebMap from '@arcgis/core/WebMap';
 import MapView from '@arcgis/core/views/MapView';
 import Basemap from '@arcgis/core/Basemap';
-import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
+import SearchViewModel from '@arcgis/core/widgets/Search/SearchViewModel';
+import cityBoundaryExtents from './../dist/support/cityBoundaryExtents';
 
-import TaxLotPopup from './../src/popups/TaxLotPopup';
-
-import MapApplication from '@vernonia/map-application/dist/MapApplication';
-
-import Measure from './../src/widgets/Measure';
-import './../src/widgets/Measure.scss';
-
-import Markup from './../src/widgets/Markup';
-import './../src/widgets/Markup.scss';
+import ShellApplicationMap from './../dist/layouts/ShellApplicationMap';
+import Measure from './../dist/widgets/Measure';
 
 esriConfig.portalUrl = 'https://gis.vernonia-or.gov/portal';
+esriConfig.assetsPath = './arcgis';
 
 const load = async (): Promise<void> => {
   const hillshadeBasemap = new Basemap({
@@ -31,33 +26,17 @@ const load = async (): Promise<void> => {
     },
   });
 
-  const cityLimits = new FeatureLayer({
-    portalItem: {
-      id: '5e1e805849ac407a8c34945c781c1d54',
-    },
-  });
-
-  const taxLots = new FeatureLayer({
-    portalItem: {
-      id: 'a0837699982f41e6b3eb92429ecdb694',
-    },
-    outFields: ['*'],
-    popupTemplate: TaxLotPopup,
-  });
-
-  await cityLimits.load();
-  const extent = cityLimits.fullExtent.clone();
-  const constraintGeometry = extent.clone().expand(3);
+  const { cityLimits, extent, constraintExtent } = await cityBoundaryExtents('5e1e805849ac407a8c34945c781c1d54');
 
   const view = new MapView({
-    map: new Map({
+    map: new WebMap({
       basemap: hillshadeBasemap,
-      layers: [taxLots, cityLimits],
+      layers: [cityLimits],
       ground: 'world-elevation',
     }),
     extent,
     constraints: {
-      geometry: constraintGeometry,
+      geometry: constraintExtent,
       minScale: 40000,
       rotationEnabled: false,
     },
@@ -70,31 +49,24 @@ const load = async (): Promise<void> => {
     },
   });
 
-  new MapApplication({
-    contentBehind: true,
+  new ShellApplicationMap({
+    view,
+    panelPosition: 'end',
     title: '@vernonia/core',
     nextBasemap: hybridBasemap,
-    panelPosition: 'end',
+    headerOptions: { searchViewModel: new SearchViewModel({ view }) },
+    viewControlOptions: {
+      includeFullscreen: true,
+      includeLocate: true,
+    },
     panelWidgets: [
       {
         widget: new Measure({ view }),
-        text: 'Measure',
         icon: 'measure',
-        type: 'calcite-panel',
-      },
-      {
-        widget: new Markup({ view, offsetProjectionWkid: 102970 }),
-        text: 'Markup',
-        icon: 'pencil',
+        text: 'Measure',
         type: 'calcite-panel',
       },
     ],
-    view,
-    viewControlOptions: {
-      includeLocate: true,
-      includeFullscreen: true,
-      includeMagnifier: true,
-    },
   });
 };
 

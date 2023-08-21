@@ -1,0 +1,17 @@
+//////////////////////////////////////
+// vernonia brand colors and variables
+//////////////////////////////////////
+$brand: #6b9560 !default;
+$brand-hover: darken($brand, 7.5) !default;
+$brand-press: darken($brand, 13) !default;
+$link-underline: rgba($brand-press, 0.4) !default;
+$brand-dark: #44693d !default;
+$brand-popup-button-hover-background: rgba(
+  $color: $brand,
+  $alpha: 0.05
+) !default;
+$brand-popup-selected-background: rgba(
+  $color: $brand,
+  $alpha: 0.2
+) !default;
+$font-family: "Roboto", sans-serif !default;

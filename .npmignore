@@ -1,5 +1,3 @@
 .github
-*.md
-*.markdown
-vite.config.js
 dev
+scripts

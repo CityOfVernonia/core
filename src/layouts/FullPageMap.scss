@@ -1,0 +1,11 @@
+@import "./../css/variables";
+@import "./../css/arcgis";
+@import "./../css/base";
+@import "./../css/esriOverrides";
+@import "./../widgets/Loader";
+@import "./../widgets/ViewControl2D";
+
+.cov-layouts--full-page-map_view {
+  width: 100%;
+  height: 100%;
+}

@@ -1,38 +1,82 @@
+//////////////////////////////////////
+// Interfaces
+//////////////////////////////////////
 import esri = __esri;
 
 interface _Item {
   count: number;
-  point: esri.Point;
   element: tsx.JSX.Element;
+  point: esri.Point;
 }
 
+export interface PrintFIRMetteProperties extends esri.WidgetProperties {
+  /**
+   * Flood hazard map layer.
+   */
+  layer: esri.MapImageLayer;
+  /**
+   * Map view.
+   */
+  view: esri.MapView;
+}
+
+//////////////////////////////////////
+// Modules
+//////////////////////////////////////
 import esriRequest from '@arcgis/core/request';
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
 
+//////////////////////////////////////
+// Constants
+//////////////////////////////////////
 const CSS = {
-  content: 'cov-printfirmette-content',
-  switch: 'cov-printfirmette-switch',
-  error: 'cov-printfirmette-error',
+  content: 'cov-widgets--printfirmette_content',
+  switch: 'cov-widgets--printfirmette_switch',
+  error: 'cov-widgets--printfirmette_error',
 };
 
 let KEY = 0;
 
 let COUNT = 1;
 
+/**
+ * A widget for generating and downloading FEMA FIRMettes.
+ */
 @subclass('cov.widgets.PrintFIRMette')
 export default class PrintFIRMette extends Widget {
-  constructor(
-    properties: esri.WidgetProperties & {
-      view: esri.MapView;
-      layer: esri.MapImageLayer;
-    },
-  ) {
+  //////////////////////////////////////
+  // Lifecycle
+  //////////////////////////////////////
+  constructor(properties: PrintFIRMetteProperties) {
     super(properties);
   }
 
+  //////////////////////////////////////
+  // Properties
+  //////////////////////////////////////
+  layer!: esri.MapImageLayer;
+
+  view!: esri.MapView;
+
+  //////////////////////////////////////
+  // Variables
+  //////////////////////////////////////
+  private _clickHandle!: IHandle;
+
+  @property({ aliasOf: 'layer.visible' })
+  private _layerVisible!: boolean;
+
+  private _listItems: esri.Collection<_Item> = new Collection();
+
+  @property()
+  private _printing = false;
+
+  //////////////////////////////////////
+  // Public methods
+  //////////////////////////////////////
   onShow(): void {
     const { view } = this;
     this._clickHandle = view.on('click', this._viewClick.bind(this));
@@ -43,26 +87,9 @@ export default class PrintFIRMette extends Widget {
     if (_clickHandle) _clickHandle.remove();
   }
 
-  view!: esri.MapView;
-
-  layer!: esri.MapImageLayer;
-
-  @property({ aliasOf: 'layer.visible' })
-  private _layerVisible!: boolean;
-
-  @property()
-  private _printing = false;
-
-  private _clickHandle!: IHandle;
-
-  private _viewClick(event: esri.ViewClickEvent): void {
-    const { _printing } = this;
-    event.stopPropagation();
-    if (_printing) return;
-    this._printing = true;
-    this._print(event.mapPoint);
-  }
-
+  //////////////////////////////////////
+  // Private methods
+  //////////////////////////////////////
   private _print(point: esri.Point): void {
     const { _listItems } = this;
     const item: _Item = {
@@ -191,6 +218,17 @@ export default class PrintFIRMette extends Widget {
     this._printing = false;
   }
 
+  private _viewClick(event: esri.ViewClickEvent): void {
+    const { _printing } = this;
+    event.stopPropagation();
+    if (_printing) return;
+    this._printing = true;
+    this._print(event.mapPoint);
+  }
+
+  //////////////////////////////////////
+  // Render and rendering methods
+  //////////////////////////////////////
   render(): tsx.JSX.Element {
     const { _layerVisible, _listItems } = this;
     return (
@@ -221,6 +259,4 @@ export default class PrintFIRMette extends Widget {
       layer.visible = _switch.checked;
     });
   }
-
-  private _listItems: esri.Collection<_Item> = new Collection();
 }

@@ -1,0 +1,77 @@
+// include esri widget scss required for cov widgets
+// excluded widgets can be included with custom theming in app
+$include_AreaMeasurement2D: false !default;
+$include_AreaMeasurement3D: false !default;
+$include_Attachments: true;
+$include_Attribution: true;
+$include_BasemapGallery: false !default;
+$include_BasemapLayerList: false !default;
+$include_BasemapToggle: true;
+$include_BinaryColorSizeSlider: false !default;
+$include_Bookmarks: false !default;
+$include_BuildingExplorer: false !default;
+$include_ButtonMenu: false !default;
+$include_ClassedColorSlider: false !default;
+$include_ClassedSizeSlider: false !default;
+$include_ColorPicker: false !default;
+$include_ColorSizeSlider: false !default;
+$include_ColorSlider: false !default;
+$include_Compass: false !default;
+$include_CoordinateConversion: false !default;
+$include_DatePicker: false !default;
+$include_Daylight: false !default;
+$include_Directions: false !default;
+$include_DirectLineMeasurement3D: false !default;
+$include_DistanceMeasurement2D: false !default;
+$include_Editor: false !default;
+$include_ElevationProfile: true;
+$include_Expand: false !default;
+$include_Feature: false !default;
+$include_FeatureContent: false !default;
+$include_FeatureForm: false !default;
+$include_FeatureMedia: false !default;
+$include_FeatureTable: false !default;
+$include_FeatureTemplates: false !default;
+$include_FloorFilter: false !default;
+$include_Grid: false !default;
+$include_HeatmapSlider: false !default;
+$include_Histogram: false !default;
+$include_HistogramRangeSlider: false !default;
+$include_IdentityForm: false !default;
+$include_IdentityModal: false !default;
+$include_ItemList: false !default;
+$include_LayerList: true;
+$include_Legend: true;
+$include_LineOfSight: false !default;
+$include_Measurement: false !default;
+$include_NavigationToggle: false !default;
+$include_OpacitySlider: false !default;
+$include_Popup: true;
+$include_Print: false !default;
+$include_SaveLayer: false !default;
+$include_ScaleBar: false !default;
+$include_ScaleRangeSlider: false !default;
+$include_Search: true;
+$include_SelectionToolbar: false !default;
+$include_ShadowCast: false !default;
+$include_SizeSlider: false !default;
+$include_Sketch: false !default;
+$include_Slice: false !default;
+$include_Slider: false !default;
+$include_SnappingControls: false !default;
+$include_Spinner: false !default;
+$include_Swipe: false !default;
+$include_TableList: false !default;
+$include_TimePicker: false !default;
+$include_TimeSlider: false !default;
+$include_Tooltip: false !default;
+$include_UtilityNetworkTrace: false !default;
+$include_Weather: false !default;
+$include_Zoom: false !default;
+
+// @arcgis/core font paths for vite to resolve
+$icomoon-font-path: "@arcgis/core/assets/esri/themes/base/icons/fonts/";
+$calcite-fonts-path: "@arcgis/core/assets/esri/themes/base/fonts/fonts/";
+
+// @arcgis/core sass
+@import "./../../node_modules/@arcgis/core/assets/esri/themes/base/core";

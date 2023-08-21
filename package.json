@@ -1,13 +1,13 @@
 {
   "name": "@vernonia/core",
-  "version": "2.2.9",
-  "description": "City of Vernonia widgets and friends for Esri JavaScript API using Calcite.",
+  "version": "3.0.0",
+  "description": "City of Vernonia widgets and friends for ArcGIS Maps SDK for JavaScript using Calcite Design System.",
   "type": "module",
   "scripts": {
-    "build": "tsc && sass src/cov.scss:dist/cov.css && sass src/widgets:dist/widgets",
-    "dev": "vite",
+    "assets": "node ./scripts/assets.js",
+    "build": "rimraf dist && tsc && sass src:dist && node ./scripts/minify.js",
+    "dev": "vite --config ./dev/vite.config.js",
     "lint": "eslint . --ext .ts,.tsx",
-    "postinstall": "node ./scripts/postinstall.js",
     "prettier": "prettier --write \"src/**/*.ts?(x)\"",
     "test": "npm run prettier && npm run lint"
   },
@@ -24,17 +24,24 @@
   "devDependencies": {
     "@types/js-cookie": "^3.0.3",
     "@types/luxon": "^3.3.1",
+    "@types/node": "^20.5.1",
     "@types/papaparse": "^5.3.7",
+    "@types/pubsub-js": "^1.8.3",
     "@types/sortablejs": "^1.15.1",
-    "@typescript-eslint/eslint-plugin": "^6.4.0",
-    "@typescript-eslint/parser": "^6.4.0",
+    "@types/uuid": "^9.0.2",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
     "@vernonia/map-application": "^1.0.25",
     "eslint": "^8.47.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
+    "fs-extra": "^11.1.1",
+    "glob": "^10.3.3",
     "prettier": "^3.0.2",
     "replace-in-file": "^7.0.1",
+    "rimraf": "^5.0.1",
     "sass": "^1.66.1",
+    "terser": "^5.19.2",
     "tslib": "^2.6.2",
     "typescript": "^5.1.6",
     "vite": "^4.4.9"
@@ -42,10 +49,12 @@
   "dependencies": {
     "@arcgis/core": "^4.27.6",
     "@esri/calcite-components": "^1.6.1",
-    "@vernonia/georeferenced-media": "^1.0.3",
+    "fast-xml-parser": "^4.2.7",
     "js-cookie": "^3.0.5",
     "luxon": "^3.4.0",
-    "papaparse": "^5.4.1"
+    "papaparse": "^5.4.1",
+    "pubsub-js": "^1.9.4",
+    "uuid": "^9.0.0"
   },
   "eslintConfig": {
     "env": {
@@ -63,7 +72,9 @@
       "no-console": 0,
       "@typescript-eslint/no-explicit-any": 0,
       "@typescript-eslint/ban-ts-comment": 1,
-      "no-useless-escape": 1
+      "no-useless-escape": 1,
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": 1
     },
     "extends": [
       "eslint:recommended",

@@ -1,0 +1,13 @@
+.cov-widgets--view-control-2d {
+  box-shadow: none !important;
+}
+
+.cov-widgets--view-control-2d_pads {
+  display: flex;
+  flex-flow: column;
+  gap: 0.75rem;
+
+  calcite-action-pad {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
+  }
+}

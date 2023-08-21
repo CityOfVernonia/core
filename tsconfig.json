@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "ESNext",
-      "dom",
-    ],
+    "lib": ["ESNext", "dom"],
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
@@ -19,14 +16,8 @@
     "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
-    "types": [
-      "@esri/calcite-components"
-    ]
+    "types": ["@esri/calcite-components", "node"]
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["dev", "node_modules"]
 }

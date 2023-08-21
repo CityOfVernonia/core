@@ -1,27 +1,34 @@
 import esri = __esri;
+export interface TaxLotBufferProperties extends esri.WidgetProperties {
+    /**
+     * Tax lot layer.
+     */
+    layer: esri.FeatureLayer;
+    /**
+     * Map view.
+     */
+    view: esri.MapView;
+}
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 /**
- * Buffer a tax lot.
+ * A widget for buffering a tax lot and downloading results.
  */
 export default class TaxLotBuffer extends Widget {
-    constructor(properties: esri.WidgetProperties & {
-        view: esri.MapView;
-        layer: esri.FeatureLayer;
-    });
+    constructor(properties: TaxLotBufferProperties);
     postInitialize(): Promise<void>;
-    view: esri.MapView;
     layer: esri.FeatureLayer;
-    protected state: 'ready' | 'selected' | 'buffering' | 'buffered' | 'error';
-    private _visible;
-    private _selectedFeature;
-    private _graphics;
+    view: esri.MapView;
     private _bufferSymbol;
-    private _featureSymbol;
-    private _resultSymbol;
     private _distance;
+    private _featureSymbol;
+    private _graphics;
     private _id;
     private _results;
+    private _resultSymbol;
+    private _selectedFeature;
+    protected _viewState: 'ready' | 'selected' | 'buffering' | 'buffered' | 'error';
+    private _visible;
     onHide(): void;
     private _clear;
     private _buffer;

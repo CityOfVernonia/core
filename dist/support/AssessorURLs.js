@@ -1,18 +1,2 @@
-/**
- * Create property info URL.
- * @param accountId number | string representing tax account number
- * @param year number tax account year in YYYY format
- * @returns property info url string
- */
-export const propertyInfoUrl = (accountId, year) => {
-    return `https://propertyquery.columbiacountyor.gov/columbiaat/MainQueryDetails.aspx?AccountID=${accountId}&QueryYear=${year}&Roll=R`;
-};
-/**
- * Create tax map url.
- * @param mapId
- * @param fileType
- * @returns tax map url string
- */
-export const taxMapUrl = (mapId) => {
-    return `https://gis.columbiacountymaps.com/TaxMaps/${mapId}.pdf`;
-};
+/* His name was Bruce McNair. Copyright 2023 City of Vernonia, Oregon. */
+export const propertyInfoUrl=(o,t)=>`https://propertyquery.columbiacountyor.gov/columbiaat/MainQueryDetails.aspx?AccountID=${o}&QueryYear=${t}&Roll=R`;export const taxMapUrl=o=>`https://gis.columbiacountymaps.com/TaxMaps/${o}.pdf`;
