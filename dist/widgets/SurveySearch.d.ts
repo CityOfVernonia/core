@@ -1,4 +1,7 @@
 import esri = __esri;
+/**
+ * Survey Search widget properties.
+ */
 export interface SurveySearchProperties extends esri.WidgetProperties {
     /**
      * Surveys layer.
@@ -24,13 +27,13 @@ export default class SurveySearch extends Widget {
     surveys: esri.FeatureLayer | esri.GeoJSONLayer;
     taxLots: esri.FeatureLayer;
     view: esri.MapView;
-    private _infoFeature;
     private _graphics;
-    private _results;
-    private _selectedFeature;
-    private _selectedFeatureSymbol;
+    private _selectedTaxLot;
+    private _selectedTaxLotSymbol;
     private _selectedResult;
     private _selectedSymbol;
+    private _surveyInfos;
+    private _surveyInfoIndex;
     private _resultSymbol;
     private _viewState;
     private _visible;
@@ -38,6 +41,6 @@ export default class SurveySearch extends Widget {
     private _clear;
     private _search;
     private _setSelectedResult;
+    private _selectNextPrevious;
     render(): tsx.JSX.Element;
-    private _renderInfo;
 }

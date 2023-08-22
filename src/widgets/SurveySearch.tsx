@@ -3,6 +3,18 @@
 //////////////////////////////////////
 import esri = __esri;
 
+/**
+ * Result information.
+ */
+interface SurveyInfo {
+  feature: esri.Graphic;
+  listItem: tsx.JSX.Element;
+  infoTable: tsx.JSX.Element;
+}
+
+/**
+ * Survey Search widget properties.
+ */
 export interface SurveySearchProperties extends esri.WidgetProperties {
   /**
    * Surveys layer.
@@ -61,11 +73,11 @@ export default class SurveySearch extends Widget {
     map.add(_graphics);
     // enable search when tax lot is selected feature of popup
     this.addHandles(
-      this.watch(['_viewState', '_visible', '_selectedFeature'], (): void => {
-        const { taxLots, _viewState, _visible, _selectedFeature } = this;
+      this.watch(['_viewState', '_visible', '_selectedTaxLot'], (): void => {
+        const { taxLots, _viewState, _visible, _selectedTaxLot } = this;
         if (_viewState === 'results' || _viewState === 'searching' || _viewState === 'info' || _viewState === 'error')
           return;
-        this._viewState = _visible && _selectedFeature && _selectedFeature.layer === taxLots ? 'selected' : 'ready';
+        this._viewState = _visible && _selectedTaxLot && _selectedTaxLot.layer === taxLots ? 'selected' : 'ready';
       }),
     );
   }
@@ -82,16 +94,12 @@ export default class SurveySearch extends Widget {
   //////////////////////////////////////
   // Variables
   //////////////////////////////////////
-  private _infoFeature!: esri.Graphic;
-
   private _graphics = new GraphicsLayer({ listMode: 'hide' });
 
-  private _results: Collection<tsx.JSX.Element> = new Collection();
-
   @property({ aliasOf: 'view.popup.selectedFeature' })
-  private _selectedFeature!: esri.Graphic;
+  private _selectedTaxLot!: esri.Graphic;
 
-  private _selectedFeatureSymbol = new SimpleFillSymbol({
+  private _selectedTaxLotSymbol = new SimpleFillSymbol({
     color: [20, 158, 206, 0.5],
     outline: {
       color: [20, 158, 206],
@@ -109,6 +117,11 @@ export default class SurveySearch extends Widget {
       width: 2,
     },
   });
+
+  private _surveyInfos: esri.Collection<SurveyInfo> = new Collection();
+
+  @property()
+  private _surveyInfoIndex: number | null = null;
 
   private _resultSymbol = new SimpleFillSymbol({
     color: [237, 81, 81, 0.05],
@@ -135,9 +148,9 @@ export default class SurveySearch extends Widget {
   // Private methods
   //////////////////////////////////////
   private _clear(): void {
-    const { _results, _graphics } = this;
-    _results.removeAll();
+    const { _graphics, _surveyInfos } = this;
     _graphics.removeAll();
+    _surveyInfos.removeAll();
     this._selectedResult = null;
     this._viewState = 'ready';
   }
@@ -149,26 +162,25 @@ export default class SurveySearch extends Widget {
       taxLots,
       taxLots: { objectIdField },
       surveys,
-      _selectedFeature,
-      _selectedFeatureSymbol,
+      _selectedTaxLot,
+      _selectedTaxLotSymbol,
+      _surveyInfos,
       _resultSymbol,
-      _results,
       _graphics,
       _graphics: { graphics },
     } = this;
-    _results.removeAll();
     _graphics.removeAll();
     this._viewState = 'searching';
 
     const featureQuery = await (taxLots.queryFeatures({
-      where: `${objectIdField} = ${_selectedFeature.attributes[objectIdField]}`,
+      where: `${objectIdField} = ${_selectedTaxLot.attributes[objectIdField]}`,
       returnGeometry: true,
       outSpatialReference: spatialReference,
     }) as Promise<esri.FeatureSet>);
 
     const feature = featureQuery.features[0];
 
-    feature.symbol = _selectedFeatureSymbol.clone();
+    feature.symbol = _selectedTaxLotSymbol.clone();
 
     graphics.add(feature);
 
@@ -196,12 +208,21 @@ export default class SurveySearch extends Widget {
     // sort by date
     features.sort((a: any, b: any) => (a.attributes.Timestamp > b.attributes.Timestamp ? -1 : 1));
 
-    features.forEach((feature: esri.Graphic): void => {
+    features.forEach((feature: esri.Graphic, index: number): void => {
       const {
-        attributes: { Subdivision, SurveyId, SurveyDate, SurveyType, SurveyUrl },
+        attributes: {
+          Client,
+          Comments,
+          FileDate,
+          Firm,
+          SurveyDate,
+          SurveyType,
+          Sheets,
+          Subdivision,
+          SurveyId,
+          SurveyUrl,
+        },
       } = feature;
-
-      const title = Subdivision ? Subdivision : SurveyId;
 
       // set symbol
       feature.symbol = _resultSymbol.clone();
@@ -209,47 +230,98 @@ export default class SurveySearch extends Widget {
       // add to graphics layer
       _graphics.add(feature);
 
-      // add result item
-      _results.add(
-        <calcite-list-item
-          key={KEY++}
-          label={title}
-          description={`${SurveyType} - ${SurveyDate}`}
-          afterCreate={(listItem: HTMLCalciteListItemElement): void => {
-            listItem.addEventListener('calciteListItemSelect', this._setSelectedResult.bind(this, feature));
-          }}
-        >
-          <calcite-action
-            icon="information"
-            slot="actions-end"
-            text="View info"
-            afterCreate={(action: HTMLCalciteActionElement): void => {
-              action.addEventListener('click', (): void => {
-                this._infoFeature = feature;
-                this._viewState = 'info';
-              });
+      const title = Subdivision ? Subdivision : SurveyId;
+
+      _surveyInfos.add({
+        feature,
+        listItem: (
+          <calcite-list-item
+            key={KEY++}
+            label={title}
+            description={`${SurveyType} - ${SurveyDate}`}
+            afterCreate={(listItem: HTMLCalciteListItemElement): void => {
+              listItem.addEventListener('calciteListItemSelect', this._setSelectedResult.bind(this, feature));
             }}
           >
-            <calcite-tooltip close-on-click="" placement="leading" slot="tooltip">
-              Info
-            </calcite-tooltip>
-          </calcite-action>
-          <calcite-action
-            slot="actions-end"
-            icon="file-pdf"
-            text="View PDF"
-            afterCreate={(action: HTMLCalciteActionElement): void => {
-              action.addEventListener('click', (): void => {
-                window.open(SurveyUrl, '_blank');
-              });
-            }}
-          >
-            <calcite-tooltip close-on-click="" placement="leading" slot="tooltip">
-              View PDF
-            </calcite-tooltip>
-          </calcite-action>
-        </calcite-list-item>,
-      );
+            <calcite-action
+              icon="information"
+              slot="actions-end"
+              text="View info"
+              afterCreate={(action: HTMLCalciteActionElement): void => {
+                action.addEventListener('click', (): void => {
+                  this._setSelectedResult(feature);
+                  this._surveyInfoIndex = index;
+                  this._viewState = 'info';
+                });
+              }}
+            >
+              <calcite-tooltip close-on-click="" placement="leading" slot="tooltip">
+                Info
+              </calcite-tooltip>
+            </calcite-action>
+            <calcite-action
+              slot="actions-end"
+              icon="file-pdf"
+              text="View PDF"
+              afterCreate={(action: HTMLCalciteActionElement): void => {
+                action.addEventListener('click', (): void => {
+                  window.open(SurveyUrl, '_blank');
+                });
+              }}
+            >
+              <calcite-tooltip close-on-click="" placement="leading" slot="tooltip">
+                View PDF
+              </calcite-tooltip>
+            </calcite-action>
+          </calcite-list-item>
+        ),
+        infoTable: (
+          <table key={KEY++} class={CSS.table}>
+            <tr>
+              <th>Id (View PDF)</th>
+              <td>
+                <calcite-link href={SurveyUrl} target="_blank">
+                  {SurveyId}
+                </calcite-link>
+              </td>
+            </tr>
+            <tr>
+              <th>Type</th>
+              <td>{SurveyType}</td>
+            </tr>
+            {Subdivision ? (
+              <tr>
+                <th>Name</th>
+                <td>{Subdivision}</td>
+              </tr>
+            ) : null}
+            <tr>
+              <th>Client</th>
+              <td>{Client}</td>
+            </tr>
+            <tr>
+              <th>Firm</th>
+              <td>{Firm}</td>
+            </tr>
+            <tr>
+              <th>Date</th>
+              <td>{SurveyDate}</td>
+            </tr>
+            <tr>
+              <th>Filed</th>
+              <td>{FileDate}</td>
+            </tr>
+            <tr>
+              <th>Comments</th>
+              <td>{Comments}</td>
+            </tr>
+            <tr>
+              <th>Pages</th>
+              <td>{(Sheets as number).toString()}</td>
+            </tr>
+          </table>
+        ),
+      });
     });
     // zoom to features
     view.goTo(_graphics.graphics);
@@ -259,7 +331,7 @@ export default class SurveySearch extends Widget {
     }, 1000);
   }
 
-  private _setSelectedResult(feature: esri.Graphic): void {
+  private _setSelectedResult(feature?: esri.Graphic): void {
     const {
       _selectedResult,
       _selectedSymbol,
@@ -267,16 +339,27 @@ export default class SurveySearch extends Widget {
       _graphics: { graphics },
     } = this;
     if (_selectedResult) _selectedResult.symbol = _resultSymbol.clone();
+    if (!feature) return;
     this._selectedResult = feature;
     feature.symbol = _selectedSymbol.clone();
     graphics.reorder(feature, graphics.length - 1);
+  }
+
+  private _selectNextPrevious(type: 'next' | 'previous'): void {
+    const { _surveyInfos, _surveyInfoIndex } = this;
+    if (_surveyInfoIndex === null) return;
+    const index = type === 'next' ? _surveyInfoIndex + 1 : _surveyInfoIndex - 1;
+    const { feature } = _surveyInfos.getItemAt(index);
+    if (!feature) return;
+    this._setSelectedResult(feature);
+    this._surveyInfoIndex = index;
   }
 
   //////////////////////////////////////
   // Render and rendering methods
   //////////////////////////////////////
   render(): tsx.JSX.Element {
-    const { _infoFeature, _viewState, _selectedFeature, _results } = this;
+    const { _viewState, _selectedTaxLot, _surveyInfos, _surveyInfoIndex } = this;
     return (
       <calcite-panel heading="Survey Search">
         {/* ready state */}
@@ -288,12 +371,12 @@ export default class SurveySearch extends Widget {
 
         {/* selected state */}
         <div class={CSS.content} hidden={_viewState !== 'selected'}>
-          {_selectedFeature ? (
+          {_selectedTaxLot ? (
             <calcite-notice icon="search" open="">
               <div slot="message">
-                {_selectedFeature.attributes.TAXLOT_ID}
+                {_selectedTaxLot.attributes.TAXLOT_ID}
                 <br></br>
-                {_selectedFeature.attributes.OWNER}
+                {_selectedTaxLot.attributes.OWNER}
               </div>
             </calcite-notice>
           ) : null}
@@ -313,11 +396,15 @@ export default class SurveySearch extends Widget {
         </div>
 
         {/* results state */}
-        <div hidden={_viewState !== 'results'}>
-          <calcite-list>{_results.toArray()}</calcite-list>
-        </div>
+        <calcite-list hidden={_viewState !== 'results'}>
+          {_surveyInfos
+            .map((surveyInfo: SurveyInfo): tsx.JSX.Element => {
+              return surveyInfo.listItem;
+            })
+            .toArray()}
+        </calcite-list>
         <calcite-button
-          appearance="outline"
+          appearance="transparent"
           hidden={_viewState !== 'results'}
           slot={_viewState === 'results' ? 'footer' : null}
           width="full"
@@ -327,27 +414,43 @@ export default class SurveySearch extends Widget {
         </calcite-button>
 
         {/* info state */}
-        {this._renderInfo()}
+        <calcite-action
+          disabled={_surveyInfoIndex === null || _surveyInfoIndex === 0}
+          hidden={_viewState !== 'info'}
+          icon="chevron-left"
+          slot={_viewState === 'info' ? 'header-actions-end' : null}
+          text="Previous"
+          onclick={this._selectNextPrevious.bind(this, 'previous')}
+        >
+          <calcite-tooltip label="Previous" placement="bottom" slot="tooltip">
+            Previous
+          </calcite-tooltip>
+        </calcite-action>
+        <calcite-action
+          disabled={_surveyInfoIndex === null || _surveyInfoIndex === _surveyInfos.length - 1}
+          hidden={_viewState !== 'info'}
+          icon="chevron-right"
+          slot={_viewState === 'info' ? 'header-actions-end' : null}
+          text="Next"
+          onclick={this._selectNextPrevious.bind(this, 'next')}
+        >
+          <calcite-tooltip label="Next" placement="bottom" slot="tooltip">
+            Next
+          </calcite-tooltip>
+        </calcite-action>
+        {_surveyInfoIndex !== null ? _surveyInfos.getItemAt(_surveyInfoIndex).infoTable : null}
         <calcite-button
-          appearance="outline"
+          appearance="transparent"
           hidden={_viewState !== 'info'}
           slot={_viewState === 'info' ? 'footer' : null}
           width="full"
           onclick={(): void => {
+            this._setSelectedResult();
+            this._surveyInfoIndex = null;
             this._viewState = 'results';
           }}
         >
           Back
-        </calcite-button>
-        <calcite-button
-          hidden={_viewState !== 'info'}
-          slot={_viewState === 'info' ? 'footer' : null}
-          width="full"
-          onclick={(): void => {
-            if (_infoFeature) window.open(_infoFeature.attributes.SurveyUrl, '_blank');
-          }}
-        >
-          View PDF
         </calcite-button>
 
         {/* error state */}
@@ -360,56 +463,6 @@ export default class SurveySearch extends Widget {
           </calcite-notice>
         </div>
       </calcite-panel>
-    );
-  }
-
-  private _renderInfo(): tsx.JSX.Element | null {
-    const { _infoFeature, _viewState } = this;
-    if (!_infoFeature || _viewState !== 'info') return null;
-    const { SurveyType, SurveyId, SurveyDate, FileDate, Comments, Sheets, Subdivision, Client, Firm } =
-      _infoFeature.attributes;
-    this._setSelectedResult(_infoFeature);
-    return (
-      <table key={KEY++} class={CSS.table}>
-        <tr>
-          <th>Id</th>
-          <td>{SurveyId}</td>
-        </tr>
-        <tr>
-          <th>Type</th>
-          <td>{SurveyType}</td>
-        </tr>
-        {Subdivision ? (
-          <tr>
-            <th>Name</th>
-            <td>{Subdivision}</td>
-          </tr>
-        ) : null}
-        <tr>
-          <th>Client</th>
-          <td>{Client}</td>
-        </tr>
-        <tr>
-          <th>Firm</th>
-          <td>{Firm}</td>
-        </tr>
-        <tr>
-          <th>Date</th>
-          <td>{SurveyDate}</td>
-        </tr>
-        <tr>
-          <th>Filed</th>
-          <td>{FileDate}</td>
-        </tr>
-        <tr>
-          <th>Comments</th>
-          <td>{Comments}</td>
-        </tr>
-        <tr>
-          <th>Pages</th>
-          <td>{Sheets}</td>
-        </tr>
-      </table>
     );
   }
 }
