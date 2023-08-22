@@ -1,0 +1,2 @@
+/* His name was Bruce McNair. Copyright 2023 City of Vernonia, Oregon. */
+import{__awaiter as o}from"tslib";export const mapImageNoPopups=p=>o(void 0,void 0,void 0,(function*(){yield p.when(),p.sublayers.forEach((o=>{o.popupEnabled=!1}))}));

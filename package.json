@@ -1,6 +1,6 @@
 {
   "name": "@vernonia/core",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "City of Vernonia widgets and friends for ArcGIS Maps SDK for JavaScript using Calcite Design System.",
   "type": "module",
   "scripts": {
@@ -51,7 +51,7 @@
     "@esri/calcite-components": "^1.6.1",
     "fast-xml-parser": "^4.2.7",
     "js-cookie": "^3.0.5",
-    "luxon": "^3.4.0",
+    "luxon": "^3.4.1",
     "papaparse": "^5.4.1",
     "pubsub-js": "^1.9.4",
     "uuid": "^9.0.0"
