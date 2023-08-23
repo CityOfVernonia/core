@@ -18,6 +18,13 @@
     "declaration": true,
     "types": ["@esri/calcite-components", "node"]
   },
+  "typedocOptions": {
+    "entryPoints": ["src"],
+    "entryPointStrategy": "Expand",
+    "out": "docs",
+    "plugin": ["typedoc-plugin-markdown", "typedoc-github-wiki-theme"],
+    "includeVersion": true,
+  },
   "include": ["src/**/*"],
   "exclude": ["dev", "node_modules"]
 }
