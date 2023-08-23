@@ -278,7 +278,7 @@ export default class SurveySearch extends Widget {
         infoTable: (
           <table key={KEY++} class={CSS.table}>
             <tr>
-              <th>Id (View PDF)</th>
+              <th>Survey id</th>
               <td>
                 <calcite-link href={SurveyUrl} target="_blank">
                   {SurveyId}
