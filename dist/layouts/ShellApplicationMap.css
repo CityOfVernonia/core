@@ -2910,7 +2910,7 @@ calcite-combobox.esri-input {
   background-size: cover;
   background-repeat: no-repeat;
   background-position: 50% 50%;
-  background-image: url(./../node_modules/@arcgis/core/assets/esri/themes/base/images/basemap-toggle-64.svg);
+  background-image: url(./arcgis/esri/themes/base/images/basemap-toggle-64.svg);
 }
 
 .esri-basemap-toggle__image--loading {

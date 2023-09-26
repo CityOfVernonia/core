@@ -438,6 +438,7 @@ export default class ShellApplicationMap extends Widget {
     const { duration, icon, kind, label, link, message, title } = options;
     _alerts.add(
       <calcite-alert
+        key={KEY++}
         icon={icon || null}
         kind={kind || 'brand'}
         open=""

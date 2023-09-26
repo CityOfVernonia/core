@@ -52,7 +52,7 @@ export interface AddServerLayerInfo extends AddLayerInfo {
   snippet: string;
 }
 
-import type AddWebLayersModal from './AddWebLayersModal';
+import type AddLayersModal from './AddLayersModal';
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -236,18 +236,18 @@ export default class Layers extends Widget {
     });
   }
 
-  private _addWebLayersModal!: AddWebLayersModal;
+  private _addLayersModal!: AddLayersModal;
 
   private async _showAddWebLayers(): Promise<void> {
-    const { _addWebLayersModal } = this;
-    if (!_addWebLayersModal) {
-      this._addWebLayersModal = new (await import('./AddWebLayersModal')).default({
+    const { _addLayersModal } = this;
+    if (!_addLayersModal) {
+      this._addLayersModal = new (await import('./AddLayersModal')).default({
         view: this.view,
         container: document.createElement('calcite-modal'),
       });
-      document.body.append(this._addWebLayersModal.container);
+      document.body.append(this._addLayersModal.container);
     }
-    this._addWebLayersModal.container.open = true;
+    this._addLayersModal.container.open = true;
   }
 
   render(): tsx.JSX.Element {

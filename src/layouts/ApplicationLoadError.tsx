@@ -18,7 +18,7 @@ interface ApplicationLoadErrorProperties extends esri.WidgetProperties {
     /**
      * Link text.
      */
-    text?: string;
+    text: string;
   };
   /**
    * Error notice message.
