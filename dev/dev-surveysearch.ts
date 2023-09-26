@@ -86,12 +86,6 @@ const load = async (): Promise<void> => {
         type: 'calcite-panel',
         open: true,
       },
-      {
-        widget: new Measure({ view }),
-        icon: 'measure',
-        text: 'Measure',
-        type: 'calcite-panel',
-      },
     ],
   });
 };
