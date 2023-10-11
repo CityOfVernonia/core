@@ -292,7 +292,7 @@ export default class ShellApplicationMap extends Widget {
       view: { ui },
       viewControlOptions,
     } = this;
-    const loader = new Loader(title ? { ...loaderOptions, title } : loaderOptions);
+    const loader = new Loader(loaderOptions.title ? loaderOptions : { ...loaderOptions, title });
 
     ui.remove('zoom');
     if (view.type === '2d') {
@@ -354,7 +354,7 @@ export default class ShellApplicationMap extends Widget {
 
   shellPanel!: esri.Widget;
 
-  title!: string;
+  title = 'City of Vernonia';
 
   @property({ type: Collection })
   panelWidgets?: esri.Collection<PanelWidget>;
@@ -728,7 +728,7 @@ export default class ShellApplicationMap extends Widget {
       <div class={CSS.header} slot="header">
         <div class={CSS.headerTitle}>
           {logoUrl !== false ? <img src={logoUrl || logoSvg} /> : null}
-          {title || headerTitle ? <div>{title || headerTitle}</div> : null}
+          {headerTitle || title ? <div>{headerTitle || title}</div> : null}
         </div>
         <div class={CSS.headerControls}>
           {searchViewModel ? (
