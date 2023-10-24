@@ -1,6 +1,7 @@
 @import "variables";
 
 // browsers have gotten weird with the focused view outline
+// may no longer be needed as of 4.28
 .esri-view .esri-view-surface--inset-outline:focus::after {
   outline: none !important;
   outline-offset: 0;
@@ -44,56 +45,9 @@
   }
 }
 
-// popup
-.esri-popup__main-container {
-  border-radius: var(--calcite-border-radius);
-
-  .esri-popup__header-title {
-    font-size: var(--calcite-font-size-0);
-    font-weight: var(--calcite-font-weight-normal);
-    color: $brand-dark;
-  }
-
-  .esri-popup__collapse-icon {
-    color: $brand-dark;
-  }
-
-  .esri-popup__button {
-    border-radius: var(--calcite-border-radius);
-    color: $brand-dark;
-    &:hover {
-      background-color: $brand-popup-button-hover-background;
-    }
-  }
-
-  .esri-popup__header-container--button,
-  .esri-popup__pagination-previous,
-  .esri-popup__pagination-next,
-  .esri-popup__feature-menu-button {
-    color: $brand-dark;
-    border-radius: 0;
-    &:hover {
-      background-color: $brand-popup-button-hover-background;
-    }
-  }
-
-  .esri-popup__feature-menu-item--selected {
-    background-color: $brand-popup-selected-background;
-  }
-
-  .esri-popup__navigation {
-    border-radius: var(--calcite-border-radius);
-  }
-}
-
-.esri-popup--feature-menu-open .esri-popup__feature-menu-button {
-  background-color: $brand-popup-selected-background;
-}
-
 // table
 .esri-widget__table {
   background-color: transparent;
-  border-radius: var(--calcite-border-radius);
 }
 
 .esri-widget__table tr th {

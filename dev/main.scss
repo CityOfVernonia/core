@@ -2,11 +2,12 @@
 /// import css for vernonia defaults
 ////////////////////////////////////
 
-@import "./../dist/layouts/ShellApplicationMap.css";
-@import "./../dist/widgets/Measure.css";
+// @import "./../dist/layouts/ShellApplicationMap.css";
+// @import "./../dist/widgets/Measure.css";
 
 /////////////////////////////////////////
 /// import scss for dev or custom theming
 /////////////////////////////////////////
 
-// @import "./../src/widgets/SurveySearch.scss";
+@import "./../src/layouts/ShellApplicationMap.scss";
+@import "./../src/widgets/Measure.scss";
