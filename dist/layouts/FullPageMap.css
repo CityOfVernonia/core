@@ -3383,22 +3383,6 @@ label.esri-feature-form__label {
   margin-bottom: 0;
 }
 
-.esri-feature-form__input-wrapper {
-  display: inline-flex;
-  position: relative;
-  flex: 1 1 0;
-  align-items: center;
-  order: 3;
-}
-
-.esri-feature-form__input-loader {
-  display: block;
-  position: absolute;
-  inset-block-start: 5px;
-  inset-inline: 1px;
-  pointer-events: none;
-}
-
 .esri-feature-form__input {
   width: 100%;
 }
@@ -3575,10 +3559,6 @@ textarea.esri-feature-form__input {
 .esri-features calcite-flow {
   position: relative;
   z-index: 1;
-  overflow: visible;
-}
-.esri-features calcite-flow-item {
-  overflow: visible;
 }
 .esri-features img {
   image-orientation: from-image;
@@ -5099,6 +5079,7 @@ textarea.esri-feature-form__input {
   width: 340px;
   min-height: 48px;
   max-height: 340px;
+  overflow: hidden;
   pointer-events: auto;
 }
 
