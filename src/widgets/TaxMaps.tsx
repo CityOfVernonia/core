@@ -87,16 +87,12 @@ export default class TaxMaps extends Widget {
   }
 
   async postInitialize(): Promise<void> {
-    const {
-      view,
-      view: { popup },
-      layer,
-      titleAttributeField,
-      fileAttributeField,
-      urlAttributeField,
-      _imageLayerInfos,
-      _options,
-    } = this;
+    const { view, layer, titleAttributeField, fileAttributeField, urlAttributeField, _imageLayerInfos, _options } =
+      this;
+
+    layer.visible = false;
+
+    layer.popupEnabled = true;
 
     layer.popupTemplate = new PopupTemplate({
       outFields: ['*'],
@@ -114,8 +110,7 @@ export default class TaxMaps extends Widget {
 
         taxMapPopup.on('show', (fileName: string) => {
           this._show(fileName);
-          popup.close();
-          if (popup.clear && typeof popup.clear === 'function') popup.clear();
+          view.closePopup();
         });
 
         return container;
@@ -151,7 +146,7 @@ export default class TaxMaps extends Widget {
 
     this.scheduleRender();
 
-    this.own(
+    this.addHandles(
       this.watch('_opacity', (opacity: number): void => {
         _imageLayerInfos.forEach((imageLayerInfo: ImageLayerInfo): void => {
           const { layer } = imageLayerInfo;
@@ -262,9 +257,9 @@ export default class TaxMaps extends Widget {
     select.addEventListener('calciteSelectChange', (): void => {
       this._show(select.selectedOption.value);
     });
-    this.own(
+    this.addHandles(
       this.watch('_imageLayerInfo', (_imageLayerInfo: ImageLayerInfo | null): void => {
-        console.log(_imageLayerInfo, select);
+        // console.log(_imageLayerInfo, select);
         select.value = !_imageLayerInfo ? 'none' : _imageLayerInfo.fileName;
       }),
     );

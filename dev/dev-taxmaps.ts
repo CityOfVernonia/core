@@ -8,9 +8,6 @@ import SearchViewModel from '@arcgis/core/widgets/Search/SearchViewModel';
 import cityBoundaryExtents from '../dist/support/cityBoundaryExtents';
 
 import GeoJSONLayer from '@arcgis/core/layers/GeoJSONLayer';
-import { SimpleRenderer } from '@arcgis/core/renderers';
-import { SimpleFillSymbol, TextSymbol } from '@arcgis/core/symbols';
-import LabelClass from '@arcgis/core/layers/support/LabelClass';
 
 import ShellApplicationMap from '../dist/layouts/ShellApplicationMap';
 import TaxMaps from '../src/widgets/TaxMaps';
@@ -31,33 +28,13 @@ const load = async (): Promise<void> => {
     },
   });
 
-  const taxMaps = new GeoJSONLayer({
-    url: 'https://cityofvernonia.github.io/vernonia-tax-maps/TaxMapBoundaries.geojson',
-    outFields: ['*'],
-    title: 'Tax Map Boundaries',
-    visible: false,
-    renderer: new SimpleRenderer({
-      symbol: new SimpleFillSymbol({
-        color: [0, 0, 0, 0],
-        outline: {
-          color: 'yellow',
-          width: 0.75,
-        },
-      }),
-    }),
-    labelingInfo: [
-      new LabelClass({
-        labelExpressionInfo: {
-          expression: '$feature.name',
-        },
-        symbol: new TextSymbol({
-          color: 'yellow',
-          haloColor: [0, 0, 0, 0.5],
-          haloSize: 1.25,
-        }),
-      }),
-    ],
-  });
+  const taxMaps = new GeoJSONLayer(
+    await (
+      await fetch('https://cityofvernonia.github.io/geospatial-data/tax-maps/tax-map-boundaries.json', {
+        cache: 'reload',
+      })
+    ).json(),
+  );
 
   const { cityLimits, extent, constraintExtent } = await cityBoundaryExtents('5e1e805849ac407a8c34945c781c1d54');
 
@@ -97,7 +74,7 @@ const load = async (): Promise<void> => {
         widget: new TaxMaps({
           view,
           layer: taxMaps,
-          imageUrlTemplate: 'https://cityofvernonia.github.io/vernonia-tax-maps/tax-maps/jpg/{taxmap}.jpg',
+          imageUrlTemplate: 'https://cityofvernonia.github.io/geospatial-data/tax-maps/files/jpg/{taxmap}.jpg',
           titleAttributeField: 'name',
           fileAttributeField: 'taxmap',
           urlAttributeField: 'county_url',
