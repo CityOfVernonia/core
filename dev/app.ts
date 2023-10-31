@@ -13,6 +13,7 @@ import taxLotPopup from './../src/popups/TaxLotPopup';
 import Color from '@arcgis/core/Color';
 
 import ShellApplicationMap from './../src/layouts/ShellApplicationMap';
+import Layers from './../src/widgets/Layers';
 import Measure from './../src/widgets/Measure';
 
 esriConfig.portalUrl = 'https://gis.vernonia-or.gov/portal';
@@ -81,6 +82,12 @@ const load = async (): Promise<void> => {
       includeLocate: true,
     },
     panelWidgets: [
+      {
+        widget: new Layers({ view }),
+        icon: 'layers',
+        text: 'Layers',
+        type: 'calcite-panel',
+      },
       {
         widget: new Measure({ view }),
         icon: 'measure',
