@@ -1,2 +1,0 @@
-/* His name was Bruce McNair. Copyright 2023 City of Vernonia, Oregon. */
-import{__awaiter as t}from"tslib";import e from"@arcgis/core/layers/FeatureLayer";export default o=>t(void 0,void 0,void 0,(function*(){const t=new e({portalItem:{id:o}});yield t.load();const i=t.fullExtent.clone();return{cityLimits:t,extent:i,constraintExtent:i.clone().expand(3)}}));
