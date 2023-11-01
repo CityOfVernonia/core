@@ -349,7 +349,7 @@ export default class Measure extends Widget {
     );
 
     // own handles
-    this.own([
+    this.addHandles([
       layerAdd,
       locationHandle,
       locationLabels,
