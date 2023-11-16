@@ -13,6 +13,7 @@ import GeoJSONLayer from '@arcgis/core/layers/GeoJSONLayer';
 
 import ShellApplicationMap from '../src/layouts/ShellApplicationMap';
 import TaxMaps from '../src/widgets/TaxMaps';
+// import TaxMaps from '../dist/widgets/TaxMaps';
 
 esriConfig.portalUrl = 'https://gis.vernonia-or.gov/portal';
 esriConfig.assetsPath = './arcgis';

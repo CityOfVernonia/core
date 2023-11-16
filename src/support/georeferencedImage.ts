@@ -14,6 +14,7 @@ import ControlPointsGeoreference from '@arcgis/core/layers/support/ControlPoints
 import ImageElement from '@arcgis/core/layers/support/ImageElement';
 import Graphic from '@arcgis/core/Graphic';
 import { SimpleMarkerSymbol } from '@arcgis/core/symbols';
+// import { publish } from 'pubsub-js';
 
 let _displayControlPoints: esri.Graphic[] = [];
 
@@ -163,12 +164,29 @@ const imageMediaLayer = async (
   imageElement.watch('loadError', async (error: string) => {
     if (error) {
       console.log(error);
-      (await import('pubsub-js')).publish('shell-application-alert', {
+
+      const pubSub = await import('pubsub-js');
+
+      pubSub.publish('shell-application-alert', {
         title: 'Load error',
         message: 'Failed to load image layer',
         duration: 'fast',
         kind: 'danger',
       } as AlertOptions);
+
+      // publish('shell-application-alert', {
+      //   title: 'Load error',
+      //   message: 'Failed to load image layer',
+      //   duration: 'fast',
+      //   kind: 'danger',
+      // } as AlertOptions);
+
+      // (await import('pubsub-js')).publish('shell-application-alert', {
+      //   title: 'Load error',
+      //   message: 'Failed to load image layer',
+      //   duration: 'fast',
+      //   kind: 'danger',
+      // } as AlertOptions);
     }
   });
 
