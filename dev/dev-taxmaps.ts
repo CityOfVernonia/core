@@ -1,5 +1,7 @@
 import './main.scss';
 
+import esri = __esri;
+
 import esriConfig from '@arcgis/core/config';
 import WebMap from '@arcgis/core/WebMap';
 import MapView from '@arcgis/core/views/MapView';
@@ -9,7 +11,7 @@ import cityBoundaryExtents from '../dist/support/cityBoundaryExtents';
 
 import GeoJSONLayer from '@arcgis/core/layers/GeoJSONLayer';
 
-import ShellApplicationMap from '../dist/layouts/ShellApplicationMap';
+import ShellApplicationMap from '../src/layouts/ShellApplicationMap';
 import TaxMaps from '../src/widgets/TaxMaps';
 
 esriConfig.portalUrl = 'https://gis.vernonia-or.gov/portal';
@@ -28,15 +30,22 @@ const load = async (): Promise<void> => {
     },
   });
 
-  const taxMaps = new GeoJSONLayer(
-    await (
-      await fetch('https://cityofvernonia.github.io/geospatial-data/tax-maps/tax-map-boundaries.json', {
-        cache: 'reload',
-      })
-    ).json(),
-  );
-
   const { cityLimits, extent, constraintExtent } = await cityBoundaryExtents('5e1e805849ac407a8c34945c781c1d54');
+
+  let taxMaps: esri.GeoJSONLayer;
+
+  try {
+    taxMaps = new GeoJSONLayer(
+      await (
+        await fetch('https://cityofvernonia.github.io/geospatial-data/tax-maps/tax-map-boundaries.json', {
+          cache: 'reload',
+        })
+      ).json(),
+    );
+  } catch (error) {
+    console.log(error);
+    taxMaps = new GeoJSONLayer();
+  }
 
   const view = new MapView({
     map: new WebMap({

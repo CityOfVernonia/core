@@ -604,10 +604,10 @@ export default class Markup extends Widget {
               symbolType === 'text'
                 ? 'text-large'
                 : geometryType === 'point'
-                ? 'point'
-                : geometryType === 'polyline'
-                ? 'line'
-                : 'polygon-vertices';
+                  ? 'point'
+                  : geometryType === 'polyline'
+                    ? 'line'
+                    : 'polygon-vertices';
             return (
               <calcite-list-item
                 key={KEY++}

@@ -190,10 +190,10 @@ export default class ViewControl2D extends Widget {
               locate.state === 'ready'
                 ? 'gps-on'
                 : locate.state === 'locating'
-                ? 'gps-on-f'
-                : locate.state === 'disabled'
-                ? 'gps-off'
-                : '';
+                  ? 'gps-on-f'
+                  : locate.state === 'disabled'
+                    ? 'gps-off'
+                    : '';
           },
         ),
       );

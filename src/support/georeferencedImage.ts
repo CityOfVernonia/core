@@ -2,6 +2,7 @@
 // Interfaces
 //////////////////////////////////////
 import esri = __esri;
+import type { AlertOptions } from './../layouts/ShellApplicationMap';
 
 //////////////////////////////////////
 // Modules
@@ -150,22 +151,36 @@ const imageMediaLayer = async (
   // create HTMLImageElement for dimensions and to pass to ImageElement
   const image = await objectUrlToImage(imageUrl);
 
-  return new MediaLayer({
+  const imageElement = new ImageElement({
+    image,
+    georeference: new ControlPointsGeoreference({
+      controlPoints,
+      width: image.width,
+      height: image.height,
+    }),
+  });
+
+  imageElement.watch('loadError', async (error: string) => {
+    if (error) {
+      console.log(error);
+      (await import('pubsub-js')).publish('shell-application-alert', {
+        title: 'Load error',
+        message: 'Failed to load image layer',
+        duration: 'fast',
+        kind: 'danger',
+      } as AlertOptions);
+    }
+  });
+
+  const layer = new MediaLayer({
     ...mediaLayerProperties,
     ...{
-      source: [
-        new ImageElement({
-          image,
-          georeference: new ControlPointsGeoreference({
-            controlPoints,
-            width: image.width,
-            height: image.height,
-          }),
-        }),
-      ],
+      source: [imageElement],
       spatialReference,
     },
   });
+
+  return layer;
 };
 
 /**
