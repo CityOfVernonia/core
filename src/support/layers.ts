@@ -1,5 +1,12 @@
 import esri = __esri;
 
+import CSVLayer from '@arcgis/core/layers/CSVLayer';
+import GeoJSONLayer from '@arcgis/core/layers/GeoJSONLayer';
+
+const _fetchLayerJSON = async (url: string): Promise<any> => {
+  return await (await fetch(url, { cache: 'reload' })).json();
+};
+
 /**
  * Set basic attributes popup to a layer.
  * @param layer
@@ -18,6 +25,40 @@ export const attributePopup = async (
     layer.popupEnabled = true;
     layer.popupTemplate = popupTemplate;
   }
+};
+
+/**
+ * Create and return a CSVLayer from URL of layer properties JSON.
+ * @param url URL of layer properties JSON
+ * @returns esri.CSVLayer
+ */
+export const csvLayerFromJSON = async (url: string): Promise<esri.CSVLayer> => {
+  const csvLayerProperties: esri.CSVLayerProperties = {
+    ...(await _fetchLayerJSON(url)),
+    ...{
+      customParameters: {
+        d: new Date().getTime(),
+      },
+    },
+  };
+  return new CSVLayer(csvLayerProperties);
+};
+
+/**
+ * Create and return a GeoJSONLayer from URL of layer properties JSON.
+ * @param url URL of layer properties JSON
+ * @returns esri.CSVLayer
+ */
+export const geojsonLayerFromJSON = async (url: string): Promise<esri.GeoJSONLayer> => {
+  const geojsonLayerProperties: esri.GeoJSONLayerProperties = {
+    ...(await _fetchLayerJSON(url)),
+    ...{
+      customParameters: {
+        d: new Date().getTime(),
+      },
+    },
+  };
+  return new GeoJSONLayer(geojsonLayerProperties);
 };
 
 /**
