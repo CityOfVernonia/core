@@ -30,9 +30,13 @@ export const attributePopup = async (
 /**
  * Create and return a CSVLayer from URL of layer properties JSON.
  * @param url URL of layer properties JSON
+ * @param layerProperties Optional CSVLayer properties
  * @returns esri.CSVLayer
  */
-export const csvLayerFromJSON = async (url: string): Promise<esri.CSVLayer> => {
+export const csvLayerFromJSON = async (
+  url: string,
+  layerProperties?: esri.CSVLayerProperties,
+): Promise<esri.CSVLayer> => {
   const csvLayerProperties: esri.CSVLayerProperties = {
     ...(await _fetchLayerJSON(url)),
     ...{
@@ -40,6 +44,7 @@ export const csvLayerFromJSON = async (url: string): Promise<esri.CSVLayer> => {
         d: new Date().getTime(),
       },
     },
+    ...(layerProperties || {}),
   };
   return new CSVLayer(csvLayerProperties);
 };
@@ -47,9 +52,13 @@ export const csvLayerFromJSON = async (url: string): Promise<esri.CSVLayer> => {
 /**
  * Create and return a GeoJSONLayer from URL of layer properties JSON.
  * @param url URL of layer properties JSON
+ * @param layerProperties Optional GeoJSONLayer properties
  * @returns esri.CSVLayer
  */
-export const geojsonLayerFromJSON = async (url: string): Promise<esri.GeoJSONLayer> => {
+export const geojsonLayerFromJSON = async (
+  url: string,
+  layerProperties?: esri.GeoJSONLayerProperties,
+): Promise<esri.GeoJSONLayer> => {
   const geojsonLayerProperties: esri.GeoJSONLayerProperties = {
     ...(await _fetchLayerJSON(url)),
     ...{
@@ -57,6 +66,7 @@ export const geojsonLayerFromJSON = async (url: string): Promise<esri.GeoJSONLay
         d: new Date().getTime(),
       },
     },
+    ...(layerProperties || {}),
   };
   return new GeoJSONLayer(geojsonLayerProperties);
 };
