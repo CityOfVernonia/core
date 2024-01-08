@@ -27,7 +27,7 @@ export default new PopupTemplate({
       : '';
     const accounts = ACCOUNT_IDS.split(',').map((account: string): string => {
       return `
-          <calcite-link href="${propertyInfoUrl(account, 2023)}" target="_blank">${account}</calcite-link>
+          <calcite-link href="${propertyInfoUrl(account, 2024)}" target="_blank">${account}</calcite-link>
         `;
     });
     const el = new DOMParser().parseFromString(
