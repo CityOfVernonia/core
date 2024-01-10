@@ -10,7 +10,7 @@
   z-index: 2000;
   user-select: none;
   color: var(--calcite-color-text-2);
-  background-color: var(-calcite-color-background);
+  background-color: var(--calcite-color-background);
   transition: opacity 1s;
 }
 .cov-widgets--loader * {
