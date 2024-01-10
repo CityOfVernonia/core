@@ -9,8 +9,8 @@
   left: 0;
   z-index: 2000;
   user-select: none;
-  color: var(--calcite-ui-text-2);
-  background-color: var(--calcite-ui-background);
+  color: var(--calcite-color-text-2);
+  background-color: var(-calcite-color-background);
   transition: opacity 1s;
 
   * {

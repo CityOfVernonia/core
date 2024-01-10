@@ -1,22 +1,44 @@
 @import "variables";
 
 :root {
+  // calcite 1.x
   --calcite-ui-brand: #{$brand};
   --calcite-ui-brand-dark: #{$brand-dark}; // custom var
   --calcite-ui-brand-hover: #{$brand-hover};
   --calcite-ui-brand-press: #{$brand-press};
   --calcite-ui-text-link: #{$brand-hover};
   --calcite-link-blue-underline: #{$link-underline};
+
+  // calcite 2.x
+  --calcite-color-text-link: #{$brand-hover};
+  --calcite-color-brand-underline:#{ $link-underline};
+  --calcite-color-brand-press: #{$brand-press};
+  --calcite-color-brand-hover: #{$brand-hover};
+  --calcite-color-brand: #{$brand};
+  --calcite-color-brand-dark: #{$brand-dark}; // custom var
+
+  // calcite
   --calcite-sans-family: #{$font-family};
 }
 
 .calcite-mode-light {
+  // calcite 1.x
   --calcite-ui-brand: #{$brand};
   --calcite-ui-brand-dark: #{$brand-dark}; // custom var
   --calcite-ui-brand-hover: #{$brand-hover};
   --calcite-ui-brand-press: #{$brand-press};
   --calcite-ui-text-link: #{$brand-hover};
   --calcite-link-blue-underline: #{$link-underline};
+
+  // calcite 2.x
+  --calcite-color-text-link: #{$brand-hover};
+  --calcite-color-brand-underline:#{ $link-underline};
+  --calcite-color-brand-press: #{$brand-press};
+  --calcite-color-brand-hover: #{$brand-hover};
+  --calcite-color-brand: #{$brand};
+  --calcite-color-brand-dark: #{$brand-dark}; // custom var
+
+  // calcite
   --calcite-sans-family: #{$font-family};
 }
 
@@ -30,8 +52,8 @@ html {
 
 body {
   display: flex;
-  background-color: var(--calcite-ui-background);
-  color: var(--calcite-ui-text-1);
+  background-color: var(--calcite-color-background);
+  color: var(--calcite-color-text-1);
   font-size: 16px;
   font-family: $font-family;
 }

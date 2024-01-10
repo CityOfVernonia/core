@@ -1,4 +1,3 @@
-/// <reference types="@esri/calcite-components" />
 import esri = __esri;
 /**
  * Shared add layer info properties.

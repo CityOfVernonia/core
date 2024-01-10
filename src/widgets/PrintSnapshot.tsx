@@ -28,7 +28,7 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
 const STYLE = {
   content: 'padding: var(--calcite-font-size--2);',
   resultButton: 'margin-top: var(--calcite-font-size--2);',
-  snapshotResult: `width: 100%; margin-top: var(--calcite-font-size--2); display: flex; flex-flow: row; justify-content: flex-end; background-size: cover; background-repeat: no-repeat; background-position: center center; box-shadow: 0 4px 8px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04); border-inline-start: 2px solid var(--calcite-ui-brand);`,
+  snapshotResult: `width: 100%; margin-top: var(--calcite-font-size--2); display: flex; flex-flow: row; justify-content: flex-end; background-size: cover; background-repeat: no-repeat; background-position: center center; box-shadow: 0 4px 8px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04); border-inline-start: 2px solid var(--calcite-color-brand);`,
 };
 
 const TITLES = {

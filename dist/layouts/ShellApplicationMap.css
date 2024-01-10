@@ -5698,6 +5698,12 @@ textarea.esri-feature-form__input {
   --calcite-ui-brand-press: #4e6d46;
   --calcite-ui-text-link: #5a7e51;
   --calcite-link-blue-underline: rgba(78, 109, 70, 0.4);
+  --calcite-color-text-link: #5a7e51;
+  --calcite-color-brand-underline:rgba(78, 109, 70, 0.4);
+  --calcite-color-brand-press: #4e6d46;
+  --calcite-color-brand-hover: #5a7e51;
+  --calcite-color-brand: #6b9560;
+  --calcite-color-brand-dark: #44693d;
   --calcite-sans-family: Roboto, sans-serif;
 }
 
@@ -5708,6 +5714,12 @@ textarea.esri-feature-form__input {
   --calcite-ui-brand-press: #4e6d46;
   --calcite-ui-text-link: #5a7e51;
   --calcite-link-blue-underline: rgba(78, 109, 70, 0.4);
+  --calcite-color-text-link: #5a7e51;
+  --calcite-color-brand-underline:rgba(78, 109, 70, 0.4);
+  --calcite-color-brand-press: #4e6d46;
+  --calcite-color-brand-hover: #5a7e51;
+  --calcite-color-brand: #6b9560;
+  --calcite-color-brand-dark: #44693d;
   --calcite-sans-family: Roboto, sans-serif;
 }
 
@@ -5721,8 +5733,8 @@ html {
 
 body {
   display: flex;
-  background-color: var(--calcite-ui-background);
-  color: var(--calcite-ui-text-1);
+  background-color: var(--calcite-color-background);
+  color: var(--calcite-color-text-1);
   font-size: 16px;
   font-family: "Roboto", sans-serif;
 }
@@ -5795,8 +5807,8 @@ body {
   left: 0;
   z-index: 2000;
   user-select: none;
-  color: var(--calcite-ui-text-2);
-  background-color: var(--calcite-ui-background);
+  color: var(--calcite-color-text-2);
+  background-color: var(-calcite-color-background);
   transition: opacity 1s;
 }
 .cov-widgets--loader * {
@@ -5983,7 +5995,7 @@ body {
 }
 .cov-layouts--shell-application-map_header--user-control--popover span {
   font-size: var(--calcite-font-size--1);
-  color: var(--calcite-ui-text-3);
+  color: var(--calcite-color-text-3);
 }
 
 .cov-layouts--shell-application-map_view {

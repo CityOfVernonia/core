@@ -9,7 +9,7 @@
   }
 
   .esri-elevation-profile__chart-spinner {
-    color: var(--calcite-ui-brand);
+    color: var(--calcite-color-brand);
   }
 }
 
@@ -84,7 +84,7 @@
 }
 
 .cov-measure--color-selector--color--selected {
-  outline: 2px solid var(--calcite-ui-brand);
+  outline: 2px solid var(--calcite-color-brand);
   outline-offset: 2px;
   cursor: default;
 }

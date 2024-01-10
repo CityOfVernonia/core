@@ -1,4 +1,3 @@
-/// <reference types="@esri/calcite-components" />
 import esri = __esri;
 /**
  * Options for configuring Disclaimer widget.

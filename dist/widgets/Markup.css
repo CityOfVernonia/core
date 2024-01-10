@@ -49,7 +49,7 @@
   line-height: 1;
   font-size: var(--calcite-font-size--3);
   font-weight: 500;
-  color: var(--calcite-ui-text-2);
+  color: var(--calcite-color-text-2);
 }
 
 .cov-markup--color-picker {
@@ -64,11 +64,11 @@
   width: 17px;
   height: 17px;
   cursor: pointer;
-  outline: 1px solid var(--calcite-ui-border-1);
+  outline: 1px solid var(--calcite-color-border-1);
 }
 
 .cov-markup--color-picker--color--selected {
-  outline: 2px solid var(--calcite-ui-brand);
+  outline: 2px solid var(--calcite-color-brand);
   outline-offset: 1px;
   cursor: default;
 }
