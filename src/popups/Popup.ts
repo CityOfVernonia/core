@@ -19,14 +19,14 @@ const urlCheck = new RegExp(
 export default new PopupTemplate({
   outFields: ['*'],
   title: (event: { graphic: esri.Graphic }): string => {
-    // @ts-ignore
+    // @ts-expect-error not typed
     return event.graphic.layer ? event.graphic.layer.title : event.graphic.sourceLayer.title;
   },
   content: (event: { graphic: esri.Graphic }): HTMLElement => {
     const { graphic } = event;
     const layer =
       (graphic.layer as esri.FeatureLayer | esri.Sublayer | esri.GeoJSONLayer) ||
-      // @ts-ignore
+      // @ts-expect-error not typed
       (graphic.sourceLayer as esri.FeatureLayer | esri.Sublayer | esri.GeoJSONLayer);
     const rows: string[] = [];
 

@@ -30,7 +30,7 @@ import Cookies from 'js-cookie';
 //////////////////////////////////////
 // Constants
 //////////////////////////////////////
-const DISCLAIMER_COOKIE_NAME = '_mad_accepted';
+const DISCLAIMER_COOKIE_NAME = '_disclaimer_accepted';
 
 const DISCLAIMER_COOKIE_VALUE = 'accepted';
 
@@ -103,7 +103,7 @@ export default class Disclaimer extends Widget {
   render(): tsx.JSX.Element {
     const { title, disclaimer } = this;
     return (
-      <calcite-modal open="" close-button-disabled="" escape-disable="" outside-close-disabled="" width="s">
+      <calcite-modal open="" close-button-disabled="" escape-disable="" outside-close-disabled="" width-scale="s">
         <div slot="header">{title}</div>
         <div
           slot="content"

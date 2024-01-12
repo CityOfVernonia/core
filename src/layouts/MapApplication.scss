@@ -1,0 +1,139 @@
+@import "./../css/variables";
+@import "./../css/arcgis";
+@import "./../css/base";
+@import "./../css/esriOverrides";
+@import "./../css/headerBackground";
+@import "./../widgets/Loader";
+@import "./../widgets/ViewControl2D";
+
+// header
+.cov-layouts--map-application_header {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 38px;
+  padding: 0.5rem 1rem;
+  background: url(#{$header-background}), center, center,
+    linear-gradient(90deg, rgba($brand-dark, 1) 0%, rgba($brand, 1) 100%);
+  color: white;
+}
+
+.cov-layouts--map-application_header--content {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  gap: 1rem;
+  user-select: none;
+
+  .esri-search {
+    width: 30vw;
+    min-width: 260px;
+    max-width: 720px;
+    transition: width var(--calcite-animation-timing);
+    background: rgba($brand, 0.6);
+    border-radius: var(--calcite-border-radius);
+    z-index: 5;
+
+    * {
+      outline: none !important;
+    }
+
+    .esri-widget--button {
+      width: 38px;
+    }
+    .esri-widget--button,
+    .esri-input {
+      height: 38px;
+      background-color: transparent;
+      color: white;
+    }
+    .esri-search__input {
+      &::-webkit-input-placeholder,
+      &::placeholder {
+        color: rgba(white, 0.7);
+      }
+    }
+    .esri-search__sources-button {
+      border: none;
+    }
+    .esri-search__submit-button {
+      border: none;
+    }
+    .esri-menu {
+      margin-top: 4px;
+    }
+    .esri-menu__list-item--active,
+    .esri-menu__list-item--active:hover,
+    .esri-menu__list-item--active:focus {
+      background-color: lighten($brand, 40%);
+      border-left-color: $brand;
+    }
+
+    .esri-menu__list-item--focus,
+    .esri-menu__list-item:hover,
+    .esri-menu__list-item:focus {
+      background-color: lighten($brand, 40%);
+    }
+
+    .esri-search__source.esri-menu__list-item:active {
+      background-color: lighten($brand, 30%);
+    }
+  }
+}
+
+.cov-layouts--map-application_header--title {
+  img {
+    height: 2.25rem;
+  }
+
+  div {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 650px) {
+  .cov-layouts--map-application_header--title div {
+    display: none;
+  }
+}
+
+// user control
+.cov-layouts--map-application_user-control {
+  display: flex;
+  align-items: center;
+
+  calcite-icon {
+    opacity: 0.8;
+    cursor: pointer;
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  calcite-avatar {
+    cursor: pointer;
+  }
+}
+
+.cov-layouts--map-application_user-control--popover {
+  display: flex;
+  flex-flow: column;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+
+  div {
+    font-weight: var(--calcite-font-weight-medium);
+  }
+
+  span {
+    font-size: var(--calcite-font-size--1);
+    color: var(--calcite-color-text-3);
+  }
+}
+
+// view
+.cov-layouts--map-application_view {
+  width: 100%;
+  height: 100%;
+}

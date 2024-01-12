@@ -228,11 +228,11 @@ export default class Measure extends Widget {
 
     // initialize sketch and snapping
     sketch.view = view;
-    // @ts-ignore
+    // @ts-expect-error not typed
     sketch.activeLineSymbol = polylineSymbol;
-    // @ts-ignore
+    // @ts-expect-error not typed
     sketch.activeVertexSymbol = pointSymbol;
-    // @ts-ignore
+    // @ts-expect-error not typed
     sketch.vertexSymbol = pointSymbol;
     sketch.activeFillSymbol = polygonSymbol;
     view.map.layers.forEach(this._addSnappingLayer.bind(this));
@@ -721,10 +721,9 @@ export default class Measure extends Widget {
 
     pointSymbol.outline.color = new Color(color);
 
-    // @ts-ignore
+    // @ts-expect-error not typed
     polylineSymbol.data.symbol.symbolLayers[1].color = [...color, 255];
 
-    // @ts-ignore
     polygonSymbol.color = new Color([...color, 0.125]);
 
     textSymbol.color = new Color(color);
@@ -753,12 +752,12 @@ export default class Measure extends Widget {
       !layer.id.includes('markup')
     )
       return;
-    // @ts-ignore
+    // @ts-expect-error not typed
     if (layer.internal === true) return;
 
     snappingOptions.featureSources.add(
       new FeatureSnappingLayerSource({
-        //@ts-ignore
+        //@ts-expect-error class will filter out non-snappable layers
         layer: layer,
       }),
     );
@@ -1534,7 +1533,7 @@ export default class Measure extends Widget {
       localeFormat,
     } = this;
 
-    // @ts-ignore
+    // @ts-expect-error not typed
     const statistics = (this.elevationProfile.viewModel.statistics as any) || null;
 
     // format values

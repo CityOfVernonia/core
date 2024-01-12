@@ -245,7 +245,7 @@ export default class AddLayersModal extends Widget {
   private async _addLayerInfo(addLayerInfo: AddPortalLayerInfo | AddServerLayerInfo, index: number): Promise<void> {
     const { _addLayerItems } = this;
 
-    // @ts-ignore
+    // @ts-expect-error bad type union
     const { id, url, title, snippet } = addLayerInfo;
 
     let item = <calcite-list-item key={KEY++}></calcite-list-item>;

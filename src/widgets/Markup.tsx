@@ -381,12 +381,12 @@ export default class Markup extends Widget {
       });
       return;
     }
-    // @ts-ignore
+    // @ts-expect-error not typed
     if (layer.listMode === 'hide' || layer.title === undefined || layer.title === null || layer.internal === true)
       return;
     snappingOptions.featureSources.add(
       new FeatureSnappingLayerSource({
-        //@ts-ignore
+        //@ts-expect-error class will filter out non-snappable layers
         layer: layer,
       }),
     );
@@ -711,7 +711,7 @@ export default class Markup extends Widget {
     } = this;
     const graphic = _selectedGraphic || _selectedPopupFeature;
     if (!graphic) return;
-    // @ts-ignore
+    // @ts-expect-error not typed
     const layer = (graphic.layer || graphic.sourceLayer) as esri.FeatureLayer | esri.GraphicsLayer;
     let geometry = graphic.geometry;
     if (geometry && geometry.type === 'point') {
@@ -747,7 +747,7 @@ export default class Markup extends Widget {
     } = this;
     const graphic = _selectedGraphic || _selectedPopupFeature;
     if (!graphic) return;
-    // @ts-ignore
+    // @ts-expect-error not typed
     const layer = (graphic.layer || graphic.sourceLayer) as esri.FeatureLayer | esri.GraphicsLayer;
     let geometry = graphic.geometry;
     if (!layer || geometry.type !== 'polyline') return;
@@ -785,7 +785,7 @@ export default class Markup extends Widget {
     } = this;
     if (!popup.selectedFeature) return; // fail safe
     const graphic = popup.selectedFeature;
-    // @ts-ignore
+    // @ts-expect-error not typed
     const layer = (graphic.layer || graphic.sourceLayer) as esri.FeatureLayer;
     let geometry = graphic.geometry;
     if (geometry && geometry.type === 'point') {
@@ -811,7 +811,7 @@ export default class Markup extends Widget {
     } = this;
     const graphic = _selectedGraphic || _selectedPopupFeature;
     if (!graphic) return;
-    // @ts-ignore
+    // @ts-expect-error not typed
     const layer = (graphic.layer || graphic.sourceLayer) as esri.FeatureLayer | esri.GraphicsLayer;
     if (!layer) return; // fail safe
     let geometry = graphic.geometry;

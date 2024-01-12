@@ -14,19 +14,13 @@ const basemapToggle = async (
   nextBasemap: esri.Basemap,
   position: string,
 ): Promise<void> => {
-  const uuid = (await import('uuid')).v4;
-
   const BasemapToggle = (await import('@arcgis/core/widgets/BasemapToggle')).default;
-
-  const id = `bt_${uuid()}`;
 
   const basemapToggle = new BasemapToggle({ view, nextBasemap });
 
   view.ui.add(basemapToggle, position);
 
   const container = basemapToggle.container as HTMLDivElement;
-
-  container.id = id;
 
   const observer = new MutationObserver((): void => {
     container.removeAttribute('title');
@@ -36,10 +30,9 @@ const basemapToggle = async (
   observer.observe(container, { attributes: true, attributeFilter: ['title'] });
 
   const tooltip = Object.assign(document.createElement('calcite-tooltip'), {
-    referenceElement: id,
+    referenceElement: container,
     overlayPositioning: 'fixed',
     closeOnClick: true,
-    label: 'Toggle basemap',
     innerHTML: 'Toggle basemap',
   });
 

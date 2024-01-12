@@ -114,7 +114,7 @@ export default class Layers extends Widget {
   private async _addLayerInfo(addLayerInfo: AddPortalLayerInfo | AddServerLayerInfo, index: number): Promise<void> {
     const { _addLayerItems } = this;
 
-    // @ts-ignore
+    // @ts-expect-error bad union type
     const { id, url, title, snippet } = addLayerInfo;
 
     let item = <calcite-list-item key={KEY++}></calcite-list-item>;
@@ -195,7 +195,7 @@ export default class Layers extends Widget {
       portalItem,
     }).then((layer: esri.Layer) => {
       for (const layerProperty in layerProperties) {
-        //@ts-ignore
+        //@ts-expect-error set actual layer properties
         layer[layerProperty] = layerProperties[layerProperty];
       }
       map.add(layer, index);
@@ -225,7 +225,7 @@ export default class Layers extends Widget {
       url,
     }).then((layer: esri.Layer) => {
       for (const layerProperty in layerProperties) {
-        //@ts-ignore
+        //@ts-expect-error set actual layer properties
         layer[layerProperty] = layerProperties[layerProperty];
       }
       map.add(layer, index);

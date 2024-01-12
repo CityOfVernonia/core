@@ -12,14 +12,34 @@ import cityBoundaryExtents from './../src/support/cityBoundaryExtents';
 import taxLotPopup from './../src/popups/TaxLotPopup';
 import Color from '@arcgis/core/Color';
 
-import MapApplication from './../src/layouts/MapApplication';
-import Layers from './../src/widgets/Layers';
+import MapApplication, { showAlertTopic, AlertOptions } from './../src/layouts/MapApplication';
+
+import Portal from '@arcgis/core/portal/Portal';
+import OAuthInfo from '@arcgis/core/identity/OAuthInfo';
+import OAuth from '../src/support/OAuth';
+
+import TestWidgetModal from './../src/modals/TestWidgetModal';
 import Measure from './../src/widgets/Measure';
+
+import { publish } from 'pubsub-js';
 
 esriConfig.portalUrl = 'https://gis.vernonia-or.gov/portal';
 esriConfig.assetsPath = './arcgis';
 
+const portal = new Portal();
+const oAuth = new OAuth({
+  portal,
+  oAuthInfo: new OAuthInfo({
+    portalUrl: esriConfig.portalUrl,
+    appId: 'abcdefghijklmnopqrstuvwxyz1234567890',
+    popup: true,
+  }),
+});
+
 const load = async (): Promise<void> => {
+  await portal.load();
+  await oAuth.load();
+
   const hillshadeBasemap = new Basemap({
     portalItem: {
       id: '6e9f78f3a26f48c89575941141fd4ac3',
@@ -71,8 +91,15 @@ const load = async (): Promise<void> => {
     },
   });
 
-  new MapApplication({
+  const mapApplication = new MapApplication({
+    endWidgetInfo: {
+      icon: 'lightbulb',
+      text: 'About',
+      type: 'modal',
+      widget: new TestWidgetModal(),
+    },
     nextBasemap: hybridBasemap,
+    oAuth,
     title: '@vernonia/core',
     searchViewModel: new SearchViewModel(),
     view,
@@ -84,12 +111,42 @@ const load = async (): Promise<void> => {
         widget: new Measure({ view }),
       },
       {
-        icon: 'layers',
-        text: 'Layers',
-        type: 'panel',
-        widget: new Layers({ view }),
+        icon: 'test-data',
+        text: 'Test',
+        type: 'modal',
+        widget: new TestWidgetModal(),
       },
     ],
+  });
+
+  mapApplication.on('load', (): void => {
+    mapApplication.showAlert({
+      duration: 'fast',
+      label: 'Testing',
+      message: 'This is a test.',
+      title: 'Alert Test',
+    });
+
+    setTimeout((): void => {
+      mapApplication.showAlert({
+        duration: 'fast',
+        kind: 'danger',
+        label: 'Testing',
+        message: 'This is a test.',
+        title: 'Alert Test',
+      });
+    }, 2000);
+
+    setTimeout((): void => {
+      publish(showAlertTopic(), {
+        // duration: 'slow',
+        kind: 'info',
+        label: 'Testing',
+        message: 'This is a pub/sub test.',
+        title: 'Alert Test',
+        width: 240,
+      } as AlertOptions);
+    }, 15000);
   });
 };
 
