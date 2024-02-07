@@ -1,382 +1,166 @@
 import esri = __esri;
-interface MeasureProperties extends esri.WidgetProperties {
+export interface MeasureConstructorProperties extends esri.WidgetProperties {
+    units?: Units;
     /**
-     * Map view to measure in.
+     * Map view to measure.
      */
     view: esri.MapView;
-    /**
-     * Default length unit.
-     */
-    lengthUnit?: string;
-    /**
-     * Length units to include.
-     * <UNIT>:<NAME> e.g. {feet: 'Feet'}
-     */
-    lengthUnits?: {
-        [key: string]: string;
-    };
-    /**
-     * Default area unit.
-     */
-    areaUnit?: string;
-    /**
-     * Area units to include.
-     * <UNIT>:<NAME> e.g. {'square-feet': 'Feet'}
-     */
-    areaUnits?: {
-        [key: string]: string;
-    };
-    /**
-     * Default location unit.
-     */
-    locationUnit?: string;
-    /**
-     * Length units to include.
-     */
-    locationUnits?: {
-        [key: string]: string;
-    };
-    /**
-     * Default elevation unit.
-     */
-    elevationUnit?: string;
-    /**
-     * Length units to include.
-     */
-    elevationUnits?: {
-        [key: string]: string;
-    };
-    /**
-     * Labels visible.
-     * @default true
-     */
-    labelsVisible?: boolean;
-    /**
-     * Add units to labels.
-     * @default false
-     */
-    labelUnits?: boolean;
-    /**
-     * Length, area and elevation precision.
-     * @default 2
-     */
-    unitsPrecision?: number;
-    /**
-     * Decimal degrees precision.
-     * @default 6
-     */
-    degreesPrecision?: number;
-    /**
-     * Format numbers, e.i. thousand separated, etc.
-     * @default true
-     */
-    localeFormat?: boolean;
 }
-interface MeasureState {
+export interface UnitsDropdownConstructorProperties extends esri.WidgetProperties {
     /**
-     * Operational state of the widget.
+     * Link text.
      */
-    operation: 'ready' | 'measure-length' | 'length' | 'measure-area' | 'area' | 'measure-location' | 'location' | 'measure-elevation' | 'elevation' | 'measure-profile' | 'profile';
+    text: string;
     /**
-     * Longitude of cursor.
+     * Unit type.
      */
-    x: number | string;
+    type: 'area' | 'elevation' | 'latitudeLongitude' | 'length';
     /**
-     * Latitude of cursor.
+     * Units instance.
      */
-    y: number | string;
-    /**
-     * Elevation of cursor.
-     */
-    z: number;
-    /**
-     * Length or perimeter value.
-     */
-    length: number;
-    /**
-     * Area value.
-     */
-    area: number;
-    /**
-     * Location longitude.
-     */
-    locationX: number | string;
-    /**
-     * Location latitude.
-     */
-    locationY: number | string;
-    /**
-     * Elevation value.
-     */
-    elevation: number;
-    /**
-     * Current length polyline.
-     */
-    lengthGeometry: Polyline | null;
-    /**
-     * Current area polygon.
-     */
-    areaGeometry: esri.Polygon | null;
-    /**
-     * Current location point.
-     */
-    locationGeometry: esri.Point | null;
-    /**
-     * Current elevation point.
-     */
-    elevationGeometry: esri.Point | null;
-    /**
-     * Current profile polyline.
-     */
-    profileGeometry: Polyline | null;
+    units: Units;
 }
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
-import { Polyline } from '@arcgis/core/geometry';
+import Units from './../support/Units';
+export declare const setMeasureColors: (primary: [number, number, number], secondary: [number, number, number]) => void;
 /**
- * Measure widget for ArcGIS JS API including length, area, location, elevation and ground profiles.
+ * Widget what for measuring in a map.
  */
 export default class Measure extends Widget {
-    constructor(properties: MeasureProperties);
+    constructor(properties: MeasureConstructorProperties);
     postInitialize(): Promise<void>;
-    /**
-     * Map view to measure in.
-     */
     view: esri.MapView;
-    lengthUnit: string;
-    lengthUnits: {
-        meters: string;
-        feet: string;
-        kilometers: string;
-        miles: string;
-        'nautical-miles': string;
-    };
-    areaUnit: string;
-    areaUnits: {
-        acres: string;
-        'square-feet': string;
-        'square-meters': string;
-        'square-kilometers': string;
-        'square-miles': string;
-    };
-    locationUnit: string;
-    locationUnits: {
-        dec: string;
-        dms: string;
-    };
-    elevationUnit: string;
-    elevationUnits: {
-        feet: string;
-        meters: string;
-    };
+    protected loaded: boolean;
     /**
-     * Labels visible.
+     * Units instance and units.
      */
-    labelsVisible: boolean;
+    units: Units;
+    protected areaUnit: string;
+    protected latitudeLongitudeUnit: string;
+    protected elevationUnit: string;
+    protected lengthUnit: string;
     /**
-     * Add units to labels.
+     * Abort controller for cursor elevation queries.
      */
-    labelUnits: boolean;
+    private _cursorElevationAbortController;
     /**
-     * Length, area and elevation precision.
+     * Point with latitude, longitude and z of the cursor.
      */
-    unitsPrecision: number;
+    private _cursor;
     /**
-     * Decimal degrees precision.
+     * Ground instance for elevations.
      */
-    degreesPrecision: number;
+    private _ground;
+    private _measureState;
+    private _selectedFeature?;
+    private _popupVisible;
     /**
-     * Format numbers, e.i. thousand separated, etc.
+     * SketchViewModel, layers, and symbols.
      */
-    localeFormat: boolean;
-    /**
-     * Graphics color.
-     */
-    protected color: number[];
-    /**
-     * Sketch VM for draw operations.
-     */
-    protected sketch: esri.SketchViewModel;
-    protected pointSymbol: esri.SimpleMarkerSymbol;
-    protected polylineSymbol: esri.CIMSymbol;
-    protected polygonSymbol: esri.SimpleFillSymbol;
-    protected textSymbol: esri.TextSymbol;
-    protected elevationProfile: esri.ElevationProfile;
-    protected elevationProfileLineGround: esri.ElevationProfileLineGround;
-    protected layers: esri.GroupLayer;
-    protected labels: esri.GraphicsLayer;
-    /**
-     * Widget state and measurement values.
-     */
-    protected state: MeasureState;
-    protected optionsVisible: boolean;
-    /**
-     * Handle for sketch create.
-     */
+    private _sketch;
     private _sketchHandle;
-    /**
-     * Convenience method for widget control classes.
-     */
-    onHide(): void;
-    /**
-     * Handle unit changes.
-     */
-    private _unitsChange;
-    /**
-     * Load settings from local storage.
-     */
-    private _loadSettings;
-    /**
-     * Update settings local storage.
-     */
-    private _updateSettings;
-    /**
-     * Set symbol and profile colors.
-     * @param color
-     */
-    private _setColors;
-    /**
-     * Add layer as snapping source.
-     * @param layer
-     */
+    private _sketchCoordinatesHandle;
+    private _labels;
+    private _layer;
+    private _pointSymbol;
+    private _polylineSymbol;
+    private _polygonSymbol;
+    private _textSymbol;
+    private _snappingSources;
+    private _snapping;
+    private _guides;
+    private _elevationProfile;
+    private _elevationProfileLineGround;
+    private _uniformChartScaling;
+    private _profileStatistics?;
     private _addSnappingLayer;
-    /**
-     * Reset the widget.
-     */
-    private _reset;
-    /**
-     * Round a number.
-     * @param value
-     * @param digits
-     * @returns number
-     */
-    private _round;
-    /**
-     * Format measurement and units for display and labels.
-     * @param measurement
-     * @param unit
-     * @param label
-     * @returns string
-     */
-    private _format;
-    /**
-     * Wire unit select event.
-     * @param type
-     * @param select
-     */
-    private _unitChangeEvent;
+    private _createCursorEvents;
     /**
      * Wire measure button event.
      * @param type
      * @param button
      */
-    private _measureEvent;
-    /**
-     * Wire clear button event.
-     * @param button
-     */
-    private _clearEvent;
+    private _buttonMeasureEvent;
+    private _unitsChangeEvent;
+    private _area;
+    private _areaEvent;
+    private _coordinates;
+    private _coordinatesEvent;
+    private _elevationEvent;
+    private _length;
+    private _lengthEvent;
+    private _profileEvent;
     /**
      * Initiate measuring.
      * @param type
      */
     private _measure;
+    private _reset;
     /**
-     * Handle length event.
-     * @param event
+     * Update `_measureState`.
+     * @param state
      */
-    private _lengthEvent;
-    /**
-     * Measure length and set state.
-     * @param polyline
-     */
-    private _length;
-    /**
-     * Handle area event.
-     * @param event
-     */
-    private _areaEvent;
-    /**
-     * Measure area and set state.
-     * @param polygon
-     */
-    private _area;
-    /**
-     * Handle location event and set state.
-     * @param event
-     */
-    private _locationEvent;
-    /**
-     * Location coordinates.
-     * @param point
-     * @returns
-     */
-    private _location;
-    /**
-     * Handle elevation event and set state.
-     * @param event
-     * @returns
-     */
-    private _elevationEvent;
-    /**
-     * Query elevation.
-     * @param point
-     * @returns
-     */
-    private _elevation;
-    private _profileEvent;
+    private _updateMeasureState;
+    private _measureSelectedFeature;
     /**
      * Add additional graphics when complete.
      * @param geometry
      */
     private _addGraphics;
-    /**
-     * Add outline to area polygon.
-     * As of 4.22 api's sketch polyline symbol only shows CIM on active polygon sketch segment.
-     * @param geometry
-     * @param layer
-     */
-    private _addPolygonOutline;
-    /**
-     * Add label graphics.
-     * @param geometry
-     */
     private _addLabels;
+    private _createPolylineLabels;
     /**
-     * Create and return new text symbol.
-     * @param text
-     * @param point
+     *
+     * @param options
      * @returns
      */
     private _createTextSymbol;
-    private _polylineLabels;
     /**
-     * Return midpoint of polyline.
-     * @param polyline Polyline
-     * @returns esri.Point
-     */
-    private _midpoint;
-    /**
-     * Text symbol angle between two sets of points.
-     * @param x1
-     * @param y1
-     * @param x2
-     * @param y2
+     * Return formatted latitude, longitude and elevation of the cursor.
      * @returns
      */
-    private _textSymbolAngle;
+    private _cursorInfo;
+    private _formatElevation;
+    private _formatLatitudeLongitude;
+    private _measureInfo;
+    private _profileStatisticsInfo;
+    /**
+     * Round a number.
+     * @param value Number to round
+     * @param digits Number of significant digits
+     * @returns number
+     */
+    private _round;
     render(): tsx.JSX.Element;
     /**
-     * Render unit select options.
-     * @param units
-     * @param defaultUnit
-     * @returns
+     * Create a UnitsDropdown.
+     * @param type
+     * @param text
+     * @param container
      */
-    private _renderUnitOptions;
+    _createUnitsDropdown(type: 'area' | 'elevation' | 'latitudeLongitude' | 'length', text: string, container: HTMLDivElement): void;
     /**
-     * Render color tiles to select color.
-     * @returns
+     * Set tooltip or popover `referenceElement` property.
+     * @param element HTMLCalciteTooltipElement | HTMLCalcitePopoverElement
      */
-    private _renderColorSelector;
+    private _referenceElement;
+    private _renderMeasureSelectedFeatureButton;
 }
-export {};
+/**
+ * Widget for changing units.
+ */
+export declare class UnitsDropdown extends Widget {
+    constructor(properties: UnitsDropdownConstructorProperties);
+    postInitialize(): void;
+    text: string;
+    type: 'area' | 'elevation' | 'latitudeLongitude' | 'length';
+    units: Units;
+    protected areaUnit: esri.AreaUnit;
+    protected elevationUnit: esri.LengthUnit;
+    protected latitudeLongitudeUnit: 'decimal' | 'dms';
+    protected lengthUnit: esri.LengthUnit;
+    private _items;
+    private _titles;
+    render(): tsx.JSX.Element;
+}
