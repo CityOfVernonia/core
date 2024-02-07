@@ -1,464 +1,351 @@
+//////////////////////////////////////
+// Interfaces
+//////////////////////////////////////
 import esri = __esri;
 
-interface MeasureProperties extends esri.WidgetProperties {
+export interface MeasureConstructorProperties extends esri.WidgetProperties {
+  units?: Units;
   /**
-   * Map view to measure in.
+   * Map view to measure.
    */
   view: esri.MapView;
-  /**
-   * Default length unit.
-   */
-  lengthUnit?: string;
-  /**
-   * Length units to include.
-   * <UNIT>:<NAME> e.g. {feet: 'Feet'}
-   */
-  lengthUnits?: { [key: string]: string };
-  /**
-   * Default area unit.
-   */
-  areaUnit?: string;
-  /**
-   * Area units to include.
-   * <UNIT>:<NAME> e.g. {'square-feet': 'Feet'}
-   */
-  areaUnits?: { [key: string]: string };
-  /**
-   * Default location unit.
-   */
-  locationUnit?: string;
-  /**
-   * Length units to include.
-   */
-  locationUnits?: { [key: string]: string };
-  /**
-   * Default elevation unit.
-   */
-  elevationUnit?: string;
-  /**
-   * Length units to include.
-   */
-  elevationUnits?: { [key: string]: string };
-  /**
-   * Labels visible.
-   * @default true
-   */
-  labelsVisible?: boolean;
-  /**
-   * Add units to labels.
-   * @default false
-   */
-  labelUnits?: boolean;
-  /**
-   * Length, area and elevation precision.
-   * @default 2
-   */
-  unitsPrecision?: number;
-  /**
-   * Decimal degrees precision.
-   * @default 6
-   */
-  degreesPrecision?: number;
-  /**
-   * Format numbers, e.i. thousand separated, etc.
-   * @default true
-   */
-  localeFormat?: boolean;
 }
 
-interface MeasureState {
+export interface UnitsDropdownConstructorProperties extends esri.WidgetProperties {
+  /**
+   * Link text.
+   */
+  text: string;
+  /**
+   * Unit type.
+   */
+  type: 'area' | 'elevation' | 'latitudeLongitude' | 'length';
+  /**
+   * Units instance.
+   */
+  units: Units;
+}
+
+/**
+ * Internal types.
+ */
+interface _Measure {
+  type: 'area' | 'coordinates' | 'elevation' | 'length' | 'profile';
+  profileStatistics: {
+    avgElevation: number;
+    avgNegativeSlope: number;
+    avgPositiveSlope: number;
+    elevationGain: number;
+    elevationLoss: number;
+    maxDistance: number;
+    maxElevation: number;
+    maxNegativeSlope: number;
+    maxPositiveSlope: number;
+    minElevation: number;
+  };
+  profileStatisticsFormatted: {
+    avgElevation: string;
+    avgNegativeSlope: string;
+    avgPositiveSlope: string;
+    elevationGain: string;
+    elevationLoss: string;
+    totalLength: string;
+    maxDistance: string;
+    maxElevation: string;
+    maxNegativeSlope: string;
+    maxPositiveSlope: string;
+    minElevation: string;
+  };
+}
+
+/**
+ * Measure state and data.
+ */
+interface _MeasureState {
   /**
    * Operational state of the widget.
    */
-  operation:
+  operation?:
     | 'ready'
     | 'measure-length'
     | 'length'
     | 'measure-area'
     | 'area'
-    | 'measure-location'
-    | 'location'
+    | 'measure-coordinates'
+    | 'coordinates'
     | 'measure-elevation'
     | 'elevation'
     | 'measure-profile'
     | 'profile';
   /**
-   * Longitude of cursor.
+   * Length value.
    */
-  x: number | string;
-  /**
-   * Latitude of cursor.
-   */
-  y: number | string;
-  /**
-   * Elevation of cursor.
-   */
-  z: number;
-  /**
-   * Length or perimeter value.
-   */
-  length: number;
+  length?: number;
   /**
    * Area value.
    */
-  area: number;
+  area?: number;
+  /**
+   * Perimeter value.
+   */
+  perimeter?: number;
   /**
    * Location longitude.
    */
-  locationX: number | string;
+  longitude?: number | string;
   /**
    * Location latitude.
    */
-  locationY: number | string;
+  latitude?: number | string;
   /**
    * Elevation value.
    */
-  elevation: number;
+  elevation?: number;
   /**
    * Current length polyline.
    */
-  lengthGeometry: Polyline | null;
+  lengthGeometry?: esri.Polyline | null;
   /**
    * Current area polygon.
    */
-  areaGeometry: esri.Polygon | null;
+  areaGeometry?: esri.Polygon | null;
   /**
    * Current location point.
    */
-  locationGeometry: esri.Point | null;
+  coordinatesGeometry?: esri.Point | null;
   /**
    * Current elevation point.
    */
-  elevationGeometry: esri.Point | null;
+  elevationGeometry?: esri.Point | null;
   /**
    * Current profile polyline.
    */
-  profileGeometry: Polyline | null;
+  profileGeometry?: esri.Polyline | null;
 }
 
-interface SettingsInfo {
-  snapping: boolean;
-  labels: boolean;
-  labelUnits: boolean;
-  localeFormat: boolean;
-  uniformChartScaling: boolean;
-  color: number[];
-}
+import type { AreaUnitInfo, ElevationUnitInfo, LatitudeLongitudeUnitInfo, LengthUnitInfo } from './../support/Units';
 
-import { watch } from '@arcgis/core/core/reactiveUtils';
+//////////////////////////////////////
+// Modules
+//////////////////////////////////////
+// base
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
+// sketch
 import SketchViewModel from '@arcgis/core/widgets/Sketch/SketchViewModel';
 import FeatureSnappingLayerSource from '@arcgis/core/views/interactive/snapping/FeatureSnappingLayerSource';
 import GroupLayer from '@arcgis/core/layers/GroupLayer';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Graphic from '@arcgis/core/Graphic';
+// geometry
+import Units from './../support/Units';
 import { Point, Polyline } from '@arcgis/core/geometry';
-import { CIMSymbol, SimpleFillSymbol, SimpleMarkerSymbol, TextSymbol } from '@arcgis/core/symbols';
-import Color from '@arcgis/core/Color';
-import { geodesicArea, geodesicLength, simplify } from '@arcgis/core/geometry/geometryEngine';
 import * as coordinateFormatter from '@arcgis/core/geometry/coordinateFormatter';
+import { geodesicArea, geodesicLength, simplify } from '@arcgis/core/geometry/geometryEngine';
 import { webMercatorToGeographic } from '@arcgis/core/geometry/support/webMercatorUtils';
+import { midpoint, textAngle, queryFeatureGeometry } from '../support/geometry';
+// symbols
+import { CIMSymbol, SimpleFillSymbol, SimpleMarkerSymbol, TextSymbol } from '@arcgis/core/symbols';
+// profile
 import ElevationProfileViewModel from '@arcgis/core/widgets/ElevationProfile';
 import ElevationProfileLineGround from '@arcgis/core/widgets/ElevationProfile/ElevationProfileLineGround';
+import Color from '@arcgis/core/Color';
 
+//////////////////////////////////////
+// Constants
+//////////////////////////////////////
 const CSS = {
-  base: 'cov-measure',
-  // content containers
-  content: 'cov-measure--content',
-  optionsContent: 'cov-measure--options-content',
-  // controls and results
-  row: 'cov-measure--row',
-  result: 'cov-measure--result',
-  // color selector
-  colorSelector: 'cov-measure--color-selector',
-  colorSelectorColor: 'cov-measure--color-selector--color',
-  colorSelectorColorSelected: 'cov-measure--color-selector--color--selected',
+  measureButtons: 'cov-widget--measure_measure-buttons',
+  notice: 'cov-widget--measure_notice',
+  options: 'cov-widget--measure_options',
+  profile: 'cov-widget--measure_profile',
+  profileOptions: 'cov-widget--measure_profile-options',
+  profileStatistics: 'cov-widget--measure_profile-statistics',
+  results: 'cov-widget--measure_results',
+  resultsRow: 'cov-widget--measure_results-row',
 };
 
-let KEY = 0;
+const CURSOR_EVENT_KEY = 'cursor-events';
 
-const SETTINGS_KEY = 'measure_settings_store';
+const MEASURE_STATE: _MeasureState = {
+  area: 0,
+  areaGeometry: null,
+  coordinatesGeometry: null,
+  elevation: 0,
+  elevationGeometry: null,
+  latitude: 0,
+  length: 0,
+  lengthGeometry: null,
+  longitude: 0,
+  operation: 'ready',
+  perimeter: 0,
+  profileGeometry: null,
+};
 
-// arcgis `Candy Shop`
-const COLORS = {
-  primary: [237, 81, 81],
-  secondary: [255, 255, 255],
-  colors: [
-    [237, 81, 81],
-    [20, 158, 206],
-    [167, 198, 54],
-    [158, 85, 156],
-    [252, 146, 31],
-    [255, 222, 62],
-  ],
+let PRIMARY: [number, number, number] = [237, 81, 81];
+let SECONDARY: [number, number, number] = [255, 255, 255];
+
+export const setMeasureColors = (primary: [number, number, number], secondary: [number, number, number]): void => {
+  PRIMARY = primary;
+  SECONDARY = secondary;
 };
 
 /**
- * Measure widget for ArcGIS JS API including length, area, location, elevation and ground profiles.
+ * Widget what for measuring in a map.
  */
 @subclass('cov.widgets.Measure')
 export default class Measure extends Widget {
-  ////////////////////////////////////////////////////////////////
+  //////////////////////////////////////
   // Lifecycle
-  ///////////////////////////////////////////////////////////////
-  constructor(properties: MeasureProperties) {
+  //////////////////////////////////////
+  constructor(properties: MeasureConstructorProperties) {
     super(properties);
-
-    // load settings from local storage
-    this._loadSettings();
   }
 
   async postInitialize(): Promise<void> {
     const {
       view,
-      sketch,
-      pointSymbol,
-      polylineSymbol,
-      polygonSymbol,
-      elevationProfile,
-      elevationProfileLineGround,
-      layers,
-      labels,
-      labelsVisible,
+      _elevationProfile,
+      _elevationProfileLineGround,
+      _labels,
+      _layer,
+      _pointSymbol,
+      _polylineSymbol,
+      _polygonSymbol,
+      _sketch,
     } = this;
 
+    // serviceable view
     await view.when();
-
-    // initialize sketch and snapping
-    sketch.view = view;
-    // @ts-expect-error not typed
-    sketch.activeLineSymbol = polylineSymbol;
-    // @ts-expect-error not typed
-    sketch.activeVertexSymbol = pointSymbol;
-    // @ts-expect-error not typed
-    sketch.vertexSymbol = pointSymbol;
-    sketch.activeFillSymbol = polygonSymbol;
-    view.map.layers.forEach(this._addSnappingLayer.bind(this));
-
-    const layerAdd = view.map.layers.on('after-add', (event: { item: esri.Layer }): void => {
-      this._addSnappingLayer(event.item);
-      // keep the layers on top
-      view.map.layers.reorder(layers, view.map.layers.length - 1);
-    });
-
-    // add layers
-    labels.visible = labelsVisible;
-    layers.addMany([sketch.layer, labels]);
-    view.map.add(layers);
 
     // load coordinate formatter
     coordinateFormatter.load();
 
+    // sketch view model
+    _sketch.view = view;
+    _sketch.layer = _layer;
+
+    // sketch symbols
+    // @ts-expect-error not typed
+    _sketch.activeVertexSymbol = _pointSymbol;
+    // @ts-expect-error not typed
+    _sketch.vertexSymbol = _pointSymbol;
+    // @ts-expect-error not typed
+    _sketch.activeLineSymbol = _polylineSymbol;
+    _sketch.activeFillSymbol = _polygonSymbol;
+
+    // add sketch layers
+    const measureLayers = new GroupLayer({ layers: [_layer, _labels], listMode: 'hide' });
+    view.map.add(measureLayers);
+
     // initialize elevation profile
-    elevationProfile.view = view;
-    elevationProfile.profiles.removeAll();
-    elevationProfileLineGround.color = new Color(this.color);
-    elevationProfile.profiles.add(elevationProfileLineGround);
+    _elevationProfile.view = view;
+    _elevationProfile.profiles.removeAll();
+    _elevationProfileLineGround.color = new Color(PRIMARY);
+    _elevationProfile.profiles.add(_elevationProfileLineGround);
 
-    // cursor coordinates
-    const locationHandle = view.on('pointer-move', (screenPoint: esri.ScreenPoint): void => {
-      // get coordinates
-      const { x, y } = this._location(view.toMap(screenPoint));
-      //set state
-      this.state = {
-        ...this.state,
-        x,
-        y,
-      };
+    // snapping layers
+    const layers = view.map.layers;
+    layers.forEach(this._addSnappingLayer.bind(this));
+    const layerAdd = layers.on('after-add', (event: { item: esri.Layer }): void => {
+      this._addSnappingLayer(event.item);
+      // keep the layers on top
+      layers.reorder(measureLayers, layers.length - 1);
     });
 
-    // location labels when measuring
-    const locationLabels = view.on('pointer-move', (screenPoint: esri.ScreenPoint): void => {
-      const {
-        state: { operation },
-      } = this;
-      if (operation === 'measure-location') {
-        this._addLabels(view.toMap(screenPoint), labels);
+    // handle widget visibility events
+    const widgetVisible = this.watch('visible', (visible: boolean): void => {
+      if (visible) {
+        this._createCursorEvents();
+      } else {
+        this._reset();
+        this.removeHandles(CURSOR_EVENT_KEY);
       }
     });
 
-    // cursor elevation
-    const elevationHandle = view.on('pointer-move', async (screenPoint: esri.ScreenPoint): Promise<void> => {
-      // reject if no ground
-      if (!view.map.ground) {
-        this.state = {
-          ...this.state,
-          z: -99999,
-        };
-      }
-      // get elevation
-      const z = await this._elevation(view.toMap(screenPoint));
-      // set state
-      this.state = {
-        ...this.state,
-        z,
-      };
-    });
+    // this.watch('_selectedFeature', (feature: esri.Graphic): void => {
+    //   console.log(feature);
+    // });
 
-    // elevation labels when measuring
-    const elevationLabels = view.on('pointer-move', (screenPoint: esri.ScreenPoint): void => {
-      const {
-        state: { operation },
-      } = this;
-      if (operation === 'measure-elevation') {
-        this._addLabels(view.toMap(screenPoint), labels);
-      }
-    });
+    // this.watch('_popupVisible', (visible: boolean): void => {
+    //   console.log(visible);
+    // });
 
-    // watch units to update measurements and displayed units
-    const lenghUnitChange = watch((): any => this.lengthUnit, this._unitsChange.bind(this));
-
-    const areaUnitChange = watch((): any => this.areaUnit, this._unitsChange.bind(this));
-
-    const locationUnitChange = watch((): any => this.locationUnit, this._unitsChange.bind(this));
-
-    const elevationUnitChange = watch((): any => this.elevationUnit, this._unitsChange.bind(this));
-
-    // watch settings change except lables and color
-    const labelUnitsChange = watch((): any => this.labelUnits, this._updateSettings.bind(this));
-
-    const localeFormatChange = watch((): any => this.localeFormat, this._updateSettings.bind(this));
-
-    const snappingEnabledChange = watch((): any => sketch.snappingOptions.enabled, this._updateSettings.bind(this));
-
-    const uniformChartScalingChange = watch(
-      (): any => elevationProfile.viewModel.uniformChartScaling,
-      this._updateSettings.bind(this),
+    // handle unit changes
+    const unitsChange = this.watch(
+      ['areaUnit', 'coordinateUnit', 'elevationUnit', 'lengthUnit'],
+      this._unitsChangeEvent.bind(this),
     );
 
-    // watch label visibility
-    const labelsVisibilityChange = watch(
-      (): any => this.labelsVisible,
-      (visible): void => {
-        labels.visible = visible;
-        this._updateSettings();
-      },
-    );
+    // add handles
+    this.addHandles([layerAdd, widgetVisible, unitsChange]);
 
-    const colorChange = watch(
-      (): any => this.color,
-      (color): void => {
-        this._setColors(color);
-        this._updateSettings();
-        // FIX
-        // only updates text color
-        // this._unitsChange();
-      },
-    );
+    // loaded
+    this.loaded = true;
+    this.emit('load');
 
-    // own handles
-    this.addHandles([
-      layerAdd,
-      locationHandle,
-      locationLabels,
-      elevationHandle,
-      elevationLabels,
-      lenghUnitChange,
-      areaUnitChange,
-      locationUnitChange,
-      elevationUnitChange,
-      labelUnitsChange,
-      localeFormatChange,
-      snappingEnabledChange,
-      uniformChartScalingChange,
-      labelsVisibilityChange,
-      colorChange,
-    ]);
+    // debug
+    // console.log(this);
   }
 
-  ////////////////////////////////////////////////////////////////
+  //////////////////////////////////////
   // Properties
-  ///////////////////////////////////////////////////////////////
-  /**
-   * Map view to measure in.
-   */
+  //////////////////////////////////////
   view!: esri.MapView;
 
   @property()
-  lengthUnit = 'feet';
-
-  lengthUnits = {
-    meters: 'Meters',
-    feet: 'Feet',
-    kilometers: 'Kilometers',
-    miles: 'Miles',
-    'nautical-miles': 'Nautical Miles',
-  };
-
-  @property()
-  areaUnit = 'acres';
-
-  areaUnits = {
-    acres: 'Acres',
-    'square-feet': 'Square Feet',
-    'square-meters': 'Square Meters',
-    'square-kilometers': 'Square Kilometers',
-    'square-miles': 'Square Miles',
-  };
-
-  @property()
-  locationUnit = 'dec';
-
-  locationUnits = {
-    dec: 'Decimal Degrees',
-    dms: 'Degrees Minutes Seconds',
-  };
-
-  @property()
-  elevationUnit = 'feet';
-
-  elevationUnits = {
-    feet: 'Feet',
-    meters: 'Meters',
-  };
+  protected loaded = false;
 
   /**
-   * Labels visible.
+   * Units instance and units.
    */
+  units = new Units();
+  @property({ aliasOf: 'units.areaUnit' })
+  protected areaUnit!: string;
+  @property({ aliasOf: 'units.latitudeLongitudeUnit' })
+  protected latitudeLongitudeUnit!: string;
+  @property({ aliasOf: 'units.elevationUnit' })
+  protected elevationUnit!: string;
+  @property({ aliasOf: 'units.lengthUnit' })
+  protected lengthUnit!: string;
+
+  ///////////////////////////////////////
+  // Variables
+  //////////////////////////////////////
+  /**
+   * Abort controller for cursor elevation queries.
+   */
+  private _cursorElevationAbortController: AbortController | null = null;
+
+  /**
+   * Point with latitude, longitude and z of the cursor.
+   */
+  private _cursor = new Point({
+    hasZ: true,
+    latitude: 0,
+    longitude: 0,
+    z: 0,
+  });
+
+  /**
+   * Ground instance for elevations.
+   */
+  @property({ aliasOf: 'view.map.ground' })
+  private _ground!: esri.Ground;
+
   @property()
-  labelsVisible = true;
+  private _measureState: _MeasureState = MEASURE_STATE;
+
+  @property({ aliasOf: 'view.popup.selectedFeature' })
+  private _selectedFeature?: esri.Graphic;
+  @property({ aliasOf: 'view.popup.visible' })
+  private _popupVisible!: boolean;
 
   /**
-   * Add units to labels.
+   * SketchViewModel, layers, and symbols.
    */
-  @property()
-  labelUnits = false;
-
-  /**
-   * Length, area and elevation precision.
-   */
-  unitsPrecision = 2;
-
-  /**
-   * Decimal degrees precision.
-   */
-  degreesPrecision = 6;
-
-  /**
-   * Format numbers, e.i. thousand separated, etc.
-   */
-  @property()
-  localeFormat = true;
-
-  ////////////////////////////////////////////////////////////////
-  // Internal properties
-  ///////////////////////////////////////////////////////////////
-  /**
-   * Graphics color.
-   */
-  @property()
-  protected color = COLORS.primary;
-
-  /**
-   * Sketch VM for draw operations.
-   */
-  protected sketch = new SketchViewModel({
-    layer: new GraphicsLayer({
-      listMode: 'hide',
-      title: 'Measure',
-    }),
+  private _sketch = new SketchViewModel({
     snappingOptions: {
       enabled: true,
       featureEnabled: true,
@@ -466,24 +353,22 @@ export default class Measure extends Widget {
     },
     updateOnGraphicClick: false,
   });
-
-  @property({
-    aliasOf: 'sketch.pointSymbol',
-  })
-  protected pointSymbol = new SimpleMarkerSymbol({
+  private _sketchHandle: IHandle | null = null;
+  private _sketchCoordinatesHandle: IHandle | null = null;
+  private _labels = new GraphicsLayer();
+  private _layer = new GraphicsLayer();
+  @property({ aliasOf: '_sketch.pointSymbol' })
+  private _pointSymbol = new SimpleMarkerSymbol({
     style: 'circle',
     size: 6,
-    color: COLORS.secondary,
+    color: SECONDARY,
     outline: {
       width: 1,
-      color: COLORS.primary,
+      color: PRIMARY,
     },
   });
-
-  @property({
-    aliasOf: 'sketch.polylineSymbol',
-  })
-  protected polylineSymbol = new CIMSymbol({
+  @property({ aliasOf: '_sketch.polylineSymbol' })
+  private _polylineSymbol = new CIMSymbol({
     data: {
       type: 'CIMSymbolReference',
       symbol: {
@@ -496,44 +381,37 @@ export default class Measure extends Widget {
                 type: 'CIMGeometricEffectDashes',
                 dashTemplate: [4.75, 4.75],
                 lineDashEnding: 'HalfPattern',
-                // controlPointEnding: 'NoConstraint',
-                offsetAlongLine: 0, // test this
+                offsetAlongLine: 0,
               },
             ],
             enable: true,
             capStyle: 'Butt',
             joinStyle: 'Round',
-            // miterLimit: 10,
             width: 2.25,
-            color: [...COLORS.secondary, 255],
+            color: [...SECONDARY, 255],
           },
           {
             type: 'CIMSolidStroke',
             enable: true,
             capStyle: 'Butt',
             joinStyle: 'Round',
-            // miterLimit: 10,
             width: 2.25,
-            color: [...COLORS.primary, 255],
+            color: [...PRIMARY, 255],
           },
         ],
       },
     },
   });
-
-  @property({
-    aliasOf: 'sketch.polygonSymbol',
-  })
-  protected polygonSymbol = new SimpleFillSymbol({
-    color: [...COLORS.primary, 0.125],
+  @property({ aliasOf: '_sketch.polygonSymbol' })
+  private _polygonSymbol = new SimpleFillSymbol({
+    color: [...PRIMARY, 0.125],
     outline: {
       width: 0,
     },
   });
-
-  protected textSymbol = new TextSymbol({
-    color: COLORS.primary,
-    haloColor: COLORS.secondary,
+  private _textSymbol = new TextSymbol({
+    color: PRIMARY,
+    haloColor: SECONDARY,
     haloSize: 2,
     horizontalAlignment: 'center',
     verticalAlignment: 'middle',
@@ -543,7 +421,17 @@ export default class Measure extends Widget {
     },
   });
 
-  protected elevationProfile = new ElevationProfileViewModel({
+  @property({ aliasOf: '_sketch.snappingOptions.featureSources' })
+  private _snappingSources!: esri.Collection<esri.FeatureSnappingLayerSource>;
+  @property({ aliasOf: '_sketch.snappingOptions.featureEnabled' })
+  private _snapping!: boolean;
+  @property({ aliasOf: '_sketch.snappingOptions.selfEnabled' })
+  private _guides!: boolean;
+
+  //////////////////////////////////////
+  // Profile instances
+  //////////////////////////////////////
+  private _elevationProfile = new ElevationProfileViewModel({
     unit: 'feet',
     visibleElements: {
       legend: false,
@@ -555,190 +443,19 @@ export default class Measure extends Widget {
       uniformChartScalingToggle: false,
     },
   });
+  private _elevationProfileLineGround = new ElevationProfileLineGround();
 
-  protected elevationProfileLineGround = new ElevationProfileLineGround();
+  @property({ aliasOf: '_elevationProfile.viewModel.uniformChartScaling' })
+  private _uniformChartScaling!: boolean;
 
-  protected layers = new GroupLayer({
-    listMode: 'hide',
-    title: 'Measure Layers',
-  });
+  @property({ aliasOf: '_elevationProfile.viewModel.statistics' })
+  private _profileStatistics?: _Measure['profileStatistics'] | null;
 
-  protected labels = new GraphicsLayer({
-    listMode: 'hide',
-    title: 'Measure Labels',
-  });
-
-  /**
-   * Widget state and measurement values.
-   */
-  @property()
-  protected state: MeasureState = {
-    operation: 'ready',
-    x: 0,
-    y: 0,
-    z: 0,
-    length: 0,
-    area: 0,
-    locationX: 0,
-    locationY: 0,
-    elevation: 0,
-    lengthGeometry: null,
-    areaGeometry: null,
-    locationGeometry: null,
-    elevationGeometry: null,
-    profileGeometry: null,
-  };
-
-  @property()
-  protected optionsVisible = false;
-
-  /**
-   * Handle for sketch create.
-   */
-  private _sketchHandle: esri.Handle | null = null;
-
-  ////////////////////////////////////////////////////////////////
-  // Public methods
-  ///////////////////////////////////////////////////////////////
-  /**
-   * Convenience method for widget control classes.
-   */
-  onHide(): void {
-    this._reset();
-    this.optionsVisible = false;
-  }
-
-  ////////////////////////////////////////////////////////////////
-  // Private methods
-  ///////////////////////////////////////////////////////////////
-  /**
-   * Handle unit changes.
-   */
-  private async _unitsChange(): Promise<void> {
-    const {
-      state: { operation, lengthGeometry, areaGeometry, locationGeometry, elevationGeometry },
-      elevationProfile,
-    } = this;
-
-    if (lengthGeometry) this._length(lengthGeometry);
-
-    if (operation === 'length' && lengthGeometry) this._addLabels(lengthGeometry);
-
-    if (areaGeometry) this._area(areaGeometry);
-
-    if (operation === 'area' && areaGeometry) this._addLabels(areaGeometry);
-
-    if (locationGeometry) {
-      const { x, y } = this._location(locationGeometry);
-      this.state = {
-        ...this.state,
-        locationX: x,
-        locationY: y,
-      };
-    }
-
-    if (operation === 'location' && locationGeometry) this._addLabels(locationGeometry);
-
-    if (elevationGeometry) {
-      const z = await this._elevation(elevationGeometry);
-      this.state = {
-        ...this.state,
-        z,
-        elevation: z,
-      };
-    }
-
-    if (operation === 'elevation' && elevationGeometry) this._addLabels(elevationGeometry);
-
-    elevationProfile.unit = this.elevationUnit as 'feet' | 'meters';
-  }
-
-  /**
-   * Load settings from local storage.
-   */
-  private _loadSettings(): void {
-    const {
-      sketch: { snappingOptions },
-      elevationProfile: { viewModel },
-    } = this;
-
-    const settingsItem = localStorage.getItem(SETTINGS_KEY);
-
-    const settings = settingsItem ? (JSON.parse(settingsItem) as SettingsInfo) : null;
-
-    if (settings) {
-      const { snapping, labels, labelUnits, localeFormat, uniformChartScaling, color } = settings;
-      snappingOptions.enabled = snapping;
-
-      this.labelsVisible = labels;
-
-      this.labelUnits = labelUnits;
-
-      this.localeFormat = localeFormat;
-
-      viewModel.uniformChartScaling = uniformChartScaling;
-
-      this.color = color;
-
-      this._setColors(color);
-    } else {
-      this._updateSettings();
-    }
-  }
-
-  /**
-   * Update settings local storage.
-   */
-  private _updateSettings(): void {
-    const {
-      sketch: { snappingOptions },
-      elevationProfile: { viewModel },
-    } = this;
-    localStorage.setItem(
-      SETTINGS_KEY,
-      JSON.stringify({
-        snapping: snappingOptions.enabled,
-
-        labels: this.labelsVisible,
-
-        labelUnits: this.labelUnits,
-
-        localeFormat: this.localeFormat,
-
-        uniformChartScaling: viewModel.uniformChartScaling,
-
-        color: this.color,
-      } as SettingsInfo),
-    );
-  }
-
-  /**
-   * Set symbol and profile colors.
-   * @param color
-   */
-  private _setColors(color: number[]): void {
-    const { pointSymbol, polylineSymbol, polygonSymbol, textSymbol, elevationProfileLineGround } = this;
-
-    pointSymbol.outline.color = new Color(color);
-
-    // @ts-expect-error not typed
-    polylineSymbol.data.symbol.symbolLayers[1].color = [...color, 255];
-
-    polygonSymbol.color = new Color([...color, 0.125]);
-
-    textSymbol.color = new Color(color);
-
-    elevationProfileLineGround.color = new Color(color);
-  }
-
-  /**
-   * Add layer as snapping source.
-   * @param layer
-   */
+  //////////////////////////////////////
+  // Private methods (snapping)
+  //////////////////////////////////////
   private _addSnappingLayer(layer: esri.Layer): void {
-    const {
-      sketch: { snappingOptions },
-    } = this;
+    const { _snappingSources } = this;
 
     if (layer.type === 'group') {
       (layer as GroupLayer).layers.forEach((_layer: esri.Layer): void => {
@@ -747,90 +464,73 @@ export default class Measure extends Widget {
       return;
     }
 
-    if (
-      (layer.listMode === 'hide' || layer.title === undefined || layer.title === null) &&
-      !layer.id.includes('markup')
-    )
-      return;
+    const { id, listMode, title } = layer;
+
+    if ((listMode === 'hide' || !title) && !id.includes('markup')) return;
+
     // @ts-expect-error not typed
     if (layer.internal === true) return;
 
-    snappingOptions.featureSources.add(
+    _snappingSources.add(
       new FeatureSnappingLayerSource({
         //@ts-expect-error class will filter out non-snappable layers
-        layer: layer,
+        layer,
       }),
     );
   }
 
-  /**
-   * Reset the widget.
-   */
-  private _reset(): void {
-    const {
-      sketch,
-      sketch: { layer },
-      labels,
-      elevationProfile,
-    } = this;
+  //////////////////////////////////////
+  // Private methods (events)
+  //////////////////////////////////////
+  private _createCursorEvents(): void {
+    const { view, _cursor, _ground } = this;
 
-    // don't use deconstructed properties to remove handles
-    this._sketchHandle?.remove();
-    this._sketchHandle = null;
-
-    // cancel sketch
-    sketch.cancel();
-    layer.removeAll();
-    labels.removeAll();
-
-    // clear profile
-    elevationProfile.viewModel.clear();
-
-    // reset state
-    this.state = {
-      ...this.state,
-      operation: 'ready',
-      length: 0,
-      area: 0,
-    };
-  }
-
-  /**
-   * Round a number.
-   * @param value
-   * @param digits
-   * @returns number
-   */
-  private _round(value: number, digits: number): number {
-    return Number(value.toFixed(digits));
-  }
-
-  /**
-   * Format measurement and units for display and labels.
-   * @param measurement
-   * @param unit
-   * @param label
-   * @returns string
-   */
-  private _format(measurement: number, unit: string, label?: boolean): string {
-    const { labelUnits, localeFormat } = this;
-
-    const _measurement = localeFormat ? measurement.toLocaleString() : measurement;
-
-    const _unit = unit.replace('-', ' ').replace('square', 'sq');
-
-    return label === true && labelUnits === false ? `${_measurement}` : `${_measurement} ${_unit}`;
-  }
-
-  /**
-   * Wire unit select event.
-   * @param type
-   * @param select
-   */
-  private _unitChangeEvent(type: 'length' | 'area' | 'location' | 'elevation', select: HTMLCalciteSelectElement): void {
-    select.addEventListener('calciteSelectChange', () => {
-      this[`${type}Unit`] = select.selectedOption.value;
+    // cursor coordinates
+    const cursorCoordinateHandle = view.on('pointer-move', (screenPoint: esri.ScreenPoint): void => {
+      const { latitude, longitude } = view.toMap(screenPoint);
+      _cursor.latitude = latitude;
+      _cursor.longitude = longitude;
     });
+
+    // cursor elevation
+    const cursorElevationHandle = view.on('pointer-move', async (screenPoint: esri.ScreenPoint): Promise<void> => {
+      const {
+        _cursorElevationAbortController,
+        _measureState: { operation },
+      } = this;
+
+      if (_cursorElevationAbortController) {
+        _cursorElevationAbortController.abort();
+        this._cursorElevationAbortController = null;
+      }
+
+      const controller = new AbortController();
+      this._cursorElevationAbortController = controller;
+
+      try {
+        const { geometry } = await _ground.queryElevation(view.toMap(screenPoint), {
+          signal: controller.signal,
+        });
+
+        if (this._cursorElevationAbortController !== controller) return;
+        this._cursorElevationAbortController = null;
+
+        const z = (geometry as esri.Point).z;
+
+        _cursor.z = z;
+
+        if (operation === 'measure-elevation') {
+          const elevationGeometry = _cursor.clone();
+          this._updateMeasureState({ elevation: z, elevationGeometry });
+          this._addLabels(elevationGeometry);
+        }
+      } catch (error: any) {
+        this._cursorElevationAbortController = null;
+        if (error.message !== 'Aborted') console.log('elevation query error', error);
+      }
+    });
+
+    this.addHandles([cursorCoordinateHandle, cursorElevationHandle], CURSOR_EVENT_KEY);
   }
 
   /**
@@ -838,115 +538,60 @@ export default class Measure extends Widget {
    * @param type
    * @param button
    */
-  private _measureEvent(
-    type: 'length' | 'area' | 'location' | 'elevation' | 'profile',
-    button: HTMLCalciteButtonElement,
-  ): void {
+  private _buttonMeasureEvent(type: _Measure['type'], button: HTMLCalciteButtonElement): void {
     button.addEventListener('click', this._measure.bind(this, type));
   }
 
-  /**
-   * Wire clear button event.
-   * @param button
-   */
-  private _clearEvent(button: HTMLCalciteButtonElement): void {
-    button.addEventListener('click', this._reset.bind(this));
-  }
-
-  /**
-   * Initiate measuring.
-   * @param type
-   */
-  private _measure(type: 'length' | 'area' | 'location' | 'elevation' | 'profile'): void {
-    const { sketch } = this;
-
-    // reset
-    this._reset();
-
-    // set state
-    this.state = {
-      ...this.state,
-      operation: `measure-${type}`,
-    };
-
-    // create handle
-    this._sketchHandle = sketch.on('create', this[`_${type}Event`].bind(this));
-
-    // begin sketch
-    sketch.create(type === 'length' || type === 'profile' ? 'polyline' : type === 'area' ? 'polygon' : 'point');
-  }
-
-  /**
-   * Handle length event.
-   * @param event
-   */
-  private _lengthEvent(event: esri.SketchViewModelCreateEvent): void {
+  private _unitsChangeEvent(): void {
     const {
-      sketch: { layer },
+      elevationUnit,
+      _elevationProfile,
+      _measureState: { areaGeometry, coordinatesGeometry, elevationGeometry, lengthGeometry, operation },
     } = this;
-    const {
-      state,
-      graphic,
-      graphic: { geometry },
-    } = event;
 
-    // reset on cancel
-    if (state === 'cancel' || !graphic) {
-      this._reset();
-      return;
+    // area update
+    if (areaGeometry) this._area(areaGeometry);
+    if (operation === 'area' && areaGeometry) this._addLabels(areaGeometry);
+
+    // length update
+    if (lengthGeometry) this._length(lengthGeometry);
+    if (operation === 'length' && lengthGeometry) this._addLabels(lengthGeometry);
+
+    // coordinates update
+    if (operation === 'coordinates' && coordinatesGeometry) {
+      this._coordinates(coordinatesGeometry);
+      this._addLabels(coordinatesGeometry);
     }
 
-    // measure
-    this._length(geometry as Polyline);
+    // elevation update
+    if (operation === 'elevation' && elevationGeometry) this._addLabels(elevationGeometry);
 
-    // completed
-    if (state === 'complete') {
-      // set state
-      this.state = {
-        ...this.state,
-        operation: 'length',
-        lengthGeometry: geometry as Polyline,
-      };
-
-      // add additional graphics
-      this._addGraphics(geometry as Polyline);
-    }
-
-    // add labels
-    this._addLabels(geometry as Polyline, graphic.layer === layer ? undefined : (graphic.layer as esri.GraphicsLayer));
+    _elevationProfile.unit = elevationUnit as esri.SystemOrLengthUnit;
   }
 
-  /**
-   * Measure length and set state.
-   * @param polyline
-   */
-  private _length(polyline: Polyline): void {
-    const { unitsPrecision, lengthUnit } = this;
+  //////////////////////////////////////
+  // Private methods (measure)
+  //////////////////////////////////////
+  private _area(polygon: esri.Polygon): void | { area: number; perimeter: number } {
+    const { areaUnit, lengthUnit } = this;
 
-    // measure length
-    let length = geodesicLength(polyline, lengthUnit as any);
+    // measure length (perimeter)
+    let perimeter = geodesicLength(polygon, lengthUnit as any);
 
     // simplify and remeasure length if required
-    if (length < 0) length = geodesicLength(simplify(polyline), lengthUnit as any);
+    if (perimeter < 0) perimeter = geodesicLength(simplify(polygon), lengthUnit as any);
 
-    // round
-    length = this._round(length, unitsPrecision);
+    let area = geodesicArea(polygon, areaUnit as any);
 
-    // set state
-    this.state = {
-      ...this.state,
-      length,
-      lengthGeometry: polyline,
-    };
+    // simplify and remeasure area if required
+    if (area < 0) area = geodesicArea(simplify(polygon) as esri.Polygon, areaUnit as any);
+
+    this._updateMeasureState({ perimeter, area });
   }
 
-  /**
-   * Handle area event.
-   * @param event
-   */
-  private _areaEvent(event: esri.SketchViewModelCreateEvent): void {
+  private _areaEvent(event: esri.SketchViewModelCreateEvent, allGraphics?: boolean): void {
     const {
-      sketch: { layer },
+      _sketch: { layer },
     } = this;
     const {
       state,
@@ -965,18 +610,13 @@ export default class Measure extends Widget {
 
     // completed
     if (state === 'complete') {
-      // set state
-      this.state = {
-        ...this.state,
+      this._updateMeasureState({
         operation: 'area',
         areaGeometry: geometry as esri.Polygon,
-      };
+      });
 
-      // add additional graphics
-      this._addGraphics(geometry as esri.Polygon);
-    } else {
-      // add outline
-      this._addPolygonOutline(geometry as esri.Polygon, graphic.layer as GraphicsLayer);
+      // add outline and vertex graphics
+      this._addGraphics(geometry as esri.Polygon, allGraphics);
     }
 
     // add labels
@@ -986,297 +626,309 @@ export default class Measure extends Widget {
     );
   }
 
-  /**
-   * Measure area and set state.
-   * @param polygon
-   */
-  private _area(polygon: esri.Polygon): void {
-    const { unitsPrecision, lengthUnit, areaUnit } = this;
+  private _coordinates(point: esri.Point) {
+    const { latitude, longitude } = this._formatLatitudeLongitude(point);
+    this._updateMeasureState({ latitude, longitude });
+  }
 
-    // measure length (perimeter)
-    let length = geodesicLength(polygon, lengthUnit as any);
+  private _coordinatesEvent(event: esri.SketchViewModelCreateEvent): void {
+    const {
+      _sketch: { layer },
+      _sketchCoordinatesHandle,
+    } = this;
+    const {
+      state,
+      graphic,
+      graphic: { geometry },
+    } = event;
+
+    // reset on cancel
+    if (state === 'cancel' || !graphic) {
+      this._reset();
+      return;
+    }
+
+    if (state !== 'complete') return;
+
+    if (_sketchCoordinatesHandle) {
+      _sketchCoordinatesHandle.remove();
+      this._sketchCoordinatesHandle = null;
+    }
+
+    this._coordinates(geometry as esri.Point);
+
+    this._updateMeasureState({ operation: 'coordinates', coordinatesGeometry: geometry as esri.Point });
+
+    // add labels
+    this._addLabels(
+      geometry as esri.Point,
+      graphic.layer === layer ? undefined : (graphic.layer as esri.GraphicsLayer),
+    );
+  }
+
+  private _elevationEvent(event: esri.SketchViewModelCreateEvent): void {
+    const {
+      _sketch: { layer },
+    } = this;
+    const {
+      state,
+      graphic,
+      graphic: { geometry },
+    } = event;
+
+    // reset on cancel
+    if (state === 'cancel' || !graphic) {
+      this._reset();
+      return;
+    }
+
+    if (state !== 'complete') return;
+    this._updateMeasureState({ operation: 'elevation' });
+    const z = this._cursor.z;
+    (geometry as esri.Point).z = z;
+    this._updateMeasureState({ elevation: z, elevationGeometry: geometry as esri.Point });
+
+    // add labels
+    this._addLabels(
+      geometry as esri.Point,
+      graphic.layer === layer ? undefined : (graphic.layer as esri.GraphicsLayer),
+    );
+  }
+
+  private _length(polyline: Polyline): void {
+    const { lengthUnit } = this;
+
+    // measure length
+    let length = geodesicLength(polyline, lengthUnit as any);
 
     // simplify and remeasure length if required
-    if (length < 0) length = geodesicLength(simplify(polygon), lengthUnit as any);
-
-    // round
-    length = this._round(length, unitsPrecision);
-
-    let area = geodesicArea(polygon, areaUnit as any);
-
-    // simplify and remeasure length if required
-    if (area < 0) area = geodesicArea(simplify(polygon) as esri.Polygon, areaUnit as any);
-
-    // round
-    area = this._round(area, unitsPrecision);
+    if (length < 0) length = geodesicLength(simplify(polyline), lengthUnit as any);
 
     // set state
-    this.state = {
-      ...this.state,
-      length,
-      area,
-      areaGeometry: polygon,
+    this._updateMeasureState({ length });
+  }
+
+  private _lengthEvent(event: esri.SketchViewModelCreateEvent, allGraphics?: boolean): void {
+    const {
+      _sketch: { layer },
+    } = this;
+    const {
+      state,
+      graphic,
+      graphic: { geometry },
+    } = event;
+
+    // reset on cancel
+    if (state === 'cancel' || !graphic) {
+      this._reset();
+      return;
+    }
+
+    // measure
+    this._length(geometry as esri.Polyline);
+
+    // completed
+    if (state === 'complete') {
+      this._updateMeasureState({
+        operation: 'length',
+        lengthGeometry: geometry as esri.Polyline,
+      });
+      // add additional graphics
+      this._addGraphics(geometry as esri.Polyline, allGraphics);
+    }
+
+    // add labels
+    this._addLabels(
+      geometry as esri.Polyline,
+      graphic.layer === layer ? undefined : (graphic.layer as esri.GraphicsLayer),
+    );
+  }
+
+  private _profileEvent(event: esri.SketchViewModelCreateEvent): void {
+    const { _elevationProfile } = this;
+    const {
+      state,
+      graphic,
+      graphic: { geometry },
+    } = event;
+
+    // reset on cancel
+    if (state === 'cancel' || !graphic) {
+      this._reset();
+      return;
+    }
+
+    if (state !== 'complete') return;
+
+    _elevationProfile.input = new Graphic({
+      geometry,
+    });
+
+    this._updateMeasureState({ operation: 'profile', profileGeometry: geometry as esri.Polyline });
+
+    // add additional graphics
+    this._addGraphics(geometry as Polyline);
+  }
+
+  /**
+   * Initiate measuring.
+   * @param type
+   */
+  private _measure(type: _Measure['type']): void {
+    const { view, _sketch } = this;
+
+    this._reset();
+
+    this._updateMeasureState({ operation: `measure-${type}` });
+
+    // create handle
+    this._sketchHandle = _sketch.on('create', this[`_${type}Event`].bind(this));
+
+    // coordinates handle
+    if (type === 'coordinates')
+      this._sketchCoordinatesHandle = view.on('pointer-move', (screenPoint: esri.ScreenPoint): void => {
+        const point = view.toMap(screenPoint);
+        this._coordinates(point);
+        this._addLabels(point);
+      });
+
+    // sketch
+    _sketch.create(type === 'length' || type === 'profile' ? 'polyline' : type === 'area' ? 'polygon' : 'point');
+  }
+
+  private _reset(): void {
+    const { _elevationProfile, _labels, _layer, _sketch } = this;
+
+    // don't use deconstructed properties to remove handles
+    this._sketchHandle?.remove();
+    this._sketchHandle = null;
+
+    // reset elevation
+    // @ts-expect-error force reset to `null`
+    _elevationProfile.input = null;
+
+    // cancel sketch
+    _sketch.cancel();
+    _layer.removeAll();
+    _labels.removeAll();
+
+    // update state
+    this._updateMeasureState(MEASURE_STATE);
+  }
+
+  /**
+   * Update `_measureState`.
+   * @param state
+   */
+  private _updateMeasureState(state: _MeasureState): void {
+    this._measureState = {
+      ...this._measureState,
+      ...state,
     };
   }
 
-  /**
-   * Handle location event and set state.
-   * @param event
-   */
-  private _locationEvent(event: esri.SketchViewModelCreateEvent): void {
+  private async _measureSelectedFeature(): Promise<void> {
     const {
-      sketch: { layer },
+      view,
+      _measureState: { operation },
+      _popupVisible,
+      _selectedFeature,
     } = this;
-    const {
-      state,
-      graphic,
-      graphic: { geometry },
-    } = event;
 
-    // reset on cancel
-    if (state === 'cancel' || !graphic) {
-      this._reset();
-      return;
-    }
+    view.closePopup();
 
-    // get coordinates and set state
-    if (state === 'complete') {
-      const { x, y } = this._location(geometry as esri.Point);
+    if (operation !== 'ready' || !_popupVisible || !_selectedFeature) return;
 
-      this.state = {
-        ...this.state,
-        operation: 'location',
-        locationX: x,
-        locationY: y,
-        locationGeometry: geometry as esri.Point,
-      };
-    }
+    // @ts-expect-error not typed
+    const layer = (_selectedFeature.layer || _selectedFeature.sourceLayer) as esri.FeatureLayer | esri.GraphicsLayer;
 
-    // add labels
-    this._addLabels(
-      geometry as esri.Point,
-      graphic.layer === layer ? undefined : (graphic.layer as esri.GraphicsLayer),
-    );
-  }
+    let geometry = _selectedFeature.geometry;
 
-  /**
-   * Location coordinates.
-   * @param point
-   * @returns
-   */
-  private _location(point: esri.Point): { x: number | string; y: number | string } {
-    const { degreesPrecision, locationUnit } = this;
-
-    let x: number | string = this._round(point.longitude, degreesPrecision);
-    let y: number | string = this._round(point.latitude, degreesPrecision);
-
-    if (locationUnit === 'dms') {
-      const dms = coordinateFormatter.toLatitudeLongitude(
-        webMercatorToGeographic(point, false) as esri.Point,
-        'dms',
-        2,
-      );
-      const index = dms.indexOf('N') !== -1 ? dms.indexOf('N') : dms.indexOf('S');
-      y = dms.substring(0, index + 1);
-      x = dms.substring(index + 2, dms.length);
-    }
-
-    return { x, y };
-  }
-
-  /**
-   * Handle elevation event and set state.
-   * @param event
-   * @returns
-   */
-  private async _elevationEvent(event: esri.SketchViewModelCreateEvent): Promise<void> {
-    const {
-      sketch: { layer },
-    } = this;
-    const {
-      state,
-      graphic,
-      graphic: { geometry },
-    } = event;
-
-    // reset on cancel
-    if (state === 'cancel' || !graphic) {
-      this._reset();
-      return;
-    }
-
-    // get coordinates and set state
-    if (state === 'complete') {
-      const elevation = await this._elevation(geometry as esri.Point);
-
-      this.state = {
-        ...this.state,
-        operation: 'elevation',
-        elevation,
-        elevationGeometry: geometry as esri.Point,
-      };
-
-      // add labels
-      this._addLabels(geometry as esri.Point);
-    }
-
-    // add labels
-    this._addLabels(
-      geometry as esri.Point,
-      graphic.layer === layer ? undefined : (graphic.layer as esri.GraphicsLayer),
-    );
-  }
-
-  /**
-   * Query elevation.
-   * @param point
-   * @returns
-   */
-  private _elevation(point: esri.Point): Promise<number> {
-    return new Promise((resolve) => {
-      const {
-        view: {
-          map: { ground },
-        },
-        unitsPrecision,
-        elevationUnit,
-      } = this;
-      ground
-        .queryElevation(point)
-        .then((result: esri.ElevationQueryResult): void => {
-          resolve(
-            this._round((result.geometry as esri.Point).z * (elevationUnit === 'feet' ? 3.2808399 : 1), unitsPrecision),
-          );
-        })
-        .catch((): void => {
-          resolve(-99999);
-        });
-    });
-  }
-
-  private async _profileEvent(event: esri.SketchViewModelCreateEvent): Promise<void> {
-    const {
-      // sketch: { layer },
-      elevationProfile,
-    } = this;
-    const {
-      state,
-      graphic,
-      graphic: { geometry },
-    } = event;
-
-    // reset on cancel
-    if (state === 'cancel' || !graphic) {
-      this._reset();
-      return;
-    }
-
-    if (state === 'complete') {
-      elevationProfile.input = new Graphic({
-        geometry,
+    if (layer.type !== 'graphics')
+      geometry = await queryFeatureGeometry({
+        layer,
+        graphic: _selectedFeature,
+        outSpatialReference: view.spatialReference,
       });
 
-      this.state = {
-        ...this.state,
-        operation: 'profile',
-        profileGeometry: geometry as Polyline,
-      };
+    const event = {
+      state: 'complete',
+      graphic: new Graphic({
+        geometry,
+      }),
+    } as esri.SketchViewModelCreateEvent;
 
-      // add additional graphics
-      this._addGraphics(geometry as Polyline);
+    switch (geometry.type) {
+      case 'polygon':
+        this._areaEvent(event, true);
+        break;
+      case 'polyline':
+        this._lengthEvent(event, true);
+        break;
+      default:
+        break;
     }
-
-    // TODO: decide if labeling is necessary
-    // add labels
-    // this._addLabels(geometry as Polyline, graphic.layer === layer ? undefined : (graphic.layer as esri.GraphicsLayer));
   }
 
+  //////////////////////////////////////
+  // Private methods (graphics support)
+  //////////////////////////////////////
   /**
    * Add additional graphics when complete.
    * @param geometry
    */
-  private _addGraphics(geometry: Polyline | esri.Polygon): void {
+  private _addGraphics(geometry: esri.Polyline | esri.Polygon, allGraphics?: boolean): void {
     const {
       view: { spatialReference },
-      sketch: { layer },
-      pointSymbol,
-      polylineSymbol,
+      _sketch: { layer },
+      _pointSymbol,
+      _polygonSymbol,
+      _polylineSymbol,
     } = this;
     const { type } = geometry;
 
     // add polygon outline
-    if (type === 'polygon') {
+    if (type === 'polygon' && allGraphics) {
       layer.add(
         new Graphic({
           geometry,
-          symbol: polylineSymbol,
+          symbol: _polygonSymbol,
         }),
       );
     }
 
-    // add vertices for polylines and polygons
-    if (type === 'polyline' || type == 'polygon') {
-      const coordinates = type === 'polyline' ? geometry.paths[0] : geometry.rings[0];
-
-      layer.addMany(
-        coordinates.map((coordinate: number[]): Graphic => {
-          const [x, y] = coordinate;
-          return new Graphic({
-            geometry: new Point({ x, y, spatialReference }),
-            symbol: pointSymbol,
-          });
+    if (type === 'polygon' || (type === 'polyline' && allGraphics)) {
+      layer.add(
+        new Graphic({
+          geometry,
+          symbol: _polylineSymbol,
         }),
       );
     }
-  }
 
-  /**
-   * Add outline to area polygon.
-   * As of 4.22 api's sketch polyline symbol only shows CIM on active polygon sketch segment.
-   * @param geometry
-   * @param layer
-   */
-  private _addPolygonOutline(geometry: esri.Polygon, layer: GraphicsLayer): void {
-    const { polylineSymbol } = this;
-    const { graphics } = layer;
-
-    layer.removeMany(
-      graphics
-        .filter((graphic: Graphic): boolean => {
-          return graphic.attributes && graphic.attributes.outline === true;
-        })
-        .toArray(),
-    );
-
-    // add to graphics collection to set index
-    graphics.add(
-      new Graphic({
-        geometry,
-        attributes: {
-          outline: true,
-        },
-        symbol: polylineSymbol,
+    // add vertices
+    const coordinates = type === 'polyline' ? geometry.paths[0] : geometry.rings[0];
+    layer.addMany(
+      coordinates.map((coordinate: number[]): Graphic => {
+        const [x, y] = coordinate;
+        return new Graphic({
+          geometry: new Point({ x, y, spatialReference }),
+          symbol: _pointSymbol,
+        });
       }),
-      1,
     );
   }
 
-  /**
-   * Add label graphics.
-   * @param geometry
-   */
-  private _addLabels(geometry: esri.Point | Polyline | esri.Polygon, layer?: GraphicsLayer): void {
+  private _addLabels(geometry: esri.Point | Polyline | esri.Polygon, layer?: esri.GraphicsLayer): void {
     const {
-      labelsVisible,
-      labels,
-      state: { operation, area, x, y, z, locationX, locationY, elevation },
-      areaUnit,
-      elevationUnit,
+      _labels,
+      _measureState: { area, elevation, latitude, length, longitude, operation },
+      _round,
     } = this;
     const { type } = geometry;
 
     // remove all labels
-    labels.removeAll();
+    _labels.removeAll();
 
     if (layer)
       layer.removeMany(
@@ -1287,98 +939,43 @@ export default class Measure extends Widget {
           .toArray(),
       );
 
-    // measuring length labels
-    if (
-      (operation === 'measure-length' || operation === 'measure-profile') &&
-      type === 'polyline' &&
-      layer &&
-      labelsVisible
-    )
-      layer.addMany(this._polylineLabels(geometry));
+    const _layer = layer || _labels;
 
-    // measured length labels
-    if ((operation === 'length' || operation === 'profile') && type === 'polyline')
-      labels.addMany(this._polylineLabels(geometry));
-
-    // measuring area labels
-    if (operation === 'measure-area' && type === 'polygon' && area > 0 && layer && labelsVisible) {
-      layer.add(
+    // area labels
+    if ((operation === 'area' || operation === 'measure-area') && type === 'polygon' && area && area > 0)
+      _layer.addMany([
+        ...this._createPolylineLabels(geometry),
         new Graphic({
           geometry: geometry.centroid,
-          symbol: this._createTextSymbol(this._format(area, areaUnit, true)),
+          symbol: this._createTextSymbol({ text: _round(area) }),
         }),
-      );
-      layer.addMany(this._polylineLabels(geometry));
-    }
+      ]);
 
-    // measured area labels
-    if (operation === 'area' && type === 'polygon') {
-      labels.add(
-        new Graphic({
-          geometry: geometry.centroid,
-          symbol: this._createTextSymbol(this._format(area, areaUnit, true)),
-        }),
-      );
-      labels.addMany(this._polylineLabels(geometry));
-    }
+    // length labels
+    if ((operation === 'length' || operation === 'measure-length') && type === 'polyline' && length && length > 0)
+      _layer.addMany(this._createPolylineLabels(geometry));
 
-    // measuring location labels
-    if (operation === 'measure-location' && type === 'point' && layer && labelsVisible)
-      layer.add(
+    // coordinate labels
+    if ((operation === 'coordinates' || operation === 'measure-coordinates') && type === 'point')
+      _layer.add(
         new Graphic({
-          geometry: geometry,
-          symbol: this._createTextSymbol(`${y}\n${x}`, true),
+          geometry,
+          symbol: this._createTextSymbol({ text: `${latitude}\n${longitude}`, point: true }),
         }),
       );
 
-    // measured location labels
-    if (operation === 'location' && type === 'point')
-      labels.add(
+    // elevation labels
+    if ((operation === 'elevation' || operation === 'measure-elevation') && type === 'point')
+      _layer.add(
         new Graphic({
-          geometry: geometry,
-          symbol: this._createTextSymbol(`${locationY}\n${locationX}`, true),
-        }),
-      );
-
-    // measuring elevation labels
-    if (operation === 'elevation' && type === 'point')
-      labels.add(
-        new Graphic({
-          geometry: geometry,
-          symbol: this._createTextSymbol(this._format(elevation, elevationUnit, true), true),
-        }),
-      );
-
-    // measured elevation labels
-    if (operation === 'measure-elevation' && type === 'point' && layer && labelsVisible)
-      layer.add(
-        new Graphic({
-          geometry: geometry,
-          symbol: this._createTextSymbol(this._format(z, elevationUnit, true), true),
+          geometry,
+          symbol: this._createTextSymbol({ text: this._formatElevation(elevation, false), point: true }),
         }),
       );
   }
 
-  /**
-   * Create and return new text symbol.
-   * @param text
-   * @param point
-   * @returns
-   */
-  private _createTextSymbol(text: string, point?: boolean, angle?: number): TextSymbol {
-    const { textSymbol } = this;
-    const sym = textSymbol.clone();
-    sym.text = text;
-    if (point) {
-      sym.horizontalAlignment = 'left';
-      sym.xoffset = 8;
-    }
-    if (angle) sym.angle = angle;
-    return sym;
-  }
-
-  private _polylineLabels(geometry: Polyline | esri.Polygon): Graphic[] {
-    const { lengthUnit } = this;
+  private _createPolylineLabels(geometry: esri.Polyline | esri.Polygon): Graphic[] {
+    const { lengthUnit, _round } = this;
 
     const paths = geometry.type === 'polyline' ? geometry.paths[0] : geometry.rings[0];
 
@@ -1408,12 +1005,11 @@ export default class Measure extends Widget {
 
       graphics.push(
         new Graphic({
-          geometry: this._midpoint(polyline),
-          symbol: this._createTextSymbol(
-            this._format(length, lengthUnit, true),
-            undefined,
-            this._textSymbolAngle(a[0], a[1], b[0], b[1]),
-          ),
+          geometry: midpoint(polyline),
+          symbol: this._createTextSymbol({
+            text: _round(length),
+            angle: textAngle({ x: a[0], y: a[1] }, { x: b[0], y: b[1] }),
+          }),
         }),
       );
     });
@@ -1422,433 +1018,550 @@ export default class Measure extends Widget {
   }
 
   /**
-   * Return midpoint of polyline.
-   * @param polyline Polyline
-   * @returns esri.Point
+   *
+   * @param options
+   * @returns
    */
-  private _midpoint(polyline: Polyline): Point {
+  private _createTextSymbol(options: { text: string | number; point?: boolean; angle?: number }): esri.TextSymbol {
+    const { _textSymbol } = this;
+    const { text, point, angle } = options;
+    const symbol = _textSymbol.clone();
+    symbol.text = typeof text === 'string' ? text : text.toLocaleString();
+    if (point) {
+      symbol.horizontalAlignment = 'left';
+      symbol.xoffset = 8;
+    }
+    if (angle) symbol.angle = angle;
+    return symbol;
+  }
+
+  //////////////////////////////////////
+  // Private methods (misc helpers)
+  //////////////////////////////////////
+  /**
+   * Return formatted latitude, longitude and elevation of the cursor.
+   * @returns
+   */
+  private _cursorInfo(): { latitude: number | string; longitude: number | string; elevation: string } {
+    const { _cursor } = this;
+
+    const { latitude, longitude } = this._formatLatitudeLongitude(_cursor);
+
+    return {
+      latitude,
+      longitude,
+      elevation: this._formatElevation(_cursor.z),
+    };
+  }
+
+  private _formatElevation(elevation?: number, includeUnit?: boolean): string {
+    const { elevationUnit, units, _round } = this;
+    let _elevation = elevation || 0;
+    if (elevationUnit === 'feet') _elevation = _elevation * 3.28084;
+    return includeUnit === false
+      ? _round(_elevation).toLocaleString()
+      : `${_round(_elevation).toLocaleString()} ${units.getUnitLabel('elevation', elevationUnit)}`;
+  }
+
+  private _formatLatitudeLongitude(point: esri.Point): { latitude: number | string; longitude: number | string } {
+    const { latitudeLongitudeUnit, _round } = this;
+
+    let _point = point.clone();
+
+    if (_point.spatialReference.isWebMercator) _point = webMercatorToGeographic(_point) as esri.Point;
+
+    let { latitude, longitude } = _point;
+
+    let lat: string;
+    let lng: string;
+
+    if (latitudeLongitudeUnit === 'decimal') {
+      latitude = _round(latitude, 6);
+      longitude = _round(longitude, 6);
+    } else if (latitudeLongitudeUnit === 'dms') {
+      const dms = coordinateFormatter.toLatitudeLongitude(_point, 'dms', 2);
+      const index = dms.indexOf('N') !== -1 ? dms.indexOf('N') : dms.indexOf('S');
+
+      lat = dms.substring(0, index + 1);
+      const latParts = lat.split(' ');
+      //@ts-expect-error force assign
+      latitude = `${latParts[0]}°${latParts[1]}'${latParts[2].slice(0, latParts[2].length - 1) + '" ' + latParts[2].slice(latParts[2].length - 1)}`;
+
+      lng = dms.substring(index + 2, dms.length);
+      const lngParts = lng.split(' ');
+      //@ts-expect-error force assign
+      longitude = `${lngParts[0]}°${lngParts[1]}'${lngParts[2].slice(0, lngParts[2].length - 1) + '" ' + lngParts[2].slice(lngParts[2].length - 1)}`;
+    }
+
+    return {
+      latitude,
+      longitude,
+    };
+  }
+
+  private _measureInfo(): {
+    area: string;
+    elevation: string;
+    latitude: string | number;
+    length: string;
+    longitude: string | number;
+    perimeter: string;
+  } {
     const {
-      paths: [path],
-      spatialReference,
-    } = polyline;
+      areaUnit,
+      lengthUnit,
+      units,
+      _measureState: { area, elevation, latitude, length, longitude, perimeter },
+      _round,
+    } = this;
 
-    /**
-     * Distance between two points.
-     * @param point1 esri.Point | x,y key/value pair
-     * @param point2 esri.Point | x,y key/value pair
-     * @returns number
-     */
-    const distance = (point1: Point | { x: number; y: number }, point2: Point | { x: number; y: number }): number => {
-      const { x: x1, y: y1 } = point1;
-      const { x: x2, y: y2 } = point2;
-      return Math.sqrt(Math.pow(Math.abs(x1 - x2), 2) + Math.pow(Math.abs(y1 - y2), 2));
+    return {
+      area: `${_round(area || 0).toLocaleString()} ${units.getUnitLabel('area', areaUnit)}`,
+      elevation: this._formatElevation(elevation),
+      latitude: latitude || 0,
+      length: `${_round(length || 0).toLocaleString()} ${units.getUnitLabel('length', lengthUnit)}`,
+      longitude: longitude || 0,
+      perimeter: `${_round(perimeter || 0).toLocaleString()} ${units.getUnitLabel('length', lengthUnit)}`,
     };
+  }
 
-    /**
-     * Point on the line between two points some distance from point one.
-     * @param point1 esri.Point
-     * @param point2 esri.Point
-     * @param linearDistance number
-     * @returns esri.Point
-     */
-    const linearInterpolation = (point1: Point, point2: Point, linearDistance: number): Point => {
-      const { x: x1, y: y1, spatialReference } = point1;
-      const { x: x2, y: y2 } = point2;
-      const steps = distance(point1, point2) / linearDistance;
-      return new Point({
-        x: x1 + (x2 - x1) / steps,
-        y: y1 + (y2 - y1) / steps,
-        spatialReference,
-      });
-    };
+  private _profileStatisticsInfo(): _Measure['profileStatisticsFormatted'] {
+    const {
+      _elevationProfile: { input },
+      _elevationProfileLineGround: { samples },
+      _profileStatistics,
+      _round,
+    } = this;
 
-    const segements = path.map((p: number[]) => {
-      const [x, y] = p;
-      return { x, y };
-    });
+    if (!_profileStatistics)
+      return {
+        avgElevation: '',
+        avgNegativeSlope: '',
+        avgPositiveSlope: '',
+        elevationGain: '',
+        elevationLoss: '',
+        totalLength: '',
+        maxDistance: '',
+        maxElevation: '',
+        maxNegativeSlope: '',
+        maxPositiveSlope: '',
+        minElevation: '',
+      };
 
-    let td = 0;
-    let dsf = 0;
+    const {
+      avgElevation,
+      avgNegativeSlope,
+      avgPositiveSlope,
+      elevationGain,
+      elevationLoss,
+      maxDistance,
+      maxElevation,
+      maxNegativeSlope,
+      maxPositiveSlope,
+      minElevation,
+    } = _profileStatistics;
 
-    for (let i = 0; i < segements.length - 1; i += 1) {
-      td += distance(new Point({ ...segements[i] }), new Point({ ...segements[i + 1] }));
-    }
+    let totalLength = 0;
 
-    for (let i = 0; i < segements.length - 1; i += 1) {
-      if (dsf + distance(new Point({ ...segements[i] }), new Point({ ...segements[i + 1] })) > td / 2) {
-        const distanceToMidpoint = td / 2 - dsf;
-        return linearInterpolation(
-          new Point({ ...segements[i], spatialReference }),
-          new Point({ ...segements[i + 1], spatialReference }),
-          distanceToMidpoint,
+    if (input && samples) {
+      samples.forEach((sample: esri.ElevationProfileSample, index: number): void => {
+        if (index === 0) return;
+        totalLength += Math.sqrt(
+          Math.pow(samples[index].distance - samples[index - 1].distance, 2) +
+            Math.pow((samples[index].elevation as number) - (samples[index - 1].elevation as number), 2),
         );
-      }
-      dsf += distance(new Point({ ...segements[i] }), new Point({ ...segements[i + 1] }));
+      });
     }
 
-    return new Point({
-      ...segements[0],
-      spatialReference,
-    });
+    return {
+      avgElevation: `${_round(avgElevation).toLocaleString()}`,
+      avgNegativeSlope: `-${_round(avgNegativeSlope, 1)}%`,
+      avgPositiveSlope: `${_round(avgPositiveSlope, 1)}%`,
+      elevationGain: `${_round(elevationGain).toLocaleString()}`,
+      elevationLoss: `${_round(elevationLoss).toLocaleString()}`,
+      totalLength: `${_round(totalLength).toLocaleString()}`,
+      maxDistance: `${_round(maxDistance).toLocaleString()}`,
+      maxElevation: `${_round(maxElevation).toLocaleString()}`,
+      maxNegativeSlope: `-${_round(maxNegativeSlope, 1)}%`,
+      maxPositiveSlope: `${_round(maxPositiveSlope, 1)}%`,
+      minElevation: `${_round(minElevation).toLocaleString()}`,
+    };
   }
 
   /**
-   * Text symbol angle between two sets of points.
-   * @param x1
-   * @param y1
-   * @param x2
-   * @param y2
-   * @returns
+   * Round a number.
+   * @param value Number to round
+   * @param digits Number of significant digits
+   * @returns number
    */
-  private _textSymbolAngle(x1: number, y1: number, x2: number, y2: number): number {
-    let angle = (Math.atan2(y1 - y2, x1 - x2) * 180) / Math.PI;
-
-    // quadrants SW SE NW NE
-    angle =
-      angle > 0 && angle < 90
-        ? Math.abs(angle - 180) + 180
-        : angle > 90 && angle < 180
-          ? (angle = Math.abs(angle - 180))
-          : angle <= 0 && angle >= -90
-            ? Math.abs(angle)
-            : Math.abs(angle) + 180;
-
-    return angle;
+  private _round(value: number, digits?: number): number {
+    if (typeof value !== 'number') return 0;
+    return Number(value.toFixed(digits || 2));
   }
 
+  //////////////////////////////////////
+  // Render and rendering methods
+  //////////////////////////////////////
   render(): tsx.JSX.Element {
     const {
-      id,
       view: { scale },
-      optionsVisible,
-      state,
-      state: { operation, x, y, locationX, locationY },
-      unitsPrecision,
-      lengthUnit,
-      areaUnit,
-      elevationUnit,
-      elevationProfile: {
-        viewModel: { state: profileState, uniformChartScaling },
-      },
-      localeFormat,
+      _measureState: { operation },
     } = this;
 
-    // @ts-expect-error not typed
-    const statistics = (this.elevationProfile.viewModel.statistics as any) || null;
+    const { latitude, longitude, elevation } = this._cursorInfo();
 
-    // format values
-    const length = `Length: ${this._format(state.length, lengthUnit)}`;
-    const area = `Area: ${this._format(state.area, areaUnit)}`;
-    const perimeter = length.replace('Length: ', 'Perimeter: ');
-    const latitude = `Latitude: ${operation === 'location' ? locationY : y}`;
-    const longitude = `Longitude: ${operation === 'location' ? locationX : x}`;
-    const elevation = `Elevation: ${
-      operation === 'elevation' ? state.elevation.toLocaleString() : state.z.toLocaleString()
-    } ${elevationUnit}`;
-    const cursorLatitude = `Latitude: ${y}`;
-    const cursorLongitude = `Longitude: ${x}`;
-    const cursorElevation = `Elevation: ${state.z.toLocaleString()} ${elevationUnit}`;
+    const {
+      area,
+      elevation: _elevation,
+      latitude: _latitude,
+      length,
+      longitude: _longitude,
+      perimeter,
+    } = this._measureInfo();
 
-    // hidden logic for results and cancel/clear button
-    const lengthResults = !(operation === 'length' || operation === 'measure-length');
-    const areaResults = !(operation === 'area' || operation === 'measure-area');
-    const locationResults = !(operation === 'location' || operation === 'measure-location');
-    const elevationResults = !(operation === 'elevation' || operation === 'measure-elevation');
-    const profileResults = operation !== 'profile' && profileState !== 'created';
-    const clearCancel = operation === 'ready';
-    const clearCancelText =
-      operation === 'measure-length' ||
-      operation === 'measure-area' ||
-      operation === 'measure-location' ||
-      operation === 'measure-elevation' ||
-      operation === 'measure-profile'
-        ? 'Cancel'
-        : 'Clear';
-
-    const tooltips = [0, 1, 2, 3, 4, 5].map((num: number): string => {
-      return `tooltip_${id}_${num}_${KEY++}`;
-    });
+    const { avgElevation, elevationGain, elevationLoss, totalLength, maxElevation, minElevation } =
+      this._profileStatisticsInfo();
 
     return (
-      <calcite-panel class={CSS.base} heading="Measure">
-        {/* show/hide options */}
-        <calcite-action
-          id={tooltips[0]}
-          slot="header-actions-end"
-          icon={optionsVisible ? 'x' : 'gear'}
-          afterCreate={(action: HTMLCalciteActionElement) => {
-            action.addEventListener('click', (): void => {
-              this.optionsVisible = !this.optionsVisible;
-            });
-          }}
-        ></calcite-action>
-        <calcite-tooltip reference-element={tooltips[0]} placement="bottom" close-on-click="">
-          {optionsVisible ? 'Close' : 'Options'}
-        </calcite-tooltip>
+      <calcite-panel heading="Measure">
+        {/* header actions */}
+        <calcite-action icon="gear" slot="header-actions-end" text="Options">
+          <calcite-tooltip close-on-click="" placement="bottom" slot="tooltip">
+            Options
+          </calcite-tooltip>
+        </calcite-action>
 
-        {/* measure context */}
-        <div class={CSS.content} hidden={optionsVisible}>
-          <div class={CSS.row}>
-            <calcite-button
-              id={tooltips[1]}
-              appearance="transparent"
-              icon-start="measure-line"
-              afterCreate={this._measureEvent.bind(this, 'length')}
-            ></calcite-button>
-            <calcite-tooltip reference-element={tooltips[1]} placement="bottom" close-on-click="">
-              Length
-            </calcite-tooltip>
-            <calcite-button
-              id={tooltips[2]}
-              appearance="transparent"
-              icon-start="measure-area"
-              afterCreate={this._measureEvent.bind(this, 'area')}
-            ></calcite-button>
-            <calcite-tooltip reference-element={tooltips[2]} placement="bottom" close-on-click="">
-              Area
-            </calcite-tooltip>
-            <calcite-button
-              id={tooltips[3]}
-              appearance="transparent"
-              icon-start="point"
-              afterCreate={this._measureEvent.bind(this, 'location')}
-            ></calcite-button>
-            <calcite-tooltip reference-element={tooltips[3]} placement="bottom" close-on-click="">
-              Location
-            </calcite-tooltip>
-            <calcite-button
-              id={tooltips[4]}
-              appearance="transparent"
-              icon-start="altitude"
-              afterCreate={this._measureEvent.bind(this, 'elevation')}
-            ></calcite-button>
-            <calcite-tooltip reference-element={tooltips[4]} placement="bottom" close-on-click="">
-              Elevation
-            </calcite-tooltip>
-            <calcite-button
-              id={tooltips[5]}
-              appearance="transparent"
-              icon-start="graph-time-series"
-              afterCreate={this._measureEvent.bind(this, 'profile')}
-            ></calcite-button>
-            <calcite-tooltip reference-element={tooltips[5]} placement="bottom" close-on-click="">
-              Profile
-            </calcite-tooltip>
-          </div>
-
-          <div class={CSS.result} hidden={!clearCancel}>
-            <span>{cursorLatitude}</span>
-            <span>{cursorLongitude}</span>
-            <span>{cursorElevation}</span>
-            <span>Scale: 1:{localeFormat ? Math.round(scale).toLocaleString() : Math.round(scale)}</span>
-          </div>
-
-          <calcite-select hidden={lengthResults} afterCreate={this._unitChangeEvent.bind(this, 'length')}>
-            {this._renderUnitOptions(this.lengthUnits, this.lengthUnit)}
-          </calcite-select>
-
-          <div class={CSS.result} hidden={lengthResults}>
-            <span>{length}</span>
-          </div>
-
-          <div class={CSS.row} hidden={areaResults}>
-            <calcite-select afterCreate={this._unitChangeEvent.bind(this, 'area')}>
-              {this._renderUnitOptions(this.areaUnits, this.areaUnit)}
-            </calcite-select>
-            <calcite-select afterCreate={this._unitChangeEvent.bind(this, 'length')}>
-              {this._renderUnitOptions(this.lengthUnits, this.lengthUnit)}
-            </calcite-select>
-          </div>
-
-          <div class={CSS.result} hidden={areaResults}>
-            <span>{area}</span>
-            <span>{perimeter}</span>
-          </div>
-
-          <calcite-select hidden={locationResults} afterCreate={this._unitChangeEvent.bind(this, 'location')}>
-            {this._renderUnitOptions(this.locationUnits, this.locationUnit)}
-          </calcite-select>
-
-          <div class={CSS.result} hidden={locationResults}>
-            <span>{latitude}</span>
-            <span>{longitude}</span>
-          </div>
-
-          <calcite-select hidden={elevationResults} afterCreate={this._unitChangeEvent.bind(this, 'elevation')}>
-            {this._renderUnitOptions(this.elevationUnits, this.elevationUnit)}
-          </calcite-select>
-
-          <div class={CSS.result} hidden={elevationResults}>
-            {elevation}
-          </div>
-
-          <calcite-select hidden={profileResults} afterCreate={this._unitChangeEvent.bind(this, 'elevation')}>
-            {this._renderUnitOptions(this.elevationUnits, this.elevationUnit)}
-          </calcite-select>
-
-          <div
-            hidden={profileResults}
-            afterCreate={(container: HTMLDivElement): void => {
-              this.elevationProfile.container = container;
-            }}
-          ></div>
-
-          <div class={CSS.result} hidden={profileResults}>
-            <calcite-label alignment="start" layout="inline-space-between">
-              Uniform profile scale
+        {/* options */}
+        <calcite-popover
+          auto-close=""
+          closable=""
+          heading="Options"
+          placement="bottom"
+          scale="s"
+          afterCreate={this._referenceElement.bind(this)}
+        >
+          <div class={CSS.options}>
+            <calcite-label layout="inline">
               <calcite-switch
+                checked=""
                 afterCreate={(_switch: HTMLCalciteSwitchElement): void => {
-                  _switch.checked = uniformChartScaling;
                   _switch.addEventListener('calciteSwitchChange', (): void => {
-                    this.elevationProfile.viewModel.uniformChartScaling = _switch.checked;
+                    this._snapping = _switch.checked;
                   });
                 }}
               ></calcite-switch>
+              Snapping
             </calcite-label>
-            <span>
-              Min elevation:{' '}
-              {statistics ? this._format(this._round(statistics.minElevation, unitsPrecision), elevationUnit) : ''}
-            </span>
-            <span>
-              Max elevation:{' '}
-              {statistics ? this._format(this._round(statistics.maxElevation, unitsPrecision), elevationUnit) : ''}
-            </span>
-            <span>
-              Avg elevation:{' '}
-              {statistics ? this._format(this._round(statistics.avgElevation, unitsPrecision), elevationUnit) : ''}
-            </span>
-            <span>
-              Elevation gain:{' '}
-              {statistics ? this._format(this._round(statistics.elevationGain, unitsPrecision), elevationUnit) : ''}
-            </span>
-            <span>
-              Elevation loss:{' '}
-              {statistics ? this._format(this._round(statistics.elevationLoss, unitsPrecision), elevationUnit) : ''}
-            </span>
+            <calcite-label layout="inline" style="--calcite-label-margin-bottom: 0;">
+              <calcite-switch
+                checked=""
+                afterCreate={(_switch: HTMLCalciteSwitchElement): void => {
+                  _switch.addEventListener('calciteSwitchChange', (): void => {
+                    this._guides = _switch.checked;
+                  });
+                }}
+              ></calcite-switch>
+              Guides
+            </calcite-label>
           </div>
+        </calcite-popover>
 
-          <span hidden={clearCancel}>
-            <calcite-button afterCreate={this._clearEvent.bind(this)}>{clearCancelText}</calcite-button>
-          </span>
+        {/* measure buttons */}
+        <div class={CSS.measureButtons}>
+          <calcite-button
+            icon-start="measure-line"
+            afterCreate={this._buttonMeasureEvent.bind(this, 'length')}
+          ></calcite-button>
+          <calcite-tooltip placement="bottom" close-on-click="" afterCreate={this._referenceElement.bind(this)}>
+            Length
+          </calcite-tooltip>
+          <calcite-button
+            icon-start="measure-area"
+            afterCreate={this._buttonMeasureEvent.bind(this, 'area')}
+          ></calcite-button>
+          <calcite-tooltip placement="bottom" close-on-click="" afterCreate={this._referenceElement.bind(this)}>
+            Area
+          </calcite-tooltip>
+          <calcite-button
+            icon-start="point"
+            afterCreate={this._buttonMeasureEvent.bind(this, 'coordinates')}
+          ></calcite-button>
+          <calcite-tooltip placement="bottom" close-on-click="" afterCreate={this._referenceElement.bind(this)}>
+            Coordinates
+          </calcite-tooltip>
+          <calcite-button
+            icon-start="altitude"
+            afterCreate={this._buttonMeasureEvent.bind(this, 'elevation')}
+          ></calcite-button>
+          <calcite-tooltip placement="bottom" close-on-click="" afterCreate={this._referenceElement.bind(this)}>
+            Elevation
+          </calcite-tooltip>
+          <calcite-button
+            icon-start="graph-time-series"
+            afterCreate={this._buttonMeasureEvent.bind(this, 'profile')}
+          ></calcite-button>
+          <calcite-tooltip placement="bottom" close-on-click="" afterCreate={this._referenceElement.bind(this)}>
+            Profile
+          </calcite-tooltip>
         </div>
-        {/* options content */}
-        <div class={CSS.optionsContent} hidden={!optionsVisible}>
-          <calcite-label alignment="start" layout="inline-space-between">
-            Feature snapping
-            <calcite-switch
-              afterCreate={(_switch: HTMLCalciteSwitchElement): void => {
-                const {
-                  sketch: { snappingOptions },
-                } = this;
-                _switch.checked = snappingOptions.featureEnabled;
-                _switch.addEventListener('calciteSwitchChange', (): void => {
-                  snappingOptions.featureEnabled = _switch.checked;
-                });
-              }}
-            ></calcite-switch>
-          </calcite-label>
-          <calcite-label alignment="start" layout="inline-space-between">
-            Sketch guides
-            <calcite-switch
-              afterCreate={(_switch: HTMLCalciteSwitchElement): void => {
-                const {
-                  sketch: { snappingOptions },
-                } = this;
-                _switch.checked = snappingOptions.selfEnabled;
-                _switch.addEventListener('calciteSwitchChange', (): void => {
-                  snappingOptions.selfEnabled = _switch.checked;
-                });
-              }}
-            ></calcite-switch>
-          </calcite-label>
-          <calcite-label alignment="start" layout="inline-space-between">
-            Graphic labels
-            <calcite-switch
-              afterCreate={(_switch: HTMLCalciteSwitchElement): void => {
-                const { labelsVisible } = this;
-                _switch.checked = labelsVisible;
-                _switch.addEventListener('calciteSwitchChange', (): void => {
-                  this.labelsVisible = _switch.checked;
-                });
-              }}
-            ></calcite-switch>
-          </calcite-label>
-          <calcite-label alignment="start" layout="inline-space-between">
-            Graphic label units
-            <calcite-switch
-              afterCreate={(_switch: HTMLCalciteSwitchElement): void => {
-                const { labelUnits } = this;
-                _switch.checked = labelUnits;
-                _switch.addEventListener('calciteSwitchChange', (): void => {
-                  this.labelUnits = _switch.checked;
-                });
-              }}
-            ></calcite-switch>
-          </calcite-label>
-          <calcite-label alignment="start" layout="inline-space-between">
-            Format results
-            <calcite-switch
-              afterCreate={(_switch: HTMLCalciteSwitchElement): void => {
-                const { localeFormat } = this;
-                _switch.checked = localeFormat;
-                _switch.addEventListener('calciteSwitchChange', (): void => {
-                  this.localeFormat = _switch.checked;
-                });
-              }}
-            ></calcite-switch>
-          </calcite-label>
-          <calcite-label>
-            Color
-            {this._renderColorSelector()}
-          </calcite-label>
+
+        {/* cursor info */}
+        <div class={CSS.results} hidden={operation !== 'ready'}>
+          <div class={CSS.resultsRow}>
+            <div afterCreate={this._createUnitsDropdown.bind(this, 'latitudeLongitude', 'Latitude')}></div>
+            <div>: {latitude}</div>
+          </div>
+          <div class={CSS.resultsRow}>Longitude: {longitude}</div>
+          <hr></hr>
+          <div class={CSS.resultsRow}>
+            <div afterCreate={this._createUnitsDropdown.bind(this, 'elevation', 'Elevation')}></div>
+            <div>: {elevation}</div>
+          </div>
+          <hr></hr>
+          <div class={CSS.resultsRow}>Scale: 1:{Math.round(scale).toLocaleString()}</div>
         </div>
+
+        {/* area */}
+        <div class={CSS.results} hidden={operation !== 'area' && operation !== 'measure-area'}>
+          <div class={CSS.resultsRow}>
+            <div afterCreate={this._createUnitsDropdown.bind(this, 'area', 'Area')}></div>
+            <div>: {area}</div>
+          </div>
+          <hr></hr>
+          <div class={CSS.resultsRow}>
+            <div afterCreate={this._createUnitsDropdown.bind(this, 'length', 'Perimeter')}></div>
+            <div>: {perimeter}</div>
+          </div>
+        </div>
+
+        {/* length */}
+        <div class={CSS.results} hidden={operation !== 'length' && operation !== 'measure-length'}>
+          <div class={CSS.resultsRow}>
+            <div afterCreate={this._createUnitsDropdown.bind(this, 'length', 'Length')}></div>
+            <div>: {length}</div>
+          </div>
+        </div>
+
+        {/* coordinates */}
+        <div class={CSS.results} hidden={operation !== 'coordinates' && operation !== 'measure-coordinates'}>
+          <div class={CSS.resultsRow}>
+            <div afterCreate={this._createUnitsDropdown.bind(this, 'latitudeLongitude', 'Latitude')}></div>
+            <div>: {_latitude}</div>
+          </div>
+          <div class={CSS.resultsRow}>Longitude: {_longitude}</div>
+        </div>
+
+        {/* elevation */}
+        <div class={CSS.results} hidden={operation !== 'elevation' && operation !== 'measure-elevation'}>
+          <div class={CSS.resultsRow}>
+            <div afterCreate={this._createUnitsDropdown.bind(this, 'elevation', 'Elevation')}></div>
+            <div>: {_elevation}</div>
+          </div>
+        </div>
+
+        {/* profile */}
+        <calcite-notice class={CSS.notice} hidden={operation !== 'measure-profile'} icon="line-straight" open="">
+          <div slot="message">Draw a line to create a profile.</div>
+        </calcite-notice>
+        <div class={CSS.profile} hidden={operation !== 'profile'}>
+          <div class={CSS.profileOptions}>
+            <div afterCreate={this._createUnitsDropdown.bind(this, 'elevation', 'Elevation unit')}></div>
+            <calcite-label layout="inline" style="--calcite-label-margin-bottom: 0;">
+              <calcite-switch
+                afterCreate={(_switch: HTMLCalciteSwitchElement): void => {
+                  _switch.addEventListener('calciteSwitchChange', (): void => {
+                    this._uniformChartScaling = _switch.checked;
+                  });
+                }}
+              ></calcite-switch>
+              Uniform scale
+            </calcite-label>
+          </div>
+          <div
+            afterCreate={(container: HTMLDivElement): void => {
+              this._elevationProfile.container = container;
+            }}
+          ></div>
+          <div class={CSS.profileStatistics}>
+            <table>
+              <tr>
+                <th>Length (3D)</th>
+                <th>Gain</th>
+                <th>Loss</th>
+              </tr>
+              <tr>
+                <td>{totalLength}</td>
+                <td>{elevationGain}</td>
+                <td>{elevationLoss}</td>
+              </tr>
+              <tr>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Avg</th>
+              </tr>
+              <tr>
+                <td>{minElevation}</td>
+                <td>{maxElevation}</td>
+                <td>{avgElevation}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        {/* cancel/clear button */}
+        <calcite-button
+          appearance="outline"
+          hidden={operation === 'ready'}
+          slot={operation === 'ready' ? null : 'footer'}
+          width="full"
+          onclick={this._reset.bind(this)}
+        >
+          {operation?.includes('measure') ? 'Cancel' : 'Clear'}
+        </calcite-button>
+
+        {/* measure selected */}
+        {/* {this._renderMeasureSelectedFeatureButton()} */}
       </calcite-panel>
     );
   }
 
-  ////////////////////////////////////////////////////////////////
-  // Rendering methods
-  ///////////////////////////////////////////////////////////////
   /**
-   * Render unit select options.
-   * @param units
-   * @param defaultUnit
-   * @returns
+   * Create a UnitsDropdown.
+   * @param type
+   * @param text
+   * @param container
    */
-  private _renderUnitOptions(units: { [key: string]: string }, defaultUnit: string): tsx.JSX.Element[] {
-    const options: tsx.JSX.Element[] = [];
-    for (const unit in units) {
-      options.push(
-        <calcite-option key={KEY++} label={units[unit]} value={unit} selected={unit === defaultUnit}></calcite-option>,
-      );
-    }
-    return options;
+  _createUnitsDropdown(
+    type: 'area' | 'elevation' | 'latitudeLongitude' | 'length',
+    text: string,
+    container: HTMLDivElement,
+  ): void {
+    new UnitsDropdown({
+      text,
+      type,
+      units: this.units,
+      container,
+    });
   }
 
   /**
-   * Render color tiles to select color.
-   * @returns
+   * Set tooltip or popover `referenceElement` property.
+   * @param element HTMLCalciteTooltipElement | HTMLCalcitePopoverElement
    */
-  private _renderColorSelector(): tsx.JSX.Element {
-    const { colors } = COLORS;
-    const { color: _color } = this;
+  private _referenceElement(element: HTMLCalciteTooltipElement | HTMLCalcitePopoverElement): void {
+    const reference = element.previousElementSibling;
+    if (reference) element.referenceElement = reference;
+  }
+
+  private _renderMeasureSelectedFeatureButton(): tsx.JSX.Element | null {
+    const {
+      _measureState: { operation },
+      _popupVisible,
+      _selectedFeature,
+    } = this;
+
+    if (operation !== 'ready' || !_popupVisible || !_selectedFeature) return null;
+
+    const type = _selectedFeature.geometry.type;
+
+    if (type !== 'polygon' && type !== 'polyline') return null;
+
+    const text = {
+      polygon: 'Area',
+      polyline: 'Length',
+    };
+
+    const icon = {
+      polygon: 'measure-area',
+      polyline: 'measure-line',
+    };
 
     return (
-      <div class={CSS.colorSelector}>
-        {colors.map((color: number[]): tsx.JSX.Element => {
-          const selected = color[0] === _color[0] && color[1] === _color[1] && color[2] === _color[2];
-          return (
-            <div
-              class={this.classes(CSS.colorSelectorColor, selected ? CSS.colorSelectorColorSelected : '')}
-              style={`background-color: rgba(${color[0]}, ${color[1]}, ${color[2]}, 1);`}
-              afterCreate={(div: HTMLDivElement): void => {
-                div.addEventListener('click', (): void => {
-                  this.color = color;
-                });
-              }}
-            ></div>
-          );
-        })}
+      <calcite-button
+        appearance="outline"
+        icon-start={icon[type]}
+        slot="footer"
+        width="full"
+        onclick={this._measureSelectedFeature.bind(this)}
+      >
+        Selected {text[type]}
+      </calcite-button>
+    );
+  }
+}
+
+/**
+ * Widget for changing units.
+ */
+@subclass('cov.widgets.Measure.UnitsDropdown')
+export class UnitsDropdown extends Widget {
+  constructor(properties: UnitsDropdownConstructorProperties) {
+    super(properties);
+  }
+
+  postInitialize(): void {
+    const { type, units, _items } = this;
+    const unitType = `${type}Unit` as 'areaUnit' | 'elevationUnit' | 'latitudeLongitudeUnit' | 'lengthUnit'; //make TS happy
+    units[`${type}UnitInfos`].forEach(
+      (unitInfo: AreaUnitInfo | ElevationUnitInfo | LatitudeLongitudeUnitInfo | LengthUnitInfo): void => {
+        const { name, unit } = unitInfo;
+        _items.push(
+          <calcite-dropdown-item
+            scale="s"
+            afterCreate={(dropdownItem: HTMLCalciteDropdownItemElement): void => {
+              dropdownItem.selected = unit === this[unitType];
+              dropdownItem.addEventListener('calciteDropdownItemSelect', (): void => {
+                (this[unitType] as any) = unit;
+              });
+              this.watch(unitType, (): void => {
+                dropdownItem.selected = this[unitType] === unit;
+              });
+            }}
+          >
+            {name}
+          </calcite-dropdown-item>,
+        );
+      },
+    );
+  }
+
+  text = 'Units';
+
+  type!: 'area' | 'elevation' | 'latitudeLongitude' | 'length';
+
+  units!: Units;
+
+  @property({ aliasOf: 'units.areaUnit' })
+  protected areaUnit!: esri.AreaUnit;
+
+  @property({ aliasOf: 'units.elevationUnit' })
+  protected elevationUnit!: esri.LengthUnit;
+
+  @property({ aliasOf: 'units.latitudeLongitudeUnit' })
+  protected latitudeLongitudeUnit!: 'decimal' | 'dms';
+
+  @property({ aliasOf: 'units.lengthUnit' })
+  protected lengthUnit!: esri.LengthUnit;
+
+  private _items: tsx.JSX.Element[] = [];
+
+  private _titles = {
+    area: 'Area units',
+    elevation: 'Elevation units',
+    latitudeLongitude: 'Lat/Lng format',
+    length: 'Length units',
+  };
+
+  render(): tsx.JSX.Element {
+    const { text, type, _items, _titles } = this;
+    return (
+      <div>
+        <calcite-dropdown overlay-positioning="fixed" scale="s" width-scale="s">
+          <calcite-link slot="trigger">{text}</calcite-link>
+          <calcite-dropdown-group group-title={_titles[type]} scale="s">
+            {_items}
+          </calcite-dropdown-group>
+        </calcite-dropdown>
       </div>
     );
   }

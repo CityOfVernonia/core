@@ -13,7 +13,7 @@ import taxLotPopup from './../src/popups/TaxLotPopup';
 import Color from '@arcgis/core/Color';
 
 import MapApplication from './../src/layouts/MapApplication';
-import _Measure from './../src/widgets/_Measure';
+import Measure from './../src/widgets/Measure';
 
 esriConfig.portalUrl = 'https://gis.vernonia-or.gov/portal';
 esriConfig.assetsPath = './arcgis';
@@ -78,7 +78,7 @@ const load = async (): Promise<void> => {
 
   // setMeasureColors([0, 0, 0], [255, 255, 255]);
 
-  const measure = new _Measure({
+  const measure = new Measure({
     view,
   });
 
