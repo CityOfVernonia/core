@@ -2,5 +2,5 @@ import esri = __esri;
 /**
  * Vernonia tax lot popup.
  */
-declare const _default: esri.PopupTemplate;
-export default _default;
+declare const taxLotPopup: esri.PopupTemplate;
+export default taxLotPopup;

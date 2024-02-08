@@ -1,2 +1,2 @@
 /* His name was Bruce McNair. Copyright 2024 City of Vernonia, Oregon. */
-export const propertyInfoUrl=(o,t)=>`https://propertyquery.columbiacountyor.gov/columbiaat/MainQueryDetails.aspx?AccountID=${o}&QueryYear=${t}&Roll=R`;export const taxMapUrl=o=>`https://gis.columbiacountymaps.com/TaxMaps/${o}.pdf`;
+export const propertyInfoUrl=(t,o)=>`https://propertyquery.columbiacountyor.gov/columbiaat/MainQueryDetails.aspx?AccountID=${t}&QueryYear=${o||(new Date).getFullYear()-1}&Roll=R`;export const taxMapUrl=t=>`https://gis.columbiacountymaps.com/TaxMaps/${t}.pdf`;
