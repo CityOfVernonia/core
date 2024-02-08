@@ -12,7 +12,7 @@ import { propertyInfoUrl, taxMapUrl } from './../support/assessorURLs';
 /**
  * Vernonia tax lot popup.
  */
-export default new PopupTemplate({
+const taxLotPopup = new PopupTemplate({
   outFields: ['*'],
   title: '{TAXLOT_ID}',
   content: (event: { graphic: esri.Graphic }): HTMLElement => {
@@ -27,7 +27,7 @@ export default new PopupTemplate({
       : '';
     const accounts = ACCOUNT_IDS.split(',').map((account: string): string => {
       return `
-          <calcite-link href="${propertyInfoUrl(account, 2023)}" target="_blank">${account}</calcite-link>
+          <calcite-link href="${propertyInfoUrl(account)}" target="_blank">${account}</calcite-link>
         `;
     });
     const el = new DOMParser().parseFromString(
@@ -65,3 +65,5 @@ export default new PopupTemplate({
     return el.body.firstChild as HTMLTableElement;
   },
 });
+
+export default taxLotPopup;
