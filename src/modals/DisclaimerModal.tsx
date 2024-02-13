@@ -6,7 +6,7 @@ import esri = __esri;
 /**
  * Options for configuring Disclaimer widget.
  */
-export interface DisclaimerOptions {
+export interface DisclaimerModalOptions {
   /**
    * Disclaimer modal text.
    * @default 'The purpose of this application...'
@@ -42,14 +42,14 @@ merchantability or fitness for a particular purpose, accompanying this applicati
 /**
  * Disclaimer modal widget.
  */
-@subclass('Disclaimer')
+@subclass('cov.modals.Disclaimer')
 export default class Disclaimer extends Widget {
   //////////////////////////////////////
   // Lifecycle
   //////////////////////////////////////
   container = document.createElement('calcite-modal');
 
-  constructor(properties?: esri.WidgetProperties & DisclaimerOptions) {
+  constructor(properties?: esri.WidgetProperties & DisclaimerModalOptions) {
     super(properties);
     document.body.append(this.container);
   }

@@ -10,7 +10,7 @@ export interface FullPageMapProperties extends esri.WidgetProperties {
   /**
    * Disclaimer options.
    */
-  disclaimerOptions?: DisclaimerOptions;
+  disclaimerOptions?: DisclaimerModalOptions;
   /**
    * Include disclaimer.
    * @default true
@@ -37,7 +37,7 @@ export interface FullPageMapProperties extends esri.WidgetProperties {
 //////////////////////////////////////
 // Types
 //////////////////////////////////////
-import type { DisclaimerOptions } from '../widgets/Disclaimer';
+import type { DisclaimerModalOptions } from '../modals/DisclaimerModal';
 import type { ViewControlOptions } from '../widgets/ViewControl2D';
 
 //////////////////////////////////////
@@ -49,7 +49,7 @@ import { subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import Loader, { LoaderOptions } from '../widgets/Loader';
-import Disclaimer from '../widgets/Disclaimer';
+import DisclaimerModal from '../modals/DisclaimerModal';
 import ViewControl2D from '../widgets/ViewControl2D';
 import basemapToggle from '../support/basemapToggle';
 
@@ -103,7 +103,7 @@ export default class FullPageMap extends Widget {
     } catch (error) {
       includeDisclaimer = true;
     }
-    if (includeDisclaimer && !Disclaimer.isAccepted()) new Disclaimer(disclaimerOptions);
+    if (includeDisclaimer && !DisclaimerModal.isAccepted()) new DisclaimerModal(disclaimerOptions);
 
     await view.when();
     loader.end();
@@ -112,7 +112,7 @@ export default class FullPageMap extends Widget {
   //////////////////////////////////////
   // Properties
   //////////////////////////////////////
-  disclaimerOptions: DisclaimerOptions = {};
+  disclaimerOptions: DisclaimerModalOptions = {};
 
   includeDisclaimer = true;
 

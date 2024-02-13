@@ -153,7 +153,7 @@ export interface ShellApplicationMapProperties extends esri.WidgetProperties {
   /**
    * Disclaimer options.
    */
-  disclaimerOptions?: DisclaimerOptions;
+  disclaimerOptions?: DisclaimerModalOptions;
   /**
    * Custom footer widget.
    * Must return a `div` VNode, and widget `container` must not be set.
@@ -220,7 +220,7 @@ export interface ShellApplicationMapProperties extends esri.WidgetProperties {
 //////////////////////////////////////
 import type OAuth from '../support/OAuth';
 import type { LoaderOptions } from '../widgets/Loader';
-import type { DisclaimerOptions } from '../widgets/Disclaimer';
+import type { DisclaimerModalOptions } from '../modals/DisclaimerModal';
 import type { ViewControlOptions } from '../widgets/ViewControl2D';
 
 //////////////////////////////////////
@@ -235,7 +235,7 @@ import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import logoSvg from '../support/logo';
 import Loader from '../widgets/Loader';
-import Disclaimer from '../widgets/Disclaimer';
+import DisclaimerModal from '../modals/DisclaimerModal';
 import ViewControl2D from '../widgets/ViewControl2D';
 import basemapToggle from '../support/basemapToggle';
 import { subscribe } from 'pubsub-js';
@@ -323,7 +323,7 @@ export default class ShellApplicationMap extends Widget {
     } catch (error) {
       includeDisclaimer = true;
     }
-    if (includeDisclaimer && !Disclaimer.isAccepted()) new Disclaimer(disclaimerOptions);
+    if (includeDisclaimer && !DisclaimerModal.isAccepted()) new DisclaimerModal(disclaimerOptions);
 
     await view.when();
     loader.end();
@@ -334,7 +334,7 @@ export default class ShellApplicationMap extends Widget {
   //////////////////////////////////////
   contentBehind = true;
 
-  disclaimerOptions: DisclaimerOptions = {};
+  disclaimerOptions: DisclaimerModalOptions = {};
 
   footer!: esri.Widget;
 

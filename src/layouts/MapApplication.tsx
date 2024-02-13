@@ -7,7 +7,7 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
   /**
    * Disclaimer options.
    */
-  disclaimerOptions?: DisclaimerOptions;
+  disclaimerOptions?: DisclaimerModalOptions;
   /**
    * Widget with an action at the end (bottom) of the action bar.
    *
@@ -129,7 +129,7 @@ export interface AlertOptions {
 //////////////////////////////////////
 import type OAuth from '../support/OAuth';
 import type { LoaderOptions } from '../widgets/Loader';
-import type { DisclaimerOptions } from '../widgets/Disclaimer';
+import type { DisclaimerModalOptions } from '../modals/DisclaimerModal';
 import type { ViewControlOptions } from '../widgets/ViewControl2D';
 
 //////////////////////////////////////
@@ -144,7 +144,7 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
 import logoSvg from '../support/logo';
 import Loader from '../widgets/Loader';
-import Disclaimer from '../widgets/Disclaimer';
+import DisclaimerModal from '../modals/DisclaimerModal';
 import ViewControl2D from '../widgets/ViewControl2D';
 import basemapToggle from '../support/basemapToggle';
 import { subscribe } from 'pubsub-js';
@@ -228,7 +228,7 @@ export default class MapApplication extends Widget {
     } catch (error) {
       includeDisclaimer = true;
     }
-    if (includeDisclaimer && !Disclaimer.isAccepted()) new Disclaimer(disclaimerOptions);
+    if (includeDisclaimer && !DisclaimerModal.isAccepted()) new DisclaimerModal(disclaimerOptions);
 
     // subscribe to alerts
     subscribe(TOPIC, (message: string, options: AlertOptions): void => {
@@ -245,7 +245,7 @@ export default class MapApplication extends Widget {
   //////////////////////////////////////
   // Properties
   //////////////////////////////////////
-  disclaimerOptions: DisclaimerOptions = {};
+  disclaimerOptions: DisclaimerModalOptions = {};
 
   endWidgetInfo?: WidgetInfo;
 
