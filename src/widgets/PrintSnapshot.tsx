@@ -3,7 +3,7 @@
 //////////////////////////////////////
 import esri = __esri;
 
-import type PhotoModal from './PhotoModal';
+import type PhotoModal from './../modals/PhotoModal';
 
 /**
  * Internal types.
@@ -79,7 +79,7 @@ export default class PrintSnapshot extends Widget {
     if (mode === 'snapshot') this._state = 'snapshot';
 
     if (mode === 'default' || mode === 'snapshot') {
-      this._photoModal = new (await import('./PhotoModal')).default();
+      this._photoModal = new (await import('./../modals/PhotoModal')).default();
     }
 
     if (mode === 'default' || mode === 'print') {
