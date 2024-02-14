@@ -31,23 +31,23 @@ export interface LoaderOptions {
 import { subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
-import logoSvg, { coffeePath, heartPath } from '../support/logo';
+import logoSvg, { coffeePath, heartPath } from '../../support/logo';
 
 //////////////////////////////////////
 // Constants
 //////////////////////////////////////
 const CSS = {
-  loader: 'cov-widgets--loader',
-  loaderTitle: 'cov-widgets--loader_title',
-  loaderInfo: 'cov-widgets--loader_info',
-  loaderHeart: 'cov-widgets--loader_heart',
-  loaderCoffee: 'cov-widgets--loader_coffee',
+  loader: 'cov-layouts-support--loader',
+  loaderTitle: 'cov-layouts-support--loader_title',
+  loaderInfo: 'cov-layouts-support--loader_info',
+  loaderHeart: 'cov-layouts-support--loader_heart',
+  loaderCoffee: 'cov-layouts-support--loader_coffee',
 };
 
 /**
  * Application loader widget.
  */
-@subclass('cov.widgets.Loader')
+@subclass('cov.layouts.support.Loader')
 export default class Loader extends Widget {
   //////////////////////////////////////
   // Lifecycle
@@ -78,10 +78,10 @@ export default class Loader extends Widget {
     const { container } = this;
     setTimeout((): void => {
       container.style.opacity = '0';
-    }, 3000);
+    }, 2500);
     setTimeout((): void => {
       this.destroy();
-    }, 4000);
+    }, 3500);
   }
 
   //////////////////////////////////////

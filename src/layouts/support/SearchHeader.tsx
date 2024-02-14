@@ -3,6 +3,13 @@
 //////////////////////////////////////
 import esri = __esri;
 
+export interface SearchHeaderConstructorProperties extends esri.WidgetProperties {
+  /**
+   * Search view model to back Search component.
+   */
+  searchViewModel: esri.SearchViewModel;
+}
+
 //////////////////////////////////////
 // Modules
 //////////////////////////////////////
@@ -26,19 +33,12 @@ const STYLES = {
 /**
  * Header with 100% width search for use in apps primarily consumed on mobile.
  */
-@subclass('cov.layouts.SearchHeader')
-export default class Header extends Widget {
+@subclass('cov.layouts.support.SearchHeader')
+export default class SearchHeader extends Widget {
   //////////////////////////////////////
   // Lifecycle
   //////////////////////////////////////
-  constructor(
-    properties: esri.WidgetProperties & {
-      /**
-       * Search view model to back Search component.
-       */
-      searchViewModel: esri.SearchViewModel;
-    },
-  ) {
+  constructor(properties: SearchHeaderConstructorProperties) {
     super(properties);
   }
 

@@ -128,9 +128,9 @@ export interface AlertOptions {
 // Types
 //////////////////////////////////////
 import type OAuth from '../support/OAuth';
-import type { LoaderOptions } from '../widgets/Loader';
+import type { LoaderOptions } from './support/Loader';
 import type { DisclaimerModalOptions } from '../modals/DisclaimerModal';
-import type { ViewControlOptions } from '../widgets/ViewControl2D';
+import type { ViewControlOptions } from './support/ViewControl2D';
 
 //////////////////////////////////////
 // Modules
@@ -143,10 +143,10 @@ import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
 import logoSvg from '../support/logo';
-import Loader from '../widgets/Loader';
+import Loader from './support/Loader';
 import DisclaimerModal from '../modals/DisclaimerModal';
-import ViewControl2D from '../widgets/ViewControl2D';
-import basemapToggle from '../support/basemapToggle';
+import ViewControl2D from './support/ViewControl2D';
+import basemapToggle from './support/basemapToggle';
 import { subscribe } from 'pubsub-js';
 
 //////////////////////////////////////

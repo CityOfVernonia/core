@@ -2,21 +2,13 @@
 @import "./../css/arcgis";
 @import "./../css/base";
 @import "./../css/esriOverrides";
-@import "./../css/headerBackground";
-@import "./../widgets/Loader";
-@import "./../widgets/ViewControl2D";
+@import "./css/layoutMixins";
+@import "./support/Loader";
+@import "./support/ViewControl2D";
 
 // header
 .cov-layouts--map-application_header {
-  display: flex;
-  flex-flow: row;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 38px;
-  padding: 0.5rem 1rem;
-  background: url(#{$header-background}), center, center,
-    linear-gradient(90deg, rgba($brand-dark, 1) 0%, rgba($brand, 1) 100%);
-  color: white;
+  @include application-header;
 }
 
 .cov-layouts--map-application_header--content {
@@ -26,60 +18,7 @@
   gap: 1rem;
   user-select: none;
 
-  .esri-search {
-    width: 30vw;
-    min-width: 260px;
-    max-width: 720px;
-    transition: width var(--calcite-animation-timing);
-    background: rgba($brand, 0.6);
-    border-radius: var(--calcite-border-radius);
-    z-index: 5;
-
-    * {
-      outline: none !important;
-    }
-
-    .esri-widget--button {
-      width: 38px;
-    }
-    .esri-widget--button,
-    .esri-input {
-      height: 38px;
-      background-color: transparent;
-      color: white;
-    }
-    .esri-search__input {
-      &::-webkit-input-placeholder,
-      &::placeholder {
-        color: rgba(white, 0.7);
-      }
-    }
-    .esri-search__sources-button {
-      border: none;
-    }
-    .esri-search__submit-button {
-      border: none;
-    }
-    .esri-menu {
-      margin-top: 4px;
-    }
-    .esri-menu__list-item--active,
-    .esri-menu__list-item--active:hover,
-    .esri-menu__list-item--active:focus {
-      background-color: lighten($brand, 40%);
-      border-left-color: $brand;
-    }
-
-    .esri-menu__list-item--focus,
-    .esri-menu__list-item:hover,
-    .esri-menu__list-item:focus {
-      background-color: lighten($brand, 40%);
-    }
-
-    .esri-search__source.esri-menu__list-item:active {
-      background-color: lighten($brand, 30%);
-    }
-  }
+  @include header-search(30vw, 260px, 720px);
 }
 
 .cov-layouts--map-application_header--title {

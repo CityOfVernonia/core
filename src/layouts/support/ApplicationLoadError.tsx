@@ -42,7 +42,7 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
 /**
  * Application load error widget.
  */
-@subclass('cov.layouts.ApplicationLoadError')
+@subclass('cov.layouts.support.ApplicationLoadError')
 export default class ApplicationLoadError extends Widget {
   //////////////////////////////////////
   // Lifecycle

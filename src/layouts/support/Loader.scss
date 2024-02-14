@@ -1,4 +1,4 @@
-.cov-widgets--loader {
+.cov-layouts-support--loader {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -28,7 +28,7 @@
   }
 }
 
-.cov-widgets--loader_title {
+.cov-layouts-support--loader_title {
   position: absolute;
   top: 10vw;
   left: 20vw;
@@ -40,7 +40,7 @@
   }
 }
 
-.cov-widgets--loader_info {
+.cov-layouts-support--loader_info {
   position: absolute;
   right: 2rem;
   bottom: 2rem;
@@ -55,17 +55,17 @@
   }
 }
 
-.cov-widgets--loader_heart,
-.cov-widgets--loader_coffee {
+.cov-layouts-support--loader_heart,
+.cov-layouts-support--loader_coffee {
   width: var(--calcite-font-size--1);
   height: var(--calcite-font-size--1);
   margin: 0 0.35rem;
 }
 
-.cov-widgets--loader_heart {
+.cov-layouts-support--loader_heart {
   color: #d9534f;
 }
 
-.cov-widgets--loader_coffee {
+.cov-layouts-support--loader_coffee {
   color: #be9969;
 }

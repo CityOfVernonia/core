@@ -76,6 +76,10 @@ const load = async (): Promise<void> => {
     title: '@vernonia/core',
     searchViewModel: new SearchViewModel(),
     view,
+    viewControlOptions: {
+      includeFullscreen: true,
+      includeLocate: true,
+    },
     widgetInfos: [
       {
         icon: 'measure',

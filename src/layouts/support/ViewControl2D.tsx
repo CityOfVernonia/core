@@ -46,14 +46,14 @@ import ZoomViewModel from '@arcgis/core/widgets/Zoom/ZoomViewModel';
 // Constants
 //////////////////////////////////////
 const CSS = {
-  base: 'cov-widgets--view-control-2d',
-  pads: 'cov-widgets--view-control-2d_pads',
+  base: 'cov-layouts-support--view-control-2d',
+  pads: 'cov-layouts-support--view-control-2d_pads',
 };
 
 /**
  * View control widget for map view.
  */
-@subclass('cov.widgets.ViewControl2D')
+@subclass('cov.layouts.support.ViewControl2D')
 export default class ViewControl2D extends Widget {
   //////////////////////////////////////
   // Lifecycle
