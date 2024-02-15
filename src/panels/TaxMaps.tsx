@@ -42,10 +42,10 @@ const CSS = {
 let KEY = 0;
 
 /**
- * A widget for displaying tax map image media layers.
+ * Panel component for displaying tax map image media layers.
  */
-@subclass('cov.widgets.TaxMaps')
-export default class TaxMaps extends Widget {
+@subclass('cov.panels.TaxMaps')
+class TaxMaps extends Widget {
   //////////////////////////////////////
   // Lifecycle
   //////////////////////////////////////
@@ -394,3 +394,5 @@ class TaxMapPopup extends Widget {
     );
   }
 }
+
+export default TaxMaps;

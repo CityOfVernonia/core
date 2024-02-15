@@ -36,7 +36,7 @@ const basemapToggle = async (
     innerHTML: 'Toggle basemap',
   });
 
-  document.body.append(tooltip);
+  container.append(tooltip);
 };
 
 export default basemapToggle;

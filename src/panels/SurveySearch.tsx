@@ -15,11 +15,11 @@ interface SurveyInfo {
 /**
  * Survey Search widget properties.
  */
-export interface SurveySearchProperties extends esri.WidgetProperties {
+export interface SurveySearchConstructorProperties extends esri.WidgetProperties {
   /**
-   * Surveys layer.
+   * Surveys GeoJSONLayer URL.
    */
-  surveys: esri.FeatureLayer | esri.GeoJSONLayer;
+  surveysGeoJSONUrl: string;
   /**
    * Tax lots layer.
    */
@@ -39,14 +39,15 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
 import { geodesicBuffer } from '@arcgis/core/geometry/geometryEngine';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
+import GeoJSONLayer from '@arcgis/core/layers/GeoJSONLayer';
 import { SimpleFillSymbol } from '@arcgis/core/symbols';
 
 //////////////////////////////////////
 // Constants
 //////////////////////////////////////
 const CSS = {
-  content: 'cov-widgets--survey-search_content',
-  contentSearching: 'cov-widgets--survey-search_content-searching',
+  content: 'cov-panels--survey-search_content',
+  contentSearching: 'cov-panels--survey-search_content-searching',
   table: 'esri-widget__table',
 };
 
@@ -55,12 +56,12 @@ let KEY = 0;
 /**
  * Search surveys related to a tax lot.
  */
-@subclass('cov.widgets.SurveySearch')
-export default class SurveySearch extends Widget {
+@subclass('cov.panels.SurveySearch')
+class SurveySearch extends Widget {
   //////////////////////////////////////
   // Lifecycle
   //////////////////////////////////////
-  constructor(properties: SurveySearchProperties) {
+  constructor(properties: SurveySearchConstructorProperties) {
     super(properties);
   }
 
@@ -72,20 +73,24 @@ export default class SurveySearch extends Widget {
     // add graphics layer
     map.add(_graphics);
     // enable search when tax lot is selected feature of popup
-    this.addHandles(
+    this.addHandles([
       this.watch(['_viewState', '_visible', '_selectedTaxLot'], (): void => {
         const { taxLots, _viewState, _visible, _selectedTaxLot } = this;
         if (_viewState === 'results' || _viewState === 'searching' || _viewState === 'info' || _viewState === 'error')
           return;
         this._viewState = _visible && _selectedTaxLot && _selectedTaxLot.layer === taxLots ? 'selected' : 'ready';
       }),
-    );
+      this.watch('visible', (visible: boolean): void => {
+        if (!visible) this._clear();
+      }),
+    ]);
   }
 
   //////////////////////////////////////
   // Properties
   //////////////////////////////////////
-  surveys!: esri.FeatureLayer | esri.GeoJSONLayer;
+
+  surveysGeoJSONUrl!: string;
 
   taxLots!: esri.FeatureLayer;
 
@@ -118,6 +123,8 @@ export default class SurveySearch extends Widget {
     },
   });
 
+  _surveys!: esri.GeoJSONLayer;
+
   private _surveyInfos: esri.Collection<SurveyInfo> = new Collection();
 
   @property()
@@ -138,13 +145,6 @@ export default class SurveySearch extends Widget {
   private _visible!: boolean;
 
   //////////////////////////////////////
-  // Public methods
-  //////////////////////////////////////
-  onHide(): void {
-    this._clear();
-  }
-
-  //////////////////////////////////////
   // Private methods
   //////////////////////////////////////
   private _clear(): void {
@@ -161,9 +161,10 @@ export default class SurveySearch extends Widget {
       view: { spatialReference },
       taxLots,
       taxLots: { objectIdField },
-      surveys,
+      surveysGeoJSONUrl,
       _selectedTaxLot,
       _selectedTaxLotSymbol,
+      _surveys,
       _surveyInfos,
       _resultSymbol,
       _graphics,
@@ -171,6 +172,12 @@ export default class SurveySearch extends Widget {
     } = this;
     _graphics.removeAll();
     this._viewState = 'searching';
+
+    if (!_surveys) {
+      this._surveys = new GeoJSONLayer({ url: surveysGeoJSONUrl });
+      this._search();
+      return;
+    }
 
     const featureQuery = await (taxLots.queryFeatures({
       where: `${objectIdField} = ${_selectedTaxLot.attributes[objectIdField]}`,
@@ -189,7 +196,7 @@ export default class SurveySearch extends Widget {
       return;
     }
     // query surveys
-    const featuresQuery = await (surveys.queryFeatures({
+    const featuresQuery = await (_surveys.queryFeatures({
       geometry: geodesicBuffer(feature.geometry, 10, 'feet') as esri.Polygon,
       outFields: ['*'],
       returnGeometry: true,
@@ -404,7 +411,7 @@ export default class SurveySearch extends Widget {
             .toArray()}
         </calcite-list>
         <calcite-button
-          appearance="transparent"
+          appearance="outline-fill"
           hidden={_viewState !== 'results'}
           slot={_viewState === 'results' ? 'footer' : null}
           width="full"
@@ -422,7 +429,7 @@ export default class SurveySearch extends Widget {
           text="Previous"
           onclick={this._selectNextPrevious.bind(this, 'previous')}
         >
-          <calcite-tooltip label="Previous" placement="bottom" slot="tooltip">
+          <calcite-tooltip close-on-click="" label="Previous" placement="bottom" slot="tooltip">
             Previous
           </calcite-tooltip>
         </calcite-action>
@@ -434,13 +441,13 @@ export default class SurveySearch extends Widget {
           text="Next"
           onclick={this._selectNextPrevious.bind(this, 'next')}
         >
-          <calcite-tooltip label="Next" placement="bottom" slot="tooltip">
+          <calcite-tooltip close-on-click="" label="Next" placement="bottom" slot="tooltip">
             Next
           </calcite-tooltip>
         </calcite-action>
         {_surveyInfoIndex !== null ? _surveyInfos.getItemAt(_surveyInfoIndex).infoTable : null}
         <calcite-button
-          appearance="transparent"
+          appearance="outline-fill"
           hidden={_viewState !== 'info'}
           slot={_viewState === 'info' ? 'footer' : null}
           width="full"
@@ -466,3 +473,5 @@ export default class SurveySearch extends Widget {
     );
   }
 }
+
+export default SurveySearch;

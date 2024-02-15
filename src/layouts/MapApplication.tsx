@@ -15,7 +15,16 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
    */
   endWidgetInfo?: WidgetInfo;
   /**
+   * Custom header widget.
+   *
+   * Must return a `div` VNode, and widget `container` must not be set.
+   *
+   * Set to `false` for no header.
+   */
+  header?: esri.Widget | false;
+  /**
    * Custom footer widget.
+   *
    * Must return a `div` VNode, and widget `container` must not be set.
    */
   footer?: esri.Widget;
@@ -41,6 +50,14 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
    */
   searchViewModel?: esri.SearchViewModel;
   /**
+   * Custom shell panel widget.
+   *
+   * Must return a `calcite-shell-panel` VNode, and widget `container` must not be set.
+   *
+   * Supersedes `widgetInfos`.
+   */
+  shellPanel?: esri.Widget;
+  /**
    * Title of the application.
    * @default Vernonia
    */
@@ -56,7 +73,7 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
   /**
    * Widgets to add to the shell panel with an action bar action.
    */
-  widgetInfos: WidgetInfo[] | esri.Collection<WidgetInfo>;
+  widgetInfos?: WidgetInfo[] | esri.Collection<WidgetInfo>;
 }
 
 /**
@@ -127,9 +144,9 @@ export interface AlertOptions {
 //////////////////////////////////////
 // Types
 //////////////////////////////////////
-import type OAuth from '../support/OAuth';
+import type OAuth from './../support/OAuth';
 import type { LoaderOptions } from './support/Loader';
-import type { DisclaimerModalOptions } from '../modals/DisclaimerModal';
+import type { DisclaimerModalOptions } from './../modals/DisclaimerModal';
 import type { ViewControlOptions } from './support/ViewControl2D';
 
 //////////////////////////////////////
@@ -142,9 +159,9 @@ import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
-import logoSvg from '../support/logo';
+import logoSvg from './../support/logo';
 import Loader from './support/Loader';
-import DisclaimerModal from '../modals/DisclaimerModal';
+import DisclaimerModal from './../modals/DisclaimerModal';
 import ViewControl2D from './support/ViewControl2D';
 import basemapToggle from './support/basemapToggle';
 import { subscribe } from 'pubsub-js';
@@ -200,6 +217,7 @@ export default class MapApplication extends Widget {
       loaderOptions,
       nextBasemap,
       title,
+      shellPanel,
       view,
       view: { ui },
       viewControlOptions,
@@ -219,8 +237,10 @@ export default class MapApplication extends Widget {
     if (nextBasemap) basemapToggle(view, nextBasemap, 'bottom-right');
 
     // add widgets
-    this._widgets(widgetInfos);
-    if (endWidgetInfo) this._widgets([endWidgetInfo], true);
+    if (widgetInfos && !shellPanel) {
+      this._widgets(widgetInfos);
+      if (endWidgetInfo) this._widgets([endWidgetInfo], true);
+    }
 
     // disclaimer
     try {
@@ -249,6 +269,8 @@ export default class MapApplication extends Widget {
 
   endWidgetInfo?: WidgetInfo;
 
+  header?: esri.Widget | false;
+
   footer?: esri.Widget;
 
   includeDisclaimer = true;
@@ -261,6 +283,8 @@ export default class MapApplication extends Widget {
 
   searchViewModel?: esri.SearchViewModel;
 
+  shellPanel?: esri.Widget;
+
   title = 'Vernonia';
 
   view!: esri.MapView;
@@ -268,7 +292,7 @@ export default class MapApplication extends Widget {
   viewControlOptions: ViewControlOptions = {};
 
   @property({ type: Collection })
-  widgetInfos!: WidgetInfo[] | esri.Collection<WidgetInfo>;
+  widgetInfos?: WidgetInfo[] | esri.Collection<WidgetInfo>;
 
   //////////////////////////////////////
   // Protected properties
@@ -495,31 +519,35 @@ export default class MapApplication extends Widget {
   // Render and rendering methods
   //////////////////////////////////////
   render(): tsx.JSX.Element {
-    const { title, _alerts, _actionBarActionGroups, _shellPanelWidgets } = this;
+    const { header, shellPanel, _alerts, _actionBarActionGroups, _shellPanelWidgets } = this;
     return (
       <calcite-shell class={CSS.base} content-behind="">
         {/* header */}
-        <div class={CSS.header} slot="header">
-          <div class={CSS.headerTitle}>
-            <img src={logoSvg}></img>
-            <div>{title}</div>
-          </div>
-          <div class={CSS.headerControls}>
-            <div afterCreate={this._searchAfterCreate.bind(this)}></div>
-            <div afterCreate={this._userControlAfterCreate.bind(this)}></div>
-          </div>
-        </div>
+        {header ? (
+          <div slot="header" afterCreate={this._headerAfterCreate.bind(this)}></div>
+        ) : header === false ? null : (
+          this._defaultHeader()
+        )}
 
         {/* view */}
         <div class={CSS.view} afterCreate={this._viewAfterCreate.bind(this)}></div>
 
         {/* shell panel */}
-        <calcite-shell-panel display-mode="float" position="end" slot="panel-end">
-          <calcite-action-bar slot="action-bar" afterCreate={this._actionBarAfterCreate.bind(this)}>
-            {_actionBarActionGroups.toArray()}
-          </calcite-action-bar>
-          {_shellPanelWidgets.toArray()}
-        </calcite-shell-panel>
+        {shellPanel ? (
+          <calcite-shell-panel
+            display-mode="float"
+            position="end"
+            slot="panel-end"
+            afterCreate={this._afterShellPanelCreate.bind(this)}
+          ></calcite-shell-panel>
+        ) : _shellPanelWidgets.length ? (
+          <calcite-shell-panel display-mode="float" position="end" slot="panel-end">
+            <calcite-action-bar slot="action-bar" afterCreate={this._actionBarAfterCreate.bind(this)}>
+              {_actionBarActionGroups.toArray()}
+            </calcite-action-bar>
+            {_shellPanelWidgets.toArray()}
+          </calcite-shell-panel>
+        ) : null}
 
         {/* footer */}
         <div slot="footer" afterCreate={this._footerAfterCreate.bind(this)}></div>
@@ -553,6 +581,35 @@ export default class MapApplication extends Widget {
   }
 
   /**
+   * Default application header.
+   * @returns tsx.JSX.Element
+   */
+  private _defaultHeader(): tsx.JSX.Element {
+    const { title } = this;
+    return (
+      <div class={CSS.header} slot="header">
+        <div class={CSS.headerTitle}>
+          <img src={logoSvg}></img>
+          <div>{title}</div>
+        </div>
+        <div class={CSS.headerControls}>
+          <div afterCreate={this._searchAfterCreate.bind(this)}></div>
+          <div afterCreate={this._userControlAfterCreate.bind(this)}></div>
+        </div>
+      </div>
+    );
+  }
+
+  /**
+   * Add header widget.
+   * @param container HTMLDivElement
+   */
+  private _headerAfterCreate(container: HTMLDivElement): void {
+    const { header } = this;
+    if (header) header.container = container;
+  }
+
+  /**
    * Add footer widget.
    * @param container HTMLDivElement
    */
@@ -563,6 +620,21 @@ export default class MapApplication extends Widget {
     } else {
       container.remove();
     }
+  }
+
+  /**
+   * Add shell panel.
+   * @param container HTMLCalciteShellPanelElement
+   */
+  private _afterShellPanelCreate(container: HTMLCalciteShellPanelElement): void {
+    const { shellPanel } = this;
+    if (!shellPanel) return;
+    shellPanel.container = container;
+    // hacky - but it's a race to render
+    setTimeout((): void => {
+      const actionBar = container.querySelector('calcite-action-bar');
+      if (actionBar) this._actionBarAfterCreate(actionBar);
+    }, 0);
   }
 
   /**

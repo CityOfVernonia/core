@@ -8,6 +8,10 @@
 /////////////////////////////////////////
 /// import scss for dev or custom theming
 /////////////////////////////////////////
-@import "./../src/widgets/Layers.scss";
 @import "./../src/layouts/MapApplication.scss";
-@import "./../src/widgets/Measure.scss";
+
+@import "./../src/panels/LayersLegend.scss";
+@import "./../src/panels/Measure.scss";
+@import "./../src/panels/PrintSnapshot.scss";
+@import "./../src/panels/SurveySearch.scss";
+@import "./../src/panels/TaxLotBuffer.scss";

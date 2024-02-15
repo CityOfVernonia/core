@@ -156,14 +156,14 @@ import Color from '@arcgis/core/Color';
 // Constants
 //////////////////////////////////////
 const CSS = {
-  measureButtons: 'cov-widget--measure_measure-buttons',
-  notice: 'cov-widget--measure_notice',
-  options: 'cov-widget--measure_options',
-  profile: 'cov-widget--measure_profile',
-  profileOptions: 'cov-widget--measure_profile-options',
-  profileStatistics: 'cov-widget--measure_profile-statistics',
-  results: 'cov-widget--measure_results',
-  resultsRow: 'cov-widget--measure_results-row',
+  measureButtons: 'cov-panels--measure_measure-buttons',
+  notice: 'cov-panels--measure_notice',
+  options: 'cov-panels--measure_options',
+  profile: 'cov-panels--measure_profile',
+  profileOptions: 'cov-panels--measure_profile-options',
+  profileStatistics: 'cov-panels--measure_profile-statistics',
+  results: 'cov-panels--measure_results',
+  resultsRow: 'cov-panels--measure_results-row',
 };
 
 const CURSOR_EVENT_KEY = 'cursor-events';
@@ -192,10 +192,10 @@ export const setMeasureColors = (primary: [number, number, number], secondary: [
 };
 
 /**
- * Widget what for measuring in a map.
+ * Panel component for measuring in a map.
  */
-@subclass('cov.widgets.Measure')
-export default class Measure extends Widget {
+@subclass('cov.panels.Measure')
+class Measure extends Widget {
   //////////////////////////////////////
   // Lifecycle
   //////////////////////////////////////
@@ -1491,9 +1491,9 @@ export default class Measure extends Widget {
 }
 
 /**
- * Widget for changing units.
+ * Link triggered unit selecting dropdown.
  */
-@subclass('cov.widgets.Measure.UnitsDropdown')
+@subclass('cov.panels.Measure.UnitsDropdown')
 export class UnitsDropdown extends Widget {
   constructor(properties: UnitsDropdownConstructorProperties) {
     super(properties);
@@ -1566,3 +1566,5 @@ export class UnitsDropdown extends Widget {
     );
   }
 }
+
+export default Measure;

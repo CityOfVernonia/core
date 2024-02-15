@@ -3,7 +3,7 @@
 //////////////////////////////////////
 import esri = __esri;
 
-export interface TaxLotBufferProperties extends esri.WidgetProperties {
+export interface TaxLotBufferConstructorProperties extends esri.WidgetProperties {
   /**
    * Tax lot layer.
    */
@@ -30,18 +30,18 @@ import { unparse } from 'papaparse';
 // Constants
 //////////////////////////////////////
 const CSS = {
-  content: 'cov-widgets--tax-lot-buffer_content',
+  content: 'cov-panels--tax-lot-buffer_content',
 };
 
 /**
  * A widget for buffering a tax lot and downloading results.
  */
-@subclass('cov.widgets.TaxLotBuffer')
-export default class TaxLotBuffer extends Widget {
+@subclass('cov.panels.TaxLotBuffer')
+class TaxLotBuffer extends Widget {
   //////////////////////////////////////
   // Lifecycle
   //////////////////////////////////////
-  constructor(properties: TaxLotBufferProperties) {
+  constructor(properties: TaxLotBufferConstructorProperties) {
     super(properties);
   }
 
@@ -53,13 +53,16 @@ export default class TaxLotBuffer extends Widget {
 
     map.add(_graphics);
 
-    this.addHandles(
+    this.addHandles([
       this.watch(['_viewState', '_visible', '_selectedFeature'], (): void => {
         const { _viewState, _visible, _selectedFeature } = this;
         if (_viewState === 'buffered') return;
         this._viewState = _visible && _selectedFeature ? 'selected' : 'ready';
       }),
-    );
+      this.watch('visible', (visible: boolean): void => {
+        if (!visible) this._clear();
+      }),
+    ]);
   }
 
   //////////////////////////////////////
@@ -121,22 +124,11 @@ export default class TaxLotBuffer extends Widget {
   private _visible!: boolean;
 
   //////////////////////////////////////
-  // Public methods
-  //////////////////////////////////////
-  onHide(): void {
-    this._clear();
-  }
-
-  //////////////////////////////////////
   // Private methods
   //////////////////////////////////////
   private _clear(): void {
-    const {
-      view: { popup },
-      _graphics,
-    } = this;
-    if (popup.clear && typeof popup.clear === 'function') popup.clear();
-    popup.close();
+    const { view, _graphics } = this;
+    view.closePopup();
     this._viewState = 'ready';
     _graphics.removeAll();
   }
@@ -330,3 +322,5 @@ export default class TaxLotBuffer extends Widget {
     );
   }
 }
+
+export default TaxLotBuffer;

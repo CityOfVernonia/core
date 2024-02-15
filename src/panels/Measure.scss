@@ -1,4 +1,4 @@
-.cov-widget--measure_measure-buttons {
+.cov-panels--measure_measure-buttons {
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
@@ -7,21 +7,21 @@
   border-bottom: 1px solid var(--calcite-color-border-3);
 }
 
-.cov-widget--measure_notice {
+.cov-panels--measure_notice {
   margin: 0.75rem;
 }
 
-.cov-widget--measure_options {
+.cov-panels--measure_options {
   padding: 1rem;
 }
 
-.cov-widget--measure_profile {
+.cov-panels--measure_profile {
   .esri-elevation-profile {
     padding: 0;
   }
 }
 
-.cov-widget--measure_profile-options {
+.cov-panels--measure_profile-options {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -29,7 +29,7 @@
   padding: 0.5rem;
 }
 
-.cov-widget--measure_profile-statistics {
+.cov-panels--measure_profile-statistics {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -45,7 +45,7 @@
   }
 }
 
-.cov-widget--measure_results {
+.cov-panels--measure_results {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -64,7 +64,7 @@
   }
 }
 
-.cov-widget--measure_results-row {
+.cov-panels--measure_results-row {
   display: flex;
   flex-direction: row;
   align-items: center;

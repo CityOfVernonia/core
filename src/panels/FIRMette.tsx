@@ -8,7 +8,7 @@ interface IResponse {
 }
 
 /**
- * FIRMette widget constructor properties.
+ * FIRMette constructor properties.
  */
 export interface FIRMetteProperties extends esri.WidgetProperties {
   /**
@@ -38,10 +38,10 @@ const STYLE = {
 const URL = 'https://msc.fema.gov/arcgis/rest/services/NFHL_Print/AGOLPrintB/GPServer/Print%20FIRM%20or%20FIRMette/';
 
 /**
- * A widget for generating FIRMette PDFs.
+ * Panel component for generating FEMA FIRMette PDFs.
  */
-@subclass('cov.widgets.FIRMette')
-export default class FIRMette extends Widget {
+@subclass('cov.panels.FIRMette')
+class FIRMette extends Widget {
   //////////////////////////////////////
   // Lifecycle
   //////////////////////////////////////
@@ -265,7 +265,7 @@ export default class FIRMette extends Widget {
         ></calcite-loader>
 
         {/* printed state */}
-        <calcite-notice hidden={_viewState !== 'printed'} icon="check" kind="success" style={STYLE.notice} open="">
+        <calcite-notice hidden={_viewState !== 'printed'} icon="check" style={STYLE.notice} open="">
           <div slot="message">Your FIRMette is ready.</div>
         </calcite-notice>
         <calcite-button
@@ -311,3 +311,5 @@ export default class FIRMette extends Widget {
     );
   }
 }
+
+export default FIRMette;

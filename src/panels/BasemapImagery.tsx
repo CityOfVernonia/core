@@ -102,8 +102,8 @@ let KEY = 0;
 /**
  * A widget for changing the imagery of a hybrid basemap.
  */
-@subclass('BasemapImagery')
-export default class BasemapImagery extends Widget {
+@subclass('cov.panels.BasemapImagery')
+class BasemapImagery extends Widget {
   //////////////////////////////////////
   // Lifecycle
   //////////////////////////////////////
@@ -136,13 +136,13 @@ export default class BasemapImagery extends Widget {
             layout="inline"
             style={index === imageryInfos.length - 1 ? '--calcite-label-margin-bottom: 0;' : null}
           >
-            <calcite-radio-button checked={title === 'Default'} value={title}></calcite-radio-button>
+            <calcite-radio-button checked={index === 0} value={title}></calcite-radio-button>
             {title}
           </calcite-label>,
         );
       } else {
         _controls.add(
-          <calcite-option key={KEY++} checked={title === 'Default'} value={title}>
+          <calcite-option key={KEY++} checked={index === 0} value={title}>
             {title}
           </calcite-option>,
         );
@@ -262,3 +262,5 @@ export default class BasemapImagery extends Widget {
     );
   }
 }
+
+export default BasemapImagery;
