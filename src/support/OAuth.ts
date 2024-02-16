@@ -3,6 +3,25 @@
 //////////////////////////////////////
 import esri = __esri;
 
+/**
+ * OAuth constructor properties.
+ */
+export interface OAuthProperties {
+  /**
+   * OAuthInfo instance to perform authentication against.
+   */
+  oAuthInfo: esri.OAuthInfo;
+  /**
+   * Portal instance to sign into.
+   */
+  portal: esri.Portal;
+  /**
+   * Alternate sign in url.
+   * Overrides default `${portal.url}/sharing/rest`.
+   */
+  signInUrl?: string;
+}
+
 //////////////////////////////////////
 // Modules
 //////////////////////////////////////
@@ -18,26 +37,12 @@ const LS_CRED = 'jsapiauthcred';
 /**
  * Module for handling auth.
  */
-@subclass('OAuth')
-export default class OAuth extends Accessor {
+@subclass('cov.support.OAuth')
+class OAuth extends Accessor {
   //////////////////////////////////////
   // Lifecycle
   //////////////////////////////////////
-  constructor(properties: {
-    /**
-     * OAuthInfo instance to perform authentication against.
-     */
-    oAuthInfo: esri.OAuthInfo;
-    /**
-     * Portal instance to sign into.
-     */
-    portal: esri.Portal;
-    /**
-     * Alternate sign in url.
-     * Overrides default `${portal.url}/sharing/rest`.
-     */
-    signInUrl?: string;
-  }) {
+  constructor(properties: OAuthProperties) {
     super(properties);
   }
 
@@ -53,21 +58,21 @@ export default class OAuth extends Accessor {
   //////////////////////////////////////
   // Variables
   //////////////////////////////////////
-  credential!: esri.Credential;
+  protected credential!: esri.Credential;
 
   @property({ aliasOf: 'user.fullName' })
-  fullName!: string;
+  protected fullName!: string;
 
   @property({ aliasOf: 'user.thumbnailUrl' })
-  thumbnailUrl!: string;
+  protected thumbnailUrl!: string;
 
   @property({ aliasOf: 'portal.user' })
-  user!: esri.PortalUser;
+  protected user!: esri.PortalUser;
 
   @property({ aliasOf: 'user.username' })
-  username!: string;
+  protected username!: string;
 
-  signedIn = false;
+  protected signedIn = false;
 
   //////////////////////////////////////
   // Public methods
@@ -194,3 +199,5 @@ export default class OAuth extends Accessor {
     });
   }
 }
+
+export default OAuth;
