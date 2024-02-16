@@ -49,17 +49,19 @@ async function assets() {
     console.log(chalk.red.bold('@esri/calcite-ui-icons must be installed'));
     return;
   }
+  let icons = 0;
   const files = await fs.readdir(iconSrc);
   files.forEach(async (file) => {
     if (file.includes('.json')) {
       const destFile = `${iconDest}/${file}`;
       const exists = await fs.exists(destFile);
       if (!exists) {
+        icons++;
         await fs.copyFile(`${iconSrc}/${file}`, destFile);
       }
     }
   });
-  console.log(chalk.green('@esri/calcite-ui-icons very up-to-date'));
+  console.log(chalk.green(`@esri/calcite-ui-icons very up-to-date with ${icons} added`));
 }
 
 assets();

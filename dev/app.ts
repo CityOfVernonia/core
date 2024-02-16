@@ -15,14 +15,14 @@ import Color from '@arcgis/core/Color';
 
 import MapApplication from './../src/layouts/MapApplication';
 
-import BasemapImagery from './../src/panels/BasemapImagery';
-import FIRMette from './../src/panels/FIRMette';
-import LayersLegend from './../src/panels/LayersLegend';
-import Measure from './../src/panels/Measure';
-import PrintSnapshot from './../src/panels/PrintSnapshot';
-import SurveySearch from './../src/panels/SurveySearch';
-import TaxLotBuffer from './../src/panels/TaxLotBuffer';
-import TaxMaps from './../src/panels/TaxMaps';
+import BasemapImagery from './../src/components/panels/BasemapImagery';
+import FIRMette from './../src/components/panels/FIRMette';
+import LayersLegend from './../src/components/panels/LayersLegend';
+import Measure from './../src/components/panels/Measure';
+import PrintSnapshot from './../src/components/panels/PrintSnapshot';
+import SurveySearch from './../src/components/panels/SurveySearch';
+import TaxLotBuffer from './../src/components/panels/TaxLotBuffer';
+import TaxMaps from './../src/components/panels/TaxMaps';
 
 esriConfig.portalUrl = 'https://gis.vernonia-or.gov/portal';
 esriConfig.assetsPath = './arcgis';
@@ -88,17 +88,9 @@ const load = async (): Promise<void> => {
     nextBasemap: hybridBasemap,
     title: '@vernonia/core',
     searchViewModel: new SearchViewModel(),
-    view,
-    viewControlOptions: {
-      includeFullscreen: true,
-      includeLocate: true,
-    },
-    widgetInfos: [
+    shellPanelComponentInfos: [
       {
-        icon: 'basemap',
-        text: 'Basemap Imagery',
-        type: 'panel',
-        widget: new BasemapImagery({
+        component: new BasemapImagery({
           control: 'radio',
           view,
           basemap: hybridBasemap,
@@ -121,52 +113,52 @@ const load = async (): Promise<void> => {
             },
           ],
         }),
+        icon: 'basemap',
+        text: 'Basemap Imagery',
+        type: 'panel',
       },
       {
+        component: new FIRMette({ view }),
         icon: 'map-pin',
         text: 'FIRMette',
         type: 'panel',
-        widget: new FIRMette({ view }),
       },
       {
+        component: new LayersLegend({ view }),
         icon: 'layers',
         text: 'Layers',
         type: 'panel',
-        widget: new LayersLegend({ view }),
       },
       {
+        component: new Measure({ view }),
         icon: 'measure',
         text: 'Measure',
         type: 'panel',
-        widget: new Measure({ view }),
       },
       {
+        component: new PrintSnapshot({ view }),
         icon: 'print',
         text: 'Print',
         type: 'panel',
-        widget: new PrintSnapshot({ view }),
       },
       {
-        icon: 'analysis',
-        text: 'Survey Search',
-        type: 'panel',
-        widget: new SurveySearch({
+        component: new SurveySearch({
           view,
           taxLots,
           surveysGeoJSONUrl: 'https://cityofvernonia.github.io/geospatial-data/record-surveys/surveys.geojson',
         }),
+        icon: 'analysis',
+        text: 'Survey Search',
+        type: 'panel',
       },
       {
+        component: new TaxLotBuffer({ view, layer: taxLots }),
         icon: 'territory-buffer-distance',
         text: 'Tax Lot Buffer',
         type: 'panel',
-        widget: new TaxLotBuffer({ view, layer: taxLots }),
       },
       {
-        icon: 'tile-layer',
-        text: 'Tax Maps',
-        type: 'panel',
-        widget: new TaxMaps({
+        component: new TaxMaps({
           view,
           layer: taxMaps,
           imageUrlTemplate: 'https://cityofvernonia.github.io/geospatial-data/tax-maps/files/jpg/{taxmap}.jpg',
@@ -174,8 +166,16 @@ const load = async (): Promise<void> => {
           fileAttributeField: 'taxmap',
           urlAttributeField: 'county_url',
         }),
+        icon: 'tile-layer',
+        text: 'Tax Maps',
+        type: 'panel',
       },
     ],
+    view,
+    viewControlOptions: {
+      includeFullscreen: true,
+      includeLocate: true,
+    },
   });
 };
 

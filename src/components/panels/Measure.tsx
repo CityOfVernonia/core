@@ -123,7 +123,7 @@ interface _MeasureState {
   profileGeometry?: esri.Polyline | null;
 }
 
-import type { AreaUnitInfo, ElevationUnitInfo, LatitudeLongitudeUnitInfo, LengthUnitInfo } from './../support/Units';
+import type { AreaUnitInfo, ElevationUnitInfo, LatitudeLongitudeUnitInfo, LengthUnitInfo } from './../../support/Units';
 
 //////////////////////////////////////
 // Modules
@@ -139,12 +139,12 @@ import GroupLayer from '@arcgis/core/layers/GroupLayer';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Graphic from '@arcgis/core/Graphic';
 // geometry
-import Units from './../support/Units';
+import Units from './../../support/Units';
 import { Point, Polyline } from '@arcgis/core/geometry';
 import * as coordinateFormatter from '@arcgis/core/geometry/coordinateFormatter';
 import { geodesicArea, geodesicLength, simplify } from '@arcgis/core/geometry/geometryEngine';
 import { webMercatorToGeographic } from '@arcgis/core/geometry/support/webMercatorUtils';
-import { midpoint, textAngle, queryFeatureGeometry } from '../support/geometry';
+import { midpoint, textAngle, queryFeatureGeometry } from './../../support/geometry';
 // symbols
 import { CIMSymbol, SimpleFillSymbol, SimpleMarkerSymbol, TextSymbol } from '@arcgis/core/symbols';
 // profile

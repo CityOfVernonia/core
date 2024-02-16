@@ -31,7 +31,7 @@ export interface LoaderOptions {
 import { subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
-import logoSvg, { coffeePath, heartPath } from '../../support/logo';
+import logoSvg, { coffeePath, heartPath } from './logo';
 
 //////////////////////////////////////
 // Constants

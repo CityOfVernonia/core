@@ -9,23 +9,23 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
    */
   disclaimerOptions?: DisclaimerModalOptions;
   /**
-   * Widget with an action at the end (bottom) of the action bar.
+   * Component with an action at the end (bottom) of the action bar.
    *
-   * Great place for an `About` modal widget...just saying.
+   * Great place for an `About` modal...just saying.
    */
-  endWidgetInfo?: WidgetInfo;
+  endShellPanelComponent?: ShellPanelComponentInfo;
   /**
-   * Custom header widget.
+   * Custom header component.
    *
-   * Must return a `div` VNode, and widget `container` must not be set.
+   * Must return a `div` VNode, and component `container` must not be set.
    *
    * Set to `false` for no header.
    */
   header?: esri.Widget | false;
   /**
-   * Custom footer widget.
+   * Custom footer component.
    *
-   * Must return a `div` VNode, and widget `container` must not be set.
+   * Must return a `div` VNode, and component `container` must not be set.
    */
   footer?: esri.Widget;
   /**
@@ -50,13 +50,17 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
    */
   searchViewModel?: esri.SearchViewModel;
   /**
-   * Custom shell panel widget.
+   * Custom shell panel component.
    *
-   * Must return a `calcite-shell-panel` VNode, and widget `container` must not be set.
+   * Must return a `calcite-shell-panel` VNode, with no attributes, and component `container` must not be set.
    *
-   * Supersedes `widgetInfos`.
+   * Supersedes `shellPanelComponentInfos`.
    */
   shellPanel?: esri.Widget;
+  /**
+   * Components to add to the shell panel with an action bar action.
+   */
+  shellPanelComponentInfos?: ShellPanelComponentInfo[] | esri.Collection<ShellPanelComponentInfo>;
   /**
    * Title of the application.
    * @default Vernonia
@@ -70,21 +74,17 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
    * View control options.
    */
   viewControlOptions?: ViewControlOptions;
-  /**
-   * Widgets to add to the shell panel with an action bar action.
-   */
-  widgetInfos?: WidgetInfo[] | esri.Collection<WidgetInfo>;
 }
 
 /**
- * Options to configure an action bar action and associated widget.
+ * Options to configure an action bar action and associated component.
  */
-export interface WidgetInfo {
+export interface ShellPanelComponentInfo {
+  component: esri.Widget;
   icon: string;
   groupEnd?: boolean;
   text: string;
   type: 'flow' | 'modal' | 'panel';
-  widget: esri.Widget;
 }
 
 /**
@@ -146,7 +146,7 @@ export interface AlertOptions {
 //////////////////////////////////////
 import type OAuth from './../support/OAuth';
 import type { LoaderOptions } from './support/Loader';
-import type { DisclaimerModalOptions } from './../modals/DisclaimerModal';
+import type { DisclaimerModalOptions } from './../components/modals/DisclaimerModal';
 import type { ViewControlOptions } from './support/ViewControl2D';
 
 //////////////////////////////////////
@@ -159,9 +159,9 @@ import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
-import logoSvg from './../support/logo';
+import logoSvg from './support/logo';
 import Loader from './support/Loader';
-import DisclaimerModal from './../modals/DisclaimerModal';
+import DisclaimerModal from './../components/modals/DisclaimerModal';
 import ViewControl2D from './support/ViewControl2D';
 import basemapToggle from './support/basemapToggle';
 import { subscribe } from 'pubsub-js';
@@ -213,15 +213,15 @@ export default class MapApplication extends Widget {
   async postInitialize(): Promise<void> {
     const {
       disclaimerOptions,
-      endWidgetInfo,
+      endShellPanelComponent,
       loaderOptions,
       nextBasemap,
       title,
       shellPanel,
+      shellPanelComponentInfos,
       view,
       view: { ui },
       viewControlOptions,
-      widgetInfos,
     } = this;
 
     let { includeDisclaimer } = this;
@@ -236,10 +236,10 @@ export default class MapApplication extends Widget {
     // basemap toggle
     if (nextBasemap) basemapToggle(view, nextBasemap, 'bottom-right');
 
-    // add widgets
-    if (widgetInfos && !shellPanel) {
-      this._widgets(widgetInfos);
-      if (endWidgetInfo) this._widgets([endWidgetInfo], true);
+    // add shell panel components
+    if (shellPanelComponentInfos && !shellPanel) {
+      this._addShellPanelComponents(shellPanelComponentInfos);
+      if (endShellPanelComponent) this._addShellPanelComponents(new Collection([endShellPanelComponent]), true);
     }
 
     // disclaimer
@@ -267,7 +267,7 @@ export default class MapApplication extends Widget {
   //////////////////////////////////////
   disclaimerOptions: DisclaimerModalOptions = {};
 
-  endWidgetInfo?: WidgetInfo;
+  endShellPanelComponent?: ShellPanelComponentInfo;
 
   header?: esri.Widget | false;
 
@@ -285,14 +285,14 @@ export default class MapApplication extends Widget {
 
   shellPanel?: esri.Widget;
 
+  @property({ type: Collection })
+  shellPanelComponentInfos?: esri.Collection<ShellPanelComponentInfo>;
+
   title = 'Vernonia';
 
   view!: esri.MapView;
 
   viewControlOptions: ViewControlOptions = {};
-
-  @property({ type: Collection })
-  widgetInfos?: WidgetInfo[] | esri.Collection<WidgetInfo>;
 
   //////////////////////////////////////
   // Protected properties
@@ -306,13 +306,13 @@ export default class MapApplication extends Widget {
   private _alerts: Collection<tsx.JSX.Element> = new Collection();
 
   @property()
-  private _actionBarActionGroups: Collection<tsx.JSX.Element> = new Collection();
+  private _shellPanelActionGroups: Collection<tsx.JSX.Element> = new Collection();
 
   @property()
-  private _visibleWidget: string | null = null;
+  private _shellPanelComponents: Collection<tsx.JSX.Element> = new Collection();
 
   @property()
-  private _shellPanelWidgets: Collection<tsx.JSX.Element> = new Collection();
+  private _visibleShellPanelComponent: string | null = null;
 
   //////////////////////////////////////
   // Public methods
@@ -330,12 +330,110 @@ export default class MapApplication extends Widget {
    * @param id
    */
   showWidget(id: string | null): void {
-    this._visibleWidget = id;
+    this._visibleShellPanelComponent = id;
   }
 
   //////////////////////////////////////
   // Private methods
   //////////////////////////////////////
+  /**
+   * Add widgets to shell panel and action bar.
+   * @param widgetInfos WidgetInfo
+   * @param endAction boolean
+   */
+  private _addShellPanelComponents(
+    shellPanelComponentInfos: esri.Collection<ShellPanelComponentInfo>,
+    endAction?: boolean,
+  ): void {
+    const { _shellPanelActionGroups, _shellPanelComponents } = this;
+
+    let actions: tsx.JSX.Element[] = [];
+
+    shellPanelComponentInfos.forEach((shellPanelComponentInfo: ShellPanelComponentInfo, index: number): void => {
+      const { component, icon, groupEnd, text, type } = shellPanelComponentInfo;
+
+      let element: tsx.JSX.Element | undefined;
+
+      component.addHandles(component.on(TOPIC, this._alertEvent.bind(this)));
+
+      switch (type) {
+        case 'modal': {
+          component.container = document.createElement('calcite-modal');
+          document.body.append(component.container);
+          break;
+        }
+        case 'panel': {
+          element = (
+            <calcite-panel
+              afterCreate={(panel: HTMLCalcitePanelElement): void => {
+                component.container = panel;
+                this._shellPanelComponentEvents(component);
+              }}
+            ></calcite-panel>
+          );
+          break;
+        }
+        case 'flow': {
+          element = (
+            <calcite-flow
+              afterCreate={(flow: HTMLCalciteFlowElement): void => {
+                component.container = flow;
+                this._shellPanelComponentEvents(component);
+              }}
+            ></calcite-flow>
+          );
+          break;
+        }
+      }
+
+      if (type !== 'modal') component.visible = false;
+
+      if (element) _shellPanelComponents.add(element);
+
+      const action = (
+        <calcite-action
+          icon={icon}
+          text={text}
+          afterCreate={(action: HTMLCalciteActionElement): void => {
+            if (type === 'modal') {
+              action.addEventListener('click', (): void => {
+                (component.container as HTMLCalciteModalElement).open = true;
+              });
+            } else {
+              action.addEventListener('click', (): void => {
+                this._visibleShellPanelComponent =
+                  this._visibleShellPanelComponent === component.id ? null : component.id;
+              });
+              this.addHandles(
+                watch(
+                  (): string | null => this._visibleShellPanelComponent,
+                  (id?: string | null): void => {
+                    action.active = id === component.id;
+                  },
+                ),
+              );
+            }
+          }}
+        >
+          <calcite-tooltip close-on-click="" slot="tooltip">
+            {text}
+          </calcite-tooltip>
+        </calcite-action>
+      );
+
+      actions.push(action);
+
+      if (groupEnd || index + 1 === shellPanelComponentInfos.length) {
+        _shellPanelActionGroups.add(
+          <calcite-action-group key={KEY++} slot={endAction ? 'actions-end' : null}>
+            {actions}
+          </calcite-action-group>,
+        );
+        actions = [];
+      }
+    });
+  }
+
   /**
    * Show alert in the application.
    * @param optionsAlertOptions
@@ -375,151 +473,42 @@ export default class MapApplication extends Widget {
   }
 
   /**
-   * Add widgets to shell panel and action bar.
-   * @param widgetInfos WidgetInfo
-   * @param endAction boolean
-   */
-  private _widgets(widgetInfos: WidgetInfo[] | esri.Collection<WidgetInfo>, endAction?: boolean): void {
-    const { _actionBarActionGroups, _shellPanelWidgets } = this;
-
-    let actions: tsx.JSX.Element[] = [];
-
-    widgetInfos.forEach((widgetInfo: WidgetInfo, index: number): void => {
-      const { icon, groupEnd, text, type, widget } = widgetInfo;
-
-      let element: tsx.JSX.Element | undefined;
-
-      this.addHandles(widget.on(TOPIC, this._alertEvent.bind(this)));
-
-      switch (type) {
-        case 'modal': {
-          widget.container = document.createElement('calcite-modal');
-          document.body.append(widget.container);
-          /**
-           * Legacy modal widget show/hide.
-           * Modal widgets should handle open/close events internally.
-           * Remove when all widgets with `onShow` and/or `onHide` have been updated.
-           */
-          const _widget = widget as esri.Widget & {
-            onHide?: () => void | undefined;
-            onShow?: () => void | undefined;
-          };
-          widget.container.addEventListener('calciteModalOpen', (): void => {
-            if (_widget.onShow && typeof _widget.onShow === 'function') _widget.onShow();
-          });
-          widget.container.addEventListener('calciteModalClose', (): void => {
-            if (_widget.onHide && typeof _widget.onHide === 'function') _widget.onHide();
-          });
-          break;
-        }
-        case 'panel': {
-          element = (
-            <calcite-panel
-              afterCreate={(panel: HTMLCalcitePanelElement): void => {
-                widget.container = panel;
-                this._widgetEvents(widget);
-              }}
-            ></calcite-panel>
-          );
-          break;
-        }
-        case 'flow': {
-          element = (
-            <calcite-flow
-              afterCreate={(flow: HTMLCalciteFlowElement): void => {
-                widget.container = flow;
-                this._widgetEvents(widget);
-              }}
-            ></calcite-flow>
-          );
-          break;
-        }
-      }
-
-      if (type !== 'modal') widget.visible = false;
-
-      if (element) _shellPanelWidgets.add(element);
-
-      const action = (
-        <calcite-action
-          icon={icon}
-          text={text}
-          afterCreate={(action: HTMLCalciteActionElement): void => {
-            if (type === 'modal') {
-              action.addEventListener('click', (): void => {
-                (widget.container as HTMLCalciteModalElement).open = true;
-              });
-            } else {
-              action.addEventListener('click', (): void => {
-                this._visibleWidget = this._visibleWidget === widget.id ? null : widget.id;
-              });
-              this.addHandles(
-                watch(
-                  (): string | null => this._visibleWidget,
-                  (id?: string | null): void => {
-                    action.active = id === widget.id;
-                  },
-                ),
-              );
-            }
-          }}
-        >
-          <calcite-tooltip close-on-click="" slot="tooltip">
-            {text}
-          </calcite-tooltip>
-        </calcite-action>
-      );
-
-      actions.push(action);
-
-      if (groupEnd || index + 1 === widgetInfos.length) {
-        _actionBarActionGroups.add(
-          <calcite-action-group key={KEY++} slot={endAction ? 'actions-end' : null}>
-            {actions}
-          </calcite-action-group>,
-        );
-        actions = [];
-      }
-    });
-  }
-
-  /**
    * Wire widget events.
    * @param widget esri.Widget
    */
-  private _widgetEvents(
-    widget: esri.Widget & {
+  private _shellPanelComponentEvents(
+    component: esri.Widget & {
       onHide?: () => void | undefined;
       onShow?: () => void | undefined;
     },
   ): void {
-    this.addHandles([
-      widget.on(TOPIC, this._alertEvent.bind(this)),
+    component.addHandles(component.on(TOPIC, this._alertEvent.bind(this)));
+    this.addHandles(
       watch(
-        (): string | null => this._visibleWidget,
+        (): string | null => this._visibleShellPanelComponent,
         (id?: string | null, oldId?: string | null): void => {
-          widget.visible = id === widget.id;
+          component.visible = id === component.id;
           /**
            * Legacy widget show/hide.
            * Widgets should watch `visible` property internally.
            * Remove when all widgets with `onShow` and/or `onHide` have been updated.
            */
-          if (id === widget.id && widget.onShow && typeof widget.onShow === 'function') {
-            widget.onShow();
+          if (id === component.id && component.onShow && typeof component.onShow === 'function') {
+            component.onShow();
           }
-          if (oldId && oldId === widget.id && widget.onHide && typeof widget.onHide === 'function') {
-            widget.onHide();
+          if (oldId && oldId === component.id && component.onHide && typeof component.onHide === 'function') {
+            component.onHide();
           }
         },
       ),
-    ]);
+    );
   }
 
   //////////////////////////////////////
   // Render and rendering methods
   //////////////////////////////////////
   render(): tsx.JSX.Element {
-    const { header, shellPanel, _alerts, _actionBarActionGroups, _shellPanelWidgets } = this;
+    const { header, shellPanel, _alerts, _shellPanelActionGroups, _shellPanelComponents } = this;
     return (
       <calcite-shell class={CSS.base} content-behind="">
         {/* header */}
@@ -540,12 +529,12 @@ export default class MapApplication extends Widget {
             slot="panel-end"
             afterCreate={this._afterShellPanelCreate.bind(this)}
           ></calcite-shell-panel>
-        ) : _shellPanelWidgets.length ? (
+        ) : _shellPanelComponents && _shellPanelComponents.length ? (
           <calcite-shell-panel display-mode="float" position="end" slot="panel-end">
             <calcite-action-bar slot="action-bar" afterCreate={this._actionBarAfterCreate.bind(this)}>
-              {_actionBarActionGroups.toArray()}
+              {_shellPanelActionGroups.toArray()}
             </calcite-action-bar>
-            {_shellPanelWidgets.toArray()}
+            {_shellPanelComponents.toArray()}
           </calcite-shell-panel>
         ) : null}
 

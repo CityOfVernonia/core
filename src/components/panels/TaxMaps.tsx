@@ -25,7 +25,7 @@ import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import PopupTemplate from '@arcgis/core/PopupTemplate';
-import imageMediaLayer from '../support/georeferencedImage';
+import imageMediaLayer from './../../support/georeferencedImage';
 
 //////////////////////////////////////
 // Constants
