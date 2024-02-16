@@ -7,7 +7,7 @@ import esri = __esri;
 // Modules
 //////////////////////////////////////
 import PopupTemplate from '@arcgis/core/PopupTemplate';
-import { propertyInfoUrl, taxMapUrl } from './../support/assessorURLs';
+import { propertyInfoUrl, taxMapUrl } from './../support/assessorUtils';
 
 /**
  * Vernonia tax lot popup.

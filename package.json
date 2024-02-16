@@ -42,7 +42,7 @@
     "prettier": "^3.2.5",
     "replace-in-file": "^7.1.0",
     "rimraf": "^5.0.5",
-    "sass": "^1.70.0",
+    "sass": "^1.71.0",
     "terser": "^5.27.1",
     "tslib": "^2.6.2",
     "typedoc": "^0.25.8",
@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@arcgis/core": "^4.28.10",
-    "@esri/calcite-components": "^2.4.0",
+    "@esri/calcite-components": "^2.5.1",
     "@esri/calcite-ui-icons": "^3.26.4",
     "fast-xml-parser": "^4.3.4",
     "js-cookie": "^3.0.5",
