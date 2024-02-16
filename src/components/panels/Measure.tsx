@@ -144,7 +144,7 @@ import { Point, Polyline } from '@arcgis/core/geometry';
 import * as coordinateFormatter from '@arcgis/core/geometry/coordinateFormatter';
 import { geodesicArea, geodesicLength, simplify } from '@arcgis/core/geometry/geometryEngine';
 import { webMercatorToGeographic } from '@arcgis/core/geometry/support/webMercatorUtils';
-import { midpoint, textAngle, queryFeatureGeometry } from './../../support/geometry';
+import { midpoint, textAngle, queryFeatureGeometry } from './../../support/geometryUtils';
 // symbols
 import { CIMSymbol, SimpleFillSymbol, SimpleMarkerSymbol, TextSymbol } from '@arcgis/core/symbols';
 // profile

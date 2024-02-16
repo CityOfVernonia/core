@@ -58,21 +58,21 @@ class OAuth extends Accessor {
   //////////////////////////////////////
   // Variables
   //////////////////////////////////////
-  protected credential!: esri.Credential;
+  credential!: esri.Credential;
 
   @property({ aliasOf: 'user.fullName' })
-  protected fullName!: string;
+  fullName!: string;
 
   @property({ aliasOf: 'user.thumbnailUrl' })
-  protected thumbnailUrl!: string;
+  thumbnailUrl!: string;
 
   @property({ aliasOf: 'portal.user' })
-  protected user!: esri.PortalUser;
+  user!: esri.PortalUser;
 
   @property({ aliasOf: 'user.username' })
-  protected username!: string;
+  username!: string;
 
-  protected signedIn = false;
+  signedIn = false;
 
   //////////////////////////////////////
   // Public methods

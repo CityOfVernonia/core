@@ -9,7 +9,7 @@ import Basemap from '@arcgis/core/Basemap';
 import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import SearchViewModel from '@arcgis/core/widgets/Search/SearchViewModel';
 import cityBoundaryExtents from './../src/support/cityBoundaryExtents';
-import { geojsonLayerFromJSON } from './../src/support/layers';
+import { geojsonLayerFromJSON } from './../src/support/layerUtils';
 import taxLotPopup from './../src/popups/TaxLotPopup';
 import Color from '@arcgis/core/Color';
 
