@@ -1,11 +1,11 @@
 @import "headerBackground";
 
 // header
-@mixin application-header {
+@mixin application-header($justifyContent) {
   display: flex;
   flex-flow: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: $justifyContent;
   min-height: 38px;
   padding: 0.5rem 1rem;
   background: url(#{$header-background}), center, center,

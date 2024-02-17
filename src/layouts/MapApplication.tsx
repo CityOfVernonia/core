@@ -23,6 +23,11 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
    */
   header?: esri.Widget | false;
   /**
+   * Display compact header with full width search and no title for mobile apps.
+   * @default false
+   */
+  headerCompact?: boolean;
+  /**
    * Custom footer component.
    *
    * Must return a `div` VNode, and component `container` must not be set.
@@ -176,6 +181,9 @@ const CSS = {
   header: 'cov-layouts--map-application_header',
   headerTitle: 'cov-layouts--map-application_header--content cov-layouts--map-application_header--title',
   headerControls: 'cov-layouts--map-application_header--content cov-layouts--map-application_header--controls',
+  // compact header
+  headerCompact: 'cov-layouts--map-application_header--compact',
+  headerCompactControls: 'cov-layouts--map-application_header--compact-controls',
   // user control
   userControl: 'cov-layouts--map-application_user-control',
   userControlPopover: 'cov-layouts--map-application_user-control--popover',
@@ -199,7 +207,7 @@ export const showAlertTopic = (): string => {
  * Vernonia map application layout.
  */
 @subclass('cov.layouts.MapApplication')
-export default class MapApplication extends Widget {
+class MapApplication extends Widget {
   //////////////////////////////////////
   // Lifecycle
   //////////////////////////////////////
@@ -270,6 +278,8 @@ export default class MapApplication extends Widget {
   endShellPanelComponent?: ShellPanelComponentInfo;
 
   header?: esri.Widget | false;
+
+  headerCompact = false;
 
   footer?: esri.Widget;
 
@@ -527,7 +537,7 @@ export default class MapApplication extends Widget {
             display-mode="float"
             position="end"
             slot="panel-end"
-            afterCreate={this._afterShellPanelCreate.bind(this)}
+            afterCreate={this._shellPanelAfterCreate.bind(this)}
           ></calcite-shell-panel>
         ) : _shellPanelComponents && _shellPanelComponents.length ? (
           <calcite-shell-panel display-mode="float" position="end" slot="panel-end">
@@ -574,8 +584,17 @@ export default class MapApplication extends Widget {
    * @returns tsx.JSX.Element
    */
   private _defaultHeader(): tsx.JSX.Element {
-    const { title } = this;
-    return (
+    const { headerCompact, title } = this;
+
+    return headerCompact === true ? (
+      <div class={CSS.headerCompact} slot="header">
+        <div class={CSS.headerCompactControls}>
+          <img src={logoSvg}></img>
+          <div afterCreate={this._searchAfterCreate.bind(this)}></div>
+          <div afterCreate={this._userControlAfterCreate.bind(this)}></div>
+        </div>
+      </div>
+    ) : (
       <div class={CSS.header} slot="header">
         <div class={CSS.headerTitle}>
           <img src={logoSvg}></img>
@@ -615,7 +634,7 @@ export default class MapApplication extends Widget {
    * Add shell panel.
    * @param container HTMLCalciteShellPanelElement
    */
-  private _afterShellPanelCreate(container: HTMLCalciteShellPanelElement): void {
+  private _shellPanelAfterCreate(container: HTMLCalciteShellPanelElement): void {
     const { shellPanel } = this;
     if (!shellPanel) return;
     shellPanel.container = container;
@@ -722,3 +741,5 @@ class UserControl extends Widget {
     );
   }
 }
+
+export default MapApplication;

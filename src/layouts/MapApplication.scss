@@ -8,7 +8,7 @@
 
 // header
 .cov-layouts--map-application_header {
-  @include application-header;
+  @include application-header(space-between);
 }
 
 .cov-layouts--map-application_header--content {
@@ -35,6 +35,26 @@
   .cov-layouts--map-application_header--title div {
     display: none;
   }
+}
+
+// compact header
+.cov-layouts--map-application_header--compact {
+  @include application-header(space-evenly);
+}
+
+.cov-layouts--map-application_header--compact-controls {
+  width: 100%;
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  gap: 1rem;
+  user-select: none;
+
+  img {
+    height: 2.25rem;
+  }
+
+  @include header-search(100%, 0, 100%);
 }
 
 // user control

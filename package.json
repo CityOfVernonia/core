@@ -29,7 +29,7 @@
     "@types/node": "^20.11.19",
     "@types/papaparse": "^5.3.14",
     "@types/pubsub-js": "^1.8.6",
-    "@types/sortablejs": "^1.15.7",
+    "@types/sortablejs": "^1.15.8",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
