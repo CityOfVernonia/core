@@ -3,10 +3,10 @@ import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 
 /**
- * A modal widget for testing purposes which does not create or add its `container` to the DOM.
+ * A modal for testing purposes which does not create or add its `container` to the DOM.
  */
-@subclass('cov.modals.TestWidgetModal')
-export default class TestWidgetModal extends Widget {
+@subclass('cov.modals.TestModal')
+export default class TestModal extends Widget {
   render(): tsx.JSX.Element {
     return (
       <calcite-modal kind="brand">
