@@ -37,16 +37,21 @@ export const csvLayerFromJSON = async (
   url: string,
   layerProperties?: esri.CSVLayerProperties,
 ): Promise<esri.CSVLayer> => {
-  const csvLayerProperties: esri.CSVLayerProperties = {
-    ...(await _fetchLayerJSON(url)),
-    ...{
-      customParameters: {
-        d: new Date().getTime(),
+  try {
+    const csvLayerProperties: esri.CSVLayerProperties = {
+      ...(await _fetchLayerJSON(url)),
+      ...{
+        customParameters: {
+          d: new Date().getTime(),
+        },
       },
-    },
-    ...(layerProperties || {}),
-  };
-  return new CSVLayer(csvLayerProperties);
+      ...(layerProperties || {}),
+    };
+    return new CSVLayer(csvLayerProperties);
+  } catch (error) {
+    console.log(error);
+    return new CSVLayer();
+  }
 };
 
 /**
@@ -59,16 +64,21 @@ export const geojsonLayerFromJSON = async (
   url: string,
   layerProperties?: esri.GeoJSONLayerProperties,
 ): Promise<esri.GeoJSONLayer> => {
-  const geojsonLayerProperties: esri.GeoJSONLayerProperties = {
-    ...(await _fetchLayerJSON(url)),
-    ...{
-      customParameters: {
-        d: new Date().getTime(),
+  try {
+    const geojsonLayerProperties: esri.GeoJSONLayerProperties = {
+      ...(await _fetchLayerJSON(url)),
+      ...{
+        customParameters: {
+          d: new Date().getTime(),
+        },
       },
-    },
-    ...(layerProperties || {}),
-  };
-  return new GeoJSONLayer(geojsonLayerProperties);
+      ...(layerProperties || {}),
+    };
+    return new GeoJSONLayer(geojsonLayerProperties);
+  } catch (error) {
+    console.log(error);
+    return new GeoJSONLayer();
+  }
 };
 
 /**
