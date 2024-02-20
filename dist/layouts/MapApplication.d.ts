@@ -6,16 +6,30 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
     /**
      * Disclaimer options.
      */
-    disclaimerOptions?: DisclaimerOptions;
+    disclaimerOptions?: DisclaimerModalOptions;
     /**
-     * Widget with an action at the end (bottom) of the action bar.
+     * Component with an action at the end (bottom) of the action bar.
      *
-     * Great place for an `About` modal widget...just saying.
+     * Great place for an `About` modal...just saying.
      */
-    endWidgetInfo?: WidgetInfo;
+    endShellPanelComponent?: ShellPanelComponentInfo;
     /**
-     * Custom footer widget.
-     * Must return a `div` VNode, and widget `container` must not be set.
+     * Custom header component.
+     *
+     * Must return a `div` VNode, and component `container` must not be set.
+     *
+     * Set to `false` for no header.
+     */
+    header?: esri.Widget | false;
+    /**
+     * Display compact header with full width search and no title for mobile apps.
+     * @default false
+     */
+    headerCompact?: boolean;
+    /**
+     * Custom footer component.
+     *
+     * Must return a `div` VNode, and component `container` must not be set.
      */
     footer?: esri.Widget;
     /**
@@ -40,6 +54,18 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
      */
     searchViewModel?: esri.SearchViewModel;
     /**
+     * Custom shell panel component.
+     *
+     * Must return a `calcite-shell-panel` VNode, with no attributes, and component `container` must not be set.
+     *
+     * Supersedes `shellPanelComponentInfos`.
+     */
+    shellPanel?: esri.Widget;
+    /**
+     * Components to add to the shell panel with an action bar action.
+     */
+    shellPanelComponentInfos?: ShellPanelComponentInfo[] | esri.Collection<ShellPanelComponentInfo>;
+    /**
      * Title of the application.
      * @default Vernonia
      */
@@ -52,20 +78,16 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
      * View control options.
      */
     viewControlOptions?: ViewControlOptions;
-    /**
-     * Widgets to add to the shell panel with an action bar action.
-     */
-    widgetInfos: WidgetInfo[] | esri.Collection<WidgetInfo>;
 }
 /**
- * Options to configure an action bar action and associated widget.
+ * Options to configure an action bar action and associated component.
  */
-export interface WidgetInfo {
+export interface ShellPanelComponentInfo {
+    component: esri.Widget;
     icon: string;
     groupEnd?: boolean;
     text: string;
     type: 'flow' | 'modal' | 'panel';
-    widget: esri.Widget;
 }
 /**
  * Options to show alert.
@@ -120,10 +142,10 @@ export interface AlertOptions {
      */
     width?: number;
 }
-import type OAuth from '../support/OAuth';
-import type { LoaderOptions } from '../widgets/Loader';
-import type { DisclaimerOptions } from '../widgets/Disclaimer';
-import type { ViewControlOptions } from '../widgets/ViewControl2D';
+import type OAuth from './../support/OAuth';
+import type { LoaderOptions } from './support/Loader';
+import type { DisclaimerModalOptions } from './../components/modals/DisclaimerModal';
+import type { ViewControlOptions } from './support/ViewControl2D';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 /**
@@ -134,27 +156,30 @@ export declare const showAlertTopic: () => string;
 /**
  * Vernonia map application layout.
  */
-export default class MapApplication extends Widget {
+declare class MapApplication extends Widget {
     container: HTMLCalciteShellElement;
     constructor(properties: MapApplicationProperties);
     postInitialize(): Promise<void>;
-    disclaimerOptions: DisclaimerOptions;
-    endWidgetInfo?: WidgetInfo;
+    disclaimerOptions: DisclaimerModalOptions;
+    endShellPanelComponent?: ShellPanelComponentInfo;
+    header?: esri.Widget | false;
+    headerCompact: boolean;
     footer?: esri.Widget;
     includeDisclaimer: boolean;
     loaderOptions: LoaderOptions;
     nextBasemap?: esri.Basemap;
     oAuth?: OAuth;
     searchViewModel?: esri.SearchViewModel;
+    shellPanel?: esri.Widget;
+    shellPanelComponentInfos?: esri.Collection<ShellPanelComponentInfo>;
     title: string;
     view: esri.MapView;
     viewControlOptions: ViewControlOptions;
-    widgetInfos: WidgetInfo[] | esri.Collection<WidgetInfo>;
     protected loaded: boolean;
     private _alerts;
-    private _actionBarActionGroups;
-    private _visibleWidget;
-    private _shellPanelWidgets;
+    private _shellPanelActionGroups;
+    private _shellPanelComponents;
+    private _visibleShellPanelComponent;
     /**
      * Show alert.
      * @param options
@@ -166,21 +191,21 @@ export default class MapApplication extends Widget {
      */
     showWidget(id: string | null): void;
     /**
+     * Add widgets to shell panel and action bar.
+     * @param widgetInfos WidgetInfo
+     * @param endAction boolean
+     */
+    private _addShellPanelComponents;
+    /**
      * Show alert in the application.
      * @param optionsAlertOptions
      */
     private _alertEvent;
     /**
-     * Add widgets to shell panel and action bar.
-     * @param widgetInfos WidgetInfo
-     * @param endAction boolean
-     */
-    private _widgets;
-    /**
      * Wire widget events.
      * @param widget esri.Widget
      */
-    private _widgetEvents;
+    private _shellPanelComponentEvents;
     render(): tsx.JSX.Element;
     /**
      * Wire view padding for action bar expand/collapse.
@@ -188,10 +213,25 @@ export default class MapApplication extends Widget {
      */
     private _actionBarAfterCreate;
     /**
+     * Default application header.
+     * @returns tsx.JSX.Element
+     */
+    private _defaultHeader;
+    /**
+     * Add header widget.
+     * @param container HTMLDivElement
+     */
+    private _headerAfterCreate;
+    /**
      * Add footer widget.
      * @param container HTMLDivElement
      */
     private _footerAfterCreate;
+    /**
+     * Add shell panel.
+     * @param container HTMLCalciteShellPanelElement
+     */
+    private _shellPanelAfterCreate;
     /**
      * Create and add UserControl widget to header.
      * @param container HTMLDivElement
@@ -208,3 +248,4 @@ export default class MapApplication extends Widget {
      */
     private _viewAfterCreate;
 }
+export default MapApplication;
