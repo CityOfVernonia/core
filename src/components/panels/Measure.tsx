@@ -274,7 +274,7 @@ class Measure extends Widget {
 
     // handle unit changes
     const unitsChange = this.watch(
-      ['areaUnit', 'coordinateUnit', 'elevationUnit', 'lengthUnit'],
+      ['areaUnit', 'elevationUnit', 'latitudeLongitudeUnit', 'lengthUnit'],
       this._unitsChangeEvent.bind(this),
     );
 
