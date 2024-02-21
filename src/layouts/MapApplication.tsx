@@ -565,6 +565,7 @@ class MapApplication extends Widget {
    * @param actionBar HTMLCalciteActionBarElement
    */
   private _actionBarAfterCreate(actionBar: HTMLCalciteActionBarElement): void {
+    if (!actionBar.getAttribute('slot')) return;
     const { view } = this;
     const setPadding = (): void => {
       const width = actionBar.getBoundingClientRect().width;

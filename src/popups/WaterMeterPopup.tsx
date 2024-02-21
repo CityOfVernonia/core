@@ -1,4 +1,5 @@
 import esri = __esri;
+
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import PopupTemplate from '@arcgis/core/PopupTemplate';
 import Widget from '@arcgis/core/widgets/Widget';
@@ -16,15 +17,15 @@ export default new PopupTemplate({
   outFields: ['*'],
   title: '{wsc_id} - {address}',
   content: (event: { graphic: esri.Graphic }): HTMLTableElement => {
-    const contentWidget = new ContentWidget({
+    const wmi = new WaterMeterInfo({
       graphic: event.graphic,
     });
-    return contentWidget.container;
+    return wmi.container;
   },
 });
 
-@subclass('ContentWidget')
-class ContentWidget extends Widget {
+@subclass('WaterMeterInfo')
+class WaterMeterInfo extends Widget {
   container = document.createElement('table');
 
   constructor(
