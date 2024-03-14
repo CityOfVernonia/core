@@ -29,7 +29,9 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
     /**
      * Custom footer component.
      *
-     * Must return a `div` VNode, and component `container` must not be set.
+     * Must return a `shell-panel` VNode, and component `container` must not be set.
+     *
+     * All appropriate `shell-panel` properties are set by default. Only `collapsed` should be optionally set on the VNode.
      */
     footer?: esri.Widget;
     /**
@@ -224,7 +226,7 @@ declare class MapApplication extends Widget {
     private _headerAfterCreate;
     /**
      * Add footer widget.
-     * @param container HTMLDivElement
+     * @param container HTMLCalciteShellPanelElement
      */
     private _footerAfterCreate;
     /**

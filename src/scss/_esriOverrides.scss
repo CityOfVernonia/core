@@ -12,6 +12,11 @@
   outline-offset: 0;
 }
 
+// lock out attribution
+.esri-attribution * {
+  user-select: none;
+}
+
 // tighten up ui
 .esri-ui-top-right {
   top: -5px;

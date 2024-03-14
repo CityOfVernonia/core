@@ -30,7 +30,9 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
   /**
    * Custom footer component.
    *
-   * Must return a `div` VNode, and component `container` must not be set.
+   * Must return a `shell-panel` VNode, and component `container` must not be set.
+   *
+   * All appropriate `shell-panel` properties are set by default. Only `collapsed` should be optionally set on the VNode.
    */
   footer?: esri.Widget;
   /**
@@ -549,7 +551,14 @@ class MapApplication extends Widget {
         ) : null}
 
         {/* footer */}
-        <div slot="footer" afterCreate={this._footerAfterCreate.bind(this)}></div>
+        <calcite-shell-panel
+          layout="horizontal"
+          position="end"
+          resizable=""
+          slot="footer"
+          style="--calcite-shell-panel-min-height: 100px; --calcite-shell-panel-max-height: 500px;"
+          afterCreate={this._footerAfterCreate.bind(this)}
+        ></calcite-shell-panel>
 
         {/* alerts */}
         <div slot="alerts">{_alerts.toArray()}</div>
@@ -620,7 +629,7 @@ class MapApplication extends Widget {
 
   /**
    * Add footer widget.
-   * @param container HTMLDivElement
+   * @param container HTMLCalciteShellPanelElement
    */
   private _footerAfterCreate(container: HTMLDivElement): void {
     const { footer } = this;

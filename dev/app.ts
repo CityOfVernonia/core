@@ -19,6 +19,7 @@ import BasemapImagery from './../src/components/panels/BasemapImagery';
 import FIRMette from './../src/components/panels/FIRMette';
 import LayersLegend from './../src/components/panels/LayersLegend';
 import Measure from './../src/components/panels/Measure';
+import PlanningFiles from './../src/components/panels/PlanningFiles';
 import PrintSnapshot from './../src/components/panels/PrintSnapshot';
 import SurveySearch from './../src/components/panels/SurveySearch';
 import TaxLotBuffer from './../src/components/panels/TaxLotBuffer';
@@ -65,10 +66,16 @@ const load = async (): Promise<void> => {
     { visible: false },
   );
 
+  const planningFilesLayer = new FeatureLayer({
+    portalItem: {
+      id: '2de40e7eca4445e2b2fa42b58b664fda',
+    },
+  });
+
   const view = new MapView({
     map: new WebMap({
       basemap: hillshadeBasemap,
-      layers: [taxLots, cityLimits, taxMaps],
+      layers: [taxLots, cityLimits, taxMaps, planningFilesLayer],
       ground: 'world-elevation',
     }),
     extent,
@@ -86,7 +93,7 @@ const load = async (): Promise<void> => {
     },
   });
 
-  new MapApplication({
+  const mapApplication = new MapApplication({
     endShellPanelComponent: {
       component: new TestModal(),
       icon: 'lightbulb',
@@ -144,6 +151,12 @@ const load = async (): Promise<void> => {
         type: 'panel',
       },
       {
+        component: new PlanningFiles({ planningFilesLayer, view }),
+        icon: 'file-report',
+        text: 'Planning Files',
+        type: 'panel',
+      },
+      {
         component: new PrintSnapshot({ view }),
         icon: 'print',
         text: 'Print',
@@ -185,6 +198,8 @@ const load = async (): Promise<void> => {
       includeLocate: true,
     },
   });
+
+  mapApplication.on('load', (): void => {});
 };
 
 load();
