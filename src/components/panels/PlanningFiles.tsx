@@ -5,7 +5,6 @@ export interface PlanningFilesProperties extends esri.WidgetProperties {
   view: esri.MapView;
 }
 
-// import { once, whenOnce } from '@arcgis/core/core/reactiveUtils';
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -19,15 +18,34 @@ let KEY = 0;
 
 @subclass('cov.components.panels.PlanningFiles')
 class PlanningFiles extends Widget {
+  container!: HTMLCalcitePanelElement;
+
   constructor(properties: PlanningFilesProperties) {
     super(properties);
   }
 
   async postInitialize(): Promise<void> {
-    const { planningFilesLayer, _planningTypeOptions } = this;
+    const { planningFilesLayer, _planningStatusOptions, _planningTypeOptions } = this;
 
     await planningFilesLayer.when();
 
+    // status
+    const statusField = planningFilesLayer.fields.find((field: esri.Field): boolean => {
+      return field.name === 'status';
+    });
+    const statuses = (statusField?.domain as esri.CodedValueDomain).codedValues.sort(
+      (a: esri.CodedValue, b: esri.CodedValue) => (a.name < b.name ? -1 : 1),
+    );
+    statuses.forEach((codedValue: esri.CodedValue): void => {
+      const { code, name } = codedValue;
+      _planningStatusOptions.add(
+        <calcite-option key={KEY++} value={code}>
+          {name}
+        </calcite-option>,
+      );
+    });
+
+    // types
     const typeField = planningFilesLayer.fields.find((field: esri.Field): boolean => {
       return field.name === 'planning_type';
     });
@@ -53,43 +71,50 @@ class PlanningFiles extends Widget {
   view!: esri.MapView;
 
   @property()
-  private _definitionExpression = '';
-
-  @property()
   private _filtered = false;
 
-  @property()
-  private _filterCount = 0;
-
-  @property()
-  private _filterType = '';
-
-  private _planningTypeOptions: esri.Collection<tsx.JSX.Element> = new Collection([
-    <calcite-option selected="" value="none">
-      All (no filter)
+  private _planningStatusOptions: esri.Collection<tsx.JSX.Element> = new Collection([
+    <calcite-option selected="" value="">
+      No status filter
     </calcite-option>,
   ]);
 
-  private async _getFilterCount(): Promise<void> {
-    const { planningFilesLayer, _definitionExpression } = this;
-    this._filterCount = await planningFilesLayer.queryFeatureCount({
-      where: _definitionExpression,
-    });
-    this._filtered = true;
+  private _planningTypeOptions: esri.Collection<tsx.JSX.Element> = new Collection([
+    <calcite-option selected="" value="">
+      No type filter
+    </calcite-option>,
+  ]);
+
+  private _clearFilters(): void {
+    const { container, planningFilesLayer } = this;
+
+    (container.querySelector('[data-filter="status"]') as HTMLCalciteSelectElement).value = '';
+    (container.querySelector('[data-filter="type"]') as HTMLCalciteSelectElement).value = '';
+
+    this._filtered = false;
+
+    planningFilesLayer.definitionExpression = '';
   }
 
-  private async _zoomToFiltered(): Promise<void> {
-    const { planningFilesLayer, view, _definitionExpression } = this;
-    const { count, extent } = await planningFilesLayer.queryExtent({
-      where: _definitionExpression,
-    });
-    if (count) {
-      view.goTo(extent);
-    }
+  private _filter(): void {
+    const { container, planningFilesLayer } = this;
+
+    const status = (container.querySelector('[data-filter="status"]') as HTMLCalciteSelectElement).selectedOption.value;
+    const type = (container.querySelector('[data-filter="type"]') as HTMLCalciteSelectElement).selectedOption.value;
+
+    let definitionExpression = '';
+
+    this._filtered = status || type;
+
+    if (status) definitionExpression += `status = '${status}'`;
+    if (status && type) definitionExpression += ' AND ';
+    if (type) definitionExpression += `planning_type = '${type}'`;
+
+    planningFilesLayer.definitionExpression = definitionExpression;
   }
 
   render(): tsx.JSX.Element {
-    const { _filtered, _filterCount, _filterType, _planningTypeOptions } = this;
+    const { _filtered, _planningStatusOptions, _planningTypeOptions } = this;
     return (
       <calcite-panel heading="Planning Files">
         <div class={CSS.content}>
@@ -97,39 +122,34 @@ class PlanningFiles extends Widget {
             <calcite-switch afterCreate={this._layerSwitchAfterCreate.bind(this)}></calcite-switch>
             Planning Files
           </calcite-label>
-          <calcite-label style={_filtered ? null : '--calcite-label-margin-bottom: 0;'}>
+          <calcite-label>
+            Filter planning status
+            <calcite-select data-filter="status" afterCreate={this._filterSelectAfterCreate.bind(this)}>
+              {_planningStatusOptions.toArray()}
+            </calcite-select>
+          </calcite-label>
+          <calcite-label style="--calcite-label-margin-bottom: 0;">
             Filter planning type
-            <calcite-select afterCreate={this._filterSelectAfterCreate.bind(this)}>
+            <calcite-select data-filter="type" afterCreate={this._filterSelectAfterCreate.bind(this)}>
               {_planningTypeOptions.toArray()}
             </calcite-select>
           </calcite-label>
-          <calcite-notice icon="filter" open={_filtered} scale="s">
-            <div slot="title">{_filterType}</div>
-            <div slot="message">
-              {_filterCount} planning file{_filterCount === 1 ? '' : 's'}
-            </div>
-            <calcite-link slot="link" onclick={this._zoomToFiltered.bind(this)}>
-              Zoom to
-            </calcite-link>
-          </calcite-notice>
         </div>
+        <calcite-button
+          appearance="transparent"
+          hidden={!_filtered}
+          slot={_filtered ? 'footer' : null}
+          width="full"
+          onclick={this._clearFilters.bind(this)}
+        >
+          Clear Filters
+        </calcite-button>
       </calcite-panel>
     );
   }
 
   private _filterSelectAfterCreate(select: HTMLCalciteSelectElement): void {
-    const { planningFilesLayer } = this;
-    select.addEventListener('calciteSelectChange', (): void => {
-      this._filtered = false;
-      const value = select.selectedOption.value;
-      if (value === 'none') {
-        this._definitionExpression = this._filterType = planningFilesLayer.definitionExpression = '';
-      } else {
-        this._definitionExpression = planningFilesLayer.definitionExpression = `planning_type = '${value}'`;
-        this._filterType = value;
-        this._getFilterCount();
-      }
-    });
+    select.addEventListener('calciteSelectChange', this._filter.bind(this));
   }
 
   private _layerSwitchAfterCreate(_switch: HTMLCalciteSwitchElement): void {

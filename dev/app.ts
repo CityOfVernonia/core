@@ -70,6 +70,7 @@ const load = async (): Promise<void> => {
     portalItem: {
       id: '2de40e7eca4445e2b2fa42b58b664fda',
     },
+    visible: false,
   });
 
   const view = new MapView({
