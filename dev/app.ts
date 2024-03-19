@@ -152,7 +152,7 @@ const load = async (): Promise<void> => {
         type: 'panel',
       },
       {
-        component: new PlanningFiles({ planningFilesLayer, view }),
+        component: new PlanningFiles({ layer: planningFilesLayer }),
         icon: 'file-report',
         text: 'Planning Files',
         type: 'panel',

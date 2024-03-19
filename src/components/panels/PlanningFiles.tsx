@@ -1,8 +1,7 @@
 import esri = __esri;
 
 export interface PlanningFilesProperties extends esri.WidgetProperties {
-  planningFilesLayer: esri.FeatureLayer;
-  view: esri.MapView;
+  layer: esri.FeatureLayer;
 }
 
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
@@ -25,12 +24,12 @@ class PlanningFiles extends Widget {
   }
 
   async postInitialize(): Promise<void> {
-    const { planningFilesLayer, _planningStatusOptions, _planningTypeOptions } = this;
+    const { layer, _planningStatusOptions, _planningTypeOptions } = this;
 
-    await planningFilesLayer.when();
+    await layer.when();
 
     // status
-    const statusField = planningFilesLayer.fields.find((field: esri.Field): boolean => {
+    const statusField = layer.fields.find((field: esri.Field): boolean => {
       return field.name === 'status';
     });
     const statuses = (statusField?.domain as esri.CodedValueDomain).codedValues.sort(
@@ -46,7 +45,7 @@ class PlanningFiles extends Widget {
     });
 
     // types
-    const typeField = planningFilesLayer.fields.find((field: esri.Field): boolean => {
+    const typeField = layer.fields.find((field: esri.Field): boolean => {
       return field.name === 'planning_type';
     });
 
@@ -66,9 +65,7 @@ class PlanningFiles extends Widget {
     this.scheduleRender();
   }
 
-  planningFilesLayer!: esri.FeatureLayer;
-
-  view!: esri.MapView;
+  layer!: esri.FeatureLayer;
 
   @property()
   private _filtered = false;
@@ -86,18 +83,18 @@ class PlanningFiles extends Widget {
   ]);
 
   private _clearFilters(): void {
-    const { container, planningFilesLayer } = this;
+    const { container, layer } = this;
 
     (container.querySelector('[data-filter="status"]') as HTMLCalciteSelectElement).value = '';
     (container.querySelector('[data-filter="type"]') as HTMLCalciteSelectElement).value = '';
 
     this._filtered = false;
 
-    planningFilesLayer.definitionExpression = '';
+    layer.definitionExpression = '';
   }
 
   private _filter(): void {
-    const { container, planningFilesLayer } = this;
+    const { container, layer } = this;
 
     const status = (container.querySelector('[data-filter="status"]') as HTMLCalciteSelectElement).selectedOption.value;
     const type = (container.querySelector('[data-filter="type"]') as HTMLCalciteSelectElement).selectedOption.value;
@@ -110,7 +107,7 @@ class PlanningFiles extends Widget {
     if (status && type) definitionExpression += ' AND ';
     if (type) definitionExpression += `planning_type = '${type}'`;
 
-    planningFilesLayer.definitionExpression = definitionExpression;
+    layer.definitionExpression = definitionExpression;
   }
 
   render(): tsx.JSX.Element {
@@ -153,16 +150,16 @@ class PlanningFiles extends Widget {
   }
 
   private _layerSwitchAfterCreate(_switch: HTMLCalciteSwitchElement): void {
-    const { planningFilesLayer } = this;
+    const { layer } = this;
 
-    if (planningFilesLayer.visible) _switch.checked = true;
+    if (layer.visible) _switch.checked = true;
 
     _switch.addEventListener('calciteSwitchChange', (): void => {
-      planningFilesLayer.visible = _switch.checked;
+      layer.visible = _switch.checked;
     });
 
     this.addHandles(
-      planningFilesLayer.watch('visible', (visible: boolean): void => {
+      layer.watch('visible', (visible: boolean): void => {
         _switch.checked = visible;
       }),
     );
