@@ -11,6 +11,7 @@ import SearchViewModel from '@arcgis/core/widgets/Search/SearchViewModel';
 import cityBoundaryExtents from './../src/support/cityBoundaryExtents';
 import { geojsonLayerFromJSON } from './../src/support/layerUtils';
 import taxLotPopup from './../src/popups/TaxLotPopup';
+import planningFilesPopup from './../src/popups/PlanningFilesPopup';
 import Color from '@arcgis/core/Color';
 
 import MapApplication from './../src/layouts/MapApplication';
@@ -70,6 +71,7 @@ const load = async (): Promise<void> => {
     portalItem: {
       id: '2de40e7eca4445e2b2fa42b58b664fda',
     },
+    popupTemplate: planningFilesPopup,
     visible: false,
   });
 
