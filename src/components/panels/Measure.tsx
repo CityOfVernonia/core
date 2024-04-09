@@ -581,10 +581,12 @@ class Measure extends Widget {
     // simplify and remeasure length if required
     if (perimeter < 0) perimeter = geodesicLength(simplify(polygon), lengthUnit as any);
 
-    let area = geodesicArea(polygon, areaUnit as any);
+    const area = geodesicArea(polygon, areaUnit as any);
 
     // simplify and remeasure area if required
-    if (area < 0) area = geodesicArea(simplify(polygon) as esri.Polygon, areaUnit as any);
+    // if (Object.is(area, -0) === false) {
+    //   if (area < 0) area = geodesicArea(simplify(polygon) as esri.Polygon, areaUnit as any);
+    // }
 
     this._updateMeasureState({ perimeter, area });
   }
