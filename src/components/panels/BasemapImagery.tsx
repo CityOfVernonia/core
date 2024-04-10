@@ -220,7 +220,8 @@ class BasemapImagery extends Widget {
 
     const basemapToggle = (document.getElementsByClassName('esri-basemap-toggle')[0] as HTMLDivElement) || undefined;
 
-    if (map.basemap !== this.basemap && basemapToggle && toggleBasemap) basemapToggle.click();
+    if (map.basemap !== this.basemap && basemapToggle && toggleBasemap)
+      (basemapToggle.querySelector('calcite-button') as HTMLCalciteButtonElement).click();
   }
 
   //////////////////////////////////////

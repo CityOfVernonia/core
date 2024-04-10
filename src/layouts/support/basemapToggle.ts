@@ -22,12 +22,14 @@ const basemapToggle = async (
 
   const container = basemapToggle.container as HTMLDivElement;
 
-  const observer = new MutationObserver((): void => {
-    container.removeAttribute('title');
-    observer.disconnect();
-  });
+  new MutationObserver((mutationRecords, observer): void => {
+    const button = container.querySelector('calcite-button') as HTMLCalciteButtonElement;
 
-  observer.observe(container, { attributes: true, attributeFilter: ['title'] });
+    if (button) {
+      button.removeAttribute('title');
+      observer.disconnect();
+    }
+  }).observe(container, { childList: true, subtree: true });
 
   const tooltip = Object.assign(document.createElement('calcite-tooltip'), {
     referenceElement: container,
