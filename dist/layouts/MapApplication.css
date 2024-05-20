@@ -5346,6 +5346,7 @@ textarea.esri-feature-form__input {
   --calcite-color-brand: #6b9560;
   --calcite-color-brand-dark: #44693d;
   --calcite-sans-family: Roboto, sans-serif;
+  --calcite-font-family: Roboto, sans-serif;
 }
 
 .calcite-mode-light {
@@ -5362,6 +5363,7 @@ textarea.esri-feature-form__input {
   --calcite-color-brand: #6b9560;
   --calcite-color-brand-dark: #44693d;
   --calcite-sans-family: Roboto, sans-serif;
+  --calcite-font-family: Roboto, sans-serif;
 }
 
 body,

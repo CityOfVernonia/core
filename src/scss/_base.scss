@@ -18,7 +18,8 @@
   --calcite-color-brand-dark: #{$brand-dark}; // custom var
 
   // calcite
-  --calcite-sans-family: #{$font-family};
+  --calcite-sans-family: #{$font-family}; // might be depreciated
+  --calcite-font-family: #{$font-family};
 }
 
 .calcite-mode-light {
@@ -39,7 +40,8 @@
   --calcite-color-brand-dark: #{$brand-dark}; // custom var
 
   // calcite
-  --calcite-sans-family: #{$font-family};
+  --calcite-sans-family: #{$font-family}; // might be depreciated
+  --calcite-font-family: #{$font-family};
 }
 
 body,
