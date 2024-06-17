@@ -181,16 +181,25 @@ class VernoniaMapTaxLotPopupContent extends Widget {
       </tr>
     ) : null;
 
-    const accounts = ACCOUNT_IDS.split(',').map((account: string): tsx.JSX.Element => {
-      return (
-        <span>
-          <calcite-link href={`${propertyInfoUrl(account)}`} target="_blank">
-            {account}
-          </calcite-link>
-          &nbsp;
-        </span>
+    const _accounts = ACCOUNT_IDS.split(',');
+
+    const accounts =
+      _accounts.length === 1 ? (
+        <calcite-link href={`${propertyInfoUrl(_accounts[0])}`} target="_blank">
+          {_accounts[0]}
+        </calcite-link>
+      ) : (
+        _accounts.map((account: string, index: number): tsx.JSX.Element => {
+          return (
+            <span>
+              <calcite-link href={`${propertyInfoUrl(account)}`} target="_blank">
+                {account}
+              </calcite-link>
+              {index < _accounts.length - 1 ? <span>&nbsp;&nbsp;</span> : ''}
+            </span>
+          );
+        })
       );
-    });
 
     return (
       <table class="esri-widget__table">
