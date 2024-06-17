@@ -10,7 +10,8 @@ import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import SearchViewModel from '@arcgis/core/widgets/Search/SearchViewModel';
 import cityBoundaryExtents from './../src/support/cityBoundaryExtents';
 import { geojsonLayerFromJSON } from './../src/support/layerUtils';
-import taxLotPopup from './../src/popups/TaxLotPopup';
+// import taxLotPopup from './../src/popups/TaxLotPopup';
+import VernoniaMapTaxLotPopup from './../src/popups/VernoniaMapTaxLotPopup';
 import planningFilesPopup from './../src/popups/PlanningFilesPopup';
 import Color from '@arcgis/core/Color';
 
@@ -51,7 +52,15 @@ const load = async (): Promise<void> => {
       id: 'a0837699982f41e6b3eb92429ecdb694',
     },
     outFields: ['*'],
-    popupTemplate: taxLotPopup,
+    // popupTemplate: taxLotPopup,
+    popupTemplate: new VernoniaMapTaxLotPopup({
+      zoning: new FeatureLayer({
+        url: 'https://gis.vernonia-or.gov/server/rest/services/LandUse/Land_Use/MapServer/30',
+      }),
+      floodZones: new FeatureLayer({
+        url: 'https://gis.vernonia-or.gov/server/rest/services/LandUse/Vernonia_Flood/MapServer/4',
+      }),
+    }),
   });
 
   taxLots.when((): void => {
