@@ -28,6 +28,7 @@ import TaxLotBuffer from './../src/components/panels/TaxLotBuffer';
 import TaxMaps from './../src/components/panels/TaxMaps';
 
 import TestModal from './../src/components/modals/TestModal';
+// import TestShellPanel from './../src/components/shellPanels/TestShellPanel';
 
 esriConfig.portalUrl = 'https://gis.vernonia-or.gov/portal';
 esriConfig.assetsPath = './arcgis';
@@ -112,6 +113,7 @@ const load = async (): Promise<void> => {
       text: 'Info',
       type: 'modal',
     },
+    // footer: new TestShellPanel(),
     nextBasemap: hybridBasemap,
     title: '@vernonia/core',
     searchViewModel: new SearchViewModel(),

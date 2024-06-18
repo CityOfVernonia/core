@@ -158,7 +158,29 @@ class VernoniaMapTaxLotPopupContent extends Widget {
 
     this._floodZones = (
       <tr>
-        <th>Flood zones</th>
+        <th>
+          <div style="display:flex;flex-direction:row;">
+            <span style="margin-right:0.25rem;">Flood zones</span>
+            <calcite-icon
+              icon="information"
+              scale="s"
+              style="transform:scale(0.875);color:var(--calcite-ui-brand);"
+            ></calcite-icon>
+            <calcite-popover
+              auto-close=""
+              closable=""
+              scale="s"
+              afterCreate={(element: HTMLCalcitePopoverElement): void => {
+                element.referenceElement = element.previousElementSibling as HTMLCalciteIconElement;
+              }}
+            >
+              <div style="max-width:120px;padding:0.25rem;">
+                Some portion of the tax lot is affected by the indicated flood zones. Turn on flood hazard layer to view
+                flood zones.
+              </div>
+            </calcite-popover>
+          </div>
+        </th>
         <td>
           {!zones.length
             ? 'None'
@@ -231,7 +253,7 @@ class VernoniaMapTaxLotPopupContent extends Widget {
           </td>
         </tr>
         <tr>
-          <th>Tax account(s)</th>
+          <th>Tax account{_accounts.length > 1 ? 's' : ''}</th>
           <td>{accounts}</td>
         </tr>
         {VERNONIA ? _zoning : null}
