@@ -1,18 +1,18 @@
 import * as url from 'url';
 import path from 'path';
 import fs from 'fs-extra';
-import replace from 'replace-in-file';
+import { replaceInFile } from 'replace-in-file';
 import chalk from 'chalk';
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
-async function assets() {
+(async () => {
   // remove calcite from arcgis core css
-  await replace({
+  const removeCalciteFromArcgis = await replaceInFile({
     files: 'node_modules/@arcgis/core/assets/esri/themes/base/_core.scss',
     from: '@import "@esri/calcite-components/dist/calcite/calcite";',
     to: '',
   });
-  console.log(chalk.green('removed calcite css from core'));
+  console.log(chalk.green(`Remove calcite css from core. Has changed: ${removeCalciteFromArcgis[0].hasChanged}.`));
 
   // copy arcgis core assets
   const arcgisSrc = path.resolve(__dirname, './../node_modules/@arcgis/core/assets');
@@ -60,6 +60,4 @@ async function assets() {
       }
     }
   });
-}
-
-assets();
+}).call();
