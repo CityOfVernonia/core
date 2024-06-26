@@ -1,5 +1,4 @@
 import esri = __esri;
-import { Point } from '@arcgis/core/geometry';
 /**
  * Distance between two points.
  * @param point1 esri.Point | x,y key/value pair

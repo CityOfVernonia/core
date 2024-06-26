@@ -1,6 +1,4 @@
 import esri = __esri;
-import { SpatialReference } from '@arcgis/core/geometry';
-import MediaLayer from '@arcgis/core/layers/MediaLayer';
 /**
  * Parse auxiliary XML file for georeference information.
  * @param url URL of `*.aux.xml` file with georeference information

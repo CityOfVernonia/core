@@ -1,6 +1,4 @@
 import esri = __esri;
-import CSVLayer from '@arcgis/core/layers/CSVLayer';
-import GeoJSONLayer from '@arcgis/core/layers/GeoJSONLayer';
 /**
  * Set basic attributes popup to a layer.
  * @param layer

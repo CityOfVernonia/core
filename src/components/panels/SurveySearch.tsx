@@ -262,7 +262,7 @@ class SurveySearch extends Widget {
                 });
               }}
             >
-              <calcite-tooltip close-on-click="" placement="leading" slot="tooltip">
+              <calcite-tooltip close-on-click="" overlay-positioning="fixed" placement="leading" slot="tooltip">
                 Info
               </calcite-tooltip>
             </calcite-action>
@@ -276,8 +276,8 @@ class SurveySearch extends Widget {
                 });
               }}
             >
-              <calcite-tooltip close-on-click="" placement="leading" slot="tooltip">
-                View PDF
+              <calcite-tooltip close-on-click="" overlay-positioning="fixed" placement="trailing" slot="tooltip">
+                PDF
               </calcite-tooltip>
             </calcite-action>
           </calcite-list-item>
