@@ -43,7 +43,7 @@
     "sass": "^1.77.6",
     "terser": "^5.31.1",
     "tslib": "^2.6.3",
-    "typedoc": "^0.26.2",
+    "typedoc": "^0.25.13",
     "typescript": "^5.5.2",
     "typescript-eslint": "^7.14.1",
     "vite": "^5.3.1"
