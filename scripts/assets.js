@@ -29,8 +29,8 @@ const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
   console.log(chalk.green('@argis/core assets copied'));
 
   // copy calcite components
-  const calciteSrc = path.resolve(__dirname, './../node_modules/@esri/calcite-components/dist/calcite');
-  const calciteDest = path.resolve(__dirname, './../dev/public/calcite');
+  const calciteSrc = path.resolve(__dirname, './../node_modules/@esri/calcite-components/dist/calcite/assets');
+  const calciteDest = path.resolve(__dirname, './../dev/public/calcite/assets');
   if (!calciteSrc) {
     console.log(chalk.red.bold('@esri/calcite-components must be installed'));
     return;

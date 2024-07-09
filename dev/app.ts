@@ -1,8 +1,17 @@
+import '@esri/calcite-components/dist/calcite/calcite.css';
 import './main.scss';
 
 import esri = __esri;
 
+// esri config
 import esriConfig from '@arcgis/core/config';
+esriConfig.portalUrl = 'https://gis.vernonia-or.gov/portal';
+esriConfig.assetsPath = './arcgis';
+
+// calcite
+import { defineCustomElements } from '@esri/calcite-components/dist/loader';
+defineCustomElements(window, { resourcesUrl: './calcite/assets' });
+
 import WebMap from '@arcgis/core/WebMap';
 import MapView from '@arcgis/core/views/MapView';
 import Basemap from '@arcgis/core/Basemap';
@@ -29,9 +38,6 @@ import TaxMaps from './../src/components/panels/TaxMaps';
 
 import TestModal from './../src/components/modals/TestModal';
 // import TestShellPanel from './../src/components/shellPanels/TestShellPanel';
-
-esriConfig.portalUrl = 'https://gis.vernonia-or.gov/portal';
-esriConfig.assetsPath = './arcgis';
 
 const load = async (): Promise<void> => {
   const hillshadeBasemap = new Basemap({
