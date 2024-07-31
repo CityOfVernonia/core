@@ -156,6 +156,11 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
  */
 export declare const showAlertTopic: () => string;
 /**
+ * Return toggle map navigation topic.
+ * @returns string
+ */
+export declare const toggleMapNavigationTopic: () => string;
+/**
  * Vernonia map application layout.
  */
 declare class MapApplication extends Widget {

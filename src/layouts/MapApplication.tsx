@@ -195,14 +195,24 @@ const CSS = {
 
 let KEY = 0;
 
-const TOPIC = 'show-alert';
+const SHOW_ALERT_TOPIC = 'show-alert';
+
+const TOGGLE_MAP_NAVIGATION_TOPIC = 'toggle-map-navigation';
 
 /**
  * Return show alert topic.
  * @returns string
  */
 export const showAlertTopic = (): string => {
-  return TOPIC;
+  return SHOW_ALERT_TOPIC;
+};
+
+/**
+ * Return toggle map navigation topic.
+ * @returns string
+ */
+export const toggleMapNavigationTopic = (): string => {
+  return TOGGLE_MAP_NAVIGATION_TOPIC;
 };
 
 /**
@@ -261,9 +271,14 @@ class MapApplication extends Widget {
     if (includeDisclaimer && !DisclaimerModal.isAccepted()) new DisclaimerModal(disclaimerOptions);
 
     // subscribe to alerts
-    subscribe(TOPIC, (message: string, options: AlertOptions): void => {
+    subscribe(SHOW_ALERT_TOPIC, (message: string, options: AlertOptions): void => {
       this._alertEvent(options);
     });
+
+    // subscribe to toggle map navigation
+    // subscribe(TOGGLE_MAP_NAVIGATION_TOPIC, (message: string, disable: boolean): void => {
+    //   this.toggleMapNavigation(disable);
+    // });
 
     // be loaded when view is serviceable
     await view.when();
@@ -345,6 +360,10 @@ class MapApplication extends Widget {
     this._visibleShellPanelComponent = id;
   }
 
+  // toggleMapNavigation(disable: boolean) {
+  //   const { view } = this;
+  // }
+
   //////////////////////////////////////
   // Private methods
   //////////////////////////////////////
@@ -366,7 +385,7 @@ class MapApplication extends Widget {
 
       let element: tsx.JSX.Element | undefined;
 
-      component.addHandles(component.on(TOPIC, this._alertEvent.bind(this)));
+      component.addHandles(component.on(SHOW_ALERT_TOPIC, this._alertEvent.bind(this)));
 
       switch (type) {
         case 'modal': {
@@ -494,7 +513,7 @@ class MapApplication extends Widget {
       onShow?: () => void | undefined;
     },
   ): void {
-    component.addHandles(component.on(TOPIC, this._alertEvent.bind(this)));
+    component.addHandles(component.on(SHOW_ALERT_TOPIC, this._alertEvent.bind(this)));
     this.addHandles(
       watch(
         (): string | null => this._visibleShellPanelComponent,

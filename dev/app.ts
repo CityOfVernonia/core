@@ -220,6 +220,8 @@ const load = async (): Promise<void> => {
   });
 
   mapApplication.on('load', (): void => {});
+
+  console.log(view);
 };
 
 load();

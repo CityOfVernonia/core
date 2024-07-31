@@ -135,7 +135,7 @@ export default class ViewControl2D extends Widget {
   private _initializeFullscreen(action: HTMLCalciteActionElement): void {
     const { view } = this;
 
-    import('@arcgis/core/widgets/Fullscreen/FullscreenViewModel').then((module: any) => {
+    import('@arcgis/core/widgets/Fullscreen/FullscreenViewModel').then((module): void => {
       const fullscreen = new (module.default as typeof esri.FullscreenViewModel)({
         view,
         element: document.body,
@@ -171,7 +171,7 @@ export default class ViewControl2D extends Widget {
   private _initializeLocate(action: HTMLCalciteActionElement): void {
     const { view, locateProperties } = this;
 
-    import('@arcgis/core/widgets/Locate/LocateViewModel').then((module: any) => {
+    import('@arcgis/core/widgets/Locate/LocateViewModel').then((module): void => {
       const locate = new (module.default as typeof esri.LocateViewModel)({
         view,
         ...locateProperties,

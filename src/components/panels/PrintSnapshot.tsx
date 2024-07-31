@@ -134,7 +134,7 @@ class PrintSnapshot extends Widget {
                 },
               }),
             )
-            .then((printResult: any): void => {
+            .then((printResult: { url: string }): void => {
               button.disabled = false;
               button.loading = false;
               button.addEventListener('click', (): void => {
