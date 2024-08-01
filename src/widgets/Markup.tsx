@@ -449,7 +449,14 @@ export default class Markup extends Widget {
     if (sketchState !== 'complete') return;
     const type = graphic.geometry.type as 'point' | 'polyline' | 'polygon';
     layer.remove(graphic);
-    (_drawState === 'text') === true ? text.add(graphic) : this[type].add(graphic);
+
+    // (_drawState === 'text') === true ? text.add(graphic) : this[type].add(graphic);
+    if (_drawState === 'text') {
+      text.add(graphic);
+    } else {
+      this[type].add(graphic);
+    }
+
     if (_drawState === 'text') {
       this._viewState = 'text';
       setTimeout((): void => {
@@ -497,7 +504,12 @@ export default class Markup extends Widget {
     const geometryType = graphic.geometry.type as 'point' | 'polyline' | 'polygon';
     const symbolType = graphic.symbol.type;
     layer.removeAll();
-    symbolType === 'text' ? text.add(graphic) : this[geometryType].add(graphic);
+    // symbolType === 'text' ? text.add(graphic) : this[geometryType].add(graphic);
+    if (symbolType === 'text') {
+      text.add(graphic);
+    } else {
+      this[geometryType].add(graphic);
+    }
     this._selectReset();
     this._viewState = 'markup';
   }
@@ -906,7 +918,12 @@ export default class Markup extends Widget {
       if (_confirmLoadModalHandle) _confirmLoadModalHandle.remove();
 
       this._confirmLoadModalHandle = this._confirmLoadModal.on('confirmed', (confirmed: boolean): void => {
-        confirmed ? this._loadGraphics(input) : (this._confirmLoadModal.container.open = false);
+        // confirmed ? this._loadGraphics(input) : (this._confirmLoadModal.container.open = false);
+        if (confirmed) {
+          this._loadGraphics(input);
+        } else {
+          this._confirmLoadModal.container.open = false;
+        }
       });
       return;
     }

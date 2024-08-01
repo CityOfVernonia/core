@@ -135,69 +135,73 @@ export default class ViewControl2D extends Widget {
   private _initializeFullscreen(action: HTMLCalciteActionElement): void {
     const { view } = this;
 
-    import('@arcgis/core/widgets/Fullscreen/FullscreenViewModel').then((module): void => {
-      const fullscreen = new (module.default as typeof esri.FullscreenViewModel)({
-        view,
-        element: document.body,
-      });
+    import('@arcgis/core/widgets/Fullscreen/FullscreenViewModel').then(
+      (module: { default: typeof esri.FullscreenViewModel }): void => {
+        const fullscreen = new module.default({
+          view,
+          element: document.body,
+        });
 
-      action.addEventListener('click', fullscreen.toggle.bind(fullscreen));
-      action.disabled = fullscreen.state === 'disabled' || fullscreen.state === 'feature-unsupported';
+        action.addEventListener('click', fullscreen.toggle.bind(fullscreen));
+        action.disabled = fullscreen.state === 'disabled' || fullscreen.state === 'feature-unsupported';
 
-      this.addHandles(
-        watch(
-          (): esri.FullscreenViewModel['state'] => fullscreen.state,
-          (state?: esri.FullscreenViewModel['state']): void => {
-            action.disabled = state === 'disabled' || state === 'feature-unsupported';
+        this.addHandles(
+          watch(
+            (): esri.FullscreenViewModel['state'] => fullscreen.state,
+            (state?: esri.FullscreenViewModel['state']): void => {
+              action.disabled = state === 'disabled' || state === 'feature-unsupported';
 
-            const tooltip = action.querySelector('calcite-tooltip') as HTMLCalciteTooltipElement;
+              const tooltip = action.querySelector('calcite-tooltip') as HTMLCalciteTooltipElement;
 
-            if (state === 'ready') {
-              action.icon = 'extent';
-              action.text = 'Enter fullscreen';
-              tooltip.innerText = 'Enter fullscreen';
-            }
-            if (state === 'active') {
-              action.icon = 'full-screen-exit';
-              action.text = 'Exit fullscreen';
-              tooltip.innerText = 'Exit fullscreen';
-            }
-          },
-        ),
-      );
-    });
+              if (state === 'ready') {
+                action.icon = 'extent';
+                action.text = 'Enter fullscreen';
+                tooltip.innerText = 'Enter fullscreen';
+              }
+              if (state === 'active') {
+                action.icon = 'full-screen-exit';
+                action.text = 'Exit fullscreen';
+                tooltip.innerText = 'Exit fullscreen';
+              }
+            },
+          ),
+        );
+      },
+    );
   }
 
   private _initializeLocate(action: HTMLCalciteActionElement): void {
     const { view, locateProperties } = this;
 
-    import('@arcgis/core/widgets/Locate/LocateViewModel').then((module): void => {
-      const locate = new (module.default as typeof esri.LocateViewModel)({
-        view,
-        ...locateProperties,
-      });
+    import('@arcgis/core/widgets/Locate/LocateViewModel').then(
+      (module: { default: typeof esri.LocateViewModel }): void => {
+        const locate = new module.default({
+          view,
+          ...locateProperties,
+        });
 
-      action.addEventListener('click', locate.locate.bind(locate));
-      action.disabled = locate.state === 'disabled';
+        action.addEventListener('click', locate.locate.bind(locate));
+        action.disabled = locate.state === 'disabled';
 
-      this.addHandles(
-        watch(
-          (): esri.LocateViewModel['state'] => locate.state,
-          (state?: esri.LocateViewModel['state']): void => {
-            action.disabled = state === 'disabled';
+        this.addHandles(
+          watch(
+            (): esri.LocateViewModel['state'] => locate.state,
+            (state?: esri.LocateViewModel['state']): void => {
+              action.disabled = state === 'disabled';
 
-            action.icon =
-              locate.state === 'ready'
-                ? 'gps-on'
-                : locate.state === 'locating'
-                  ? 'gps-on-f'
-                  : locate.state === 'disabled'
-                    ? 'gps-off'
-                    : '';
-          },
-        ),
-      );
-    });
+              action.icon =
+                locate.state === 'ready'
+                  ? 'gps-on'
+                  : locate.state === 'locating'
+                    ? 'gps-on-f'
+                    : locate.state === 'disabled'
+                      ? 'gps-off'
+                      : '';
+            },
+          ),
+        );
+      },
+    );
   }
 
   private _toggleMagnifier(): void {

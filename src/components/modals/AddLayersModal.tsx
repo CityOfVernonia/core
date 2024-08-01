@@ -47,7 +47,7 @@ interface LayerInfo {
 
 // import type OAuth from '../../support/OAuth';
 
-import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
+import { subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 
