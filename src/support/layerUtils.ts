@@ -3,7 +3,7 @@ import esri = __esri;
 import CSVLayer from '@arcgis/core/layers/CSVLayer';
 import GeoJSONLayer from '@arcgis/core/layers/GeoJSONLayer';
 
-const _fetchLayerJSON = async (url: string): Promise<any> => {
+const _fetchLayerJSON = async (url: string): Promise<object> => {
   return await (await fetch(url, { cache: 'reload' })).json();
 };
 

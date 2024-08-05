@@ -62,7 +62,7 @@ export interface ImageryInfo {
   /**
    * Layer properties.
    */
-  properties?: any;
+  properties?: object;
   /**
    * Title of the imagery layer.
    */

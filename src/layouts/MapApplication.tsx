@@ -266,6 +266,7 @@ class MapApplication extends Widget {
     try {
       if (await IdentityManager.checkSignInStatus(esriConfig.portalUrl)) includeDisclaimer = false;
     } catch (error) {
+      console.log(error);
       includeDisclaimer = true;
     }
     if (includeDisclaimer && !DisclaimerModal.isAccepted()) new DisclaimerModal(disclaimerOptions);
