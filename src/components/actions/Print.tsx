@@ -145,6 +145,8 @@ export default class Print extends Widget {
       _reader: { result },
     } = this;
 
+    this._printing = false;
+
     const a = Object.assign(document.createElement('a'), {
       href: result,
       download: `${printFileName}.${printFormat}`,
