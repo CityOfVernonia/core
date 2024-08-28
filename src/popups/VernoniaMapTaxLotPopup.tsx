@@ -169,6 +169,7 @@ class VernoniaMapTaxLotPopupContent extends Widget {
             <calcite-popover
               auto-close=""
               closable=""
+              overlay-positioning="fixed"
               scale="s"
               afterCreate={(element: HTMLCalcitePopoverElement): void => {
                 element.referenceElement = element.previousElementSibling as HTMLCalciteIconElement;
