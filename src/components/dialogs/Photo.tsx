@@ -11,14 +11,14 @@ const URL_REG_EXP = new RegExp(
 );
 
 /**
- * Modal widget for viewing and downloading images.
+ * Modal dialog for viewing and downloading images.
  */
-@subclass('cov.modals.PhotoModal')
-export default class PhotoModal extends Widget {
+@subclass('cov.components.dialogs.Photo')
+export default class Photo extends Widget {
   //////////////////////////////////////
   // Lifecycle
   //////////////////////////////////////
-  container = document.createElement('calcite-modal');
+  container = document.createElement('calcite-dialog');
 
   constructor(
     properties?: esri.WidgetProperties & {
@@ -31,7 +31,7 @@ export default class PhotoModal extends Widget {
   ) {
     super(properties);
     document.body.append(this.container);
-    this.container.addEventListener('calciteModalClose', (): void => {
+    this.container.addEventListener('calciteDialogClose', (): void => {
       this._url = '';
     });
   }
@@ -99,7 +99,7 @@ export default class PhotoModal extends Widget {
   // Private methods
   //////////////////////////////////////
   /**
-   * Close modal.
+   * Close dialog.
    */
   private _close(): void {
     this.container.open = false;
@@ -111,34 +111,25 @@ export default class PhotoModal extends Widget {
   render(): tsx.JSX.Element {
     const { showDownload, _fileName, _url, _loading } = this;
     return (
-      <calcite-modal style="--calcite-modal-content-padding: 0;">
-        <div slot="header">{_fileName}</div>
-        <div slot="content">
-          <calcite-scrim hidden={!_loading} loading=""></calcite-scrim>
-          <img
-            style="width: 100%; min-height: 300px;"
-            src={_url}
-            afterCreate={(img: HTMLImageElement): void => {
-              img.addEventListener('load', (): void => {
-                this._loading = false;
-              });
-            }}
-          ></img>
-        </div>
+      <calcite-dialog heading={_fileName} loading={_loading} modal="" style="--calcite-dialog-content-space:0;">
+        <img
+          style="width:100%; min-height:300px;"
+          src={_url}
+          afterCreate={(img: HTMLImageElement): void => {
+            img.addEventListener('load', (): void => {
+              this._loading = false;
+            });
+          }}
+        ></img>
         {showDownload ? (
-          <calcite-button
-            appearance="outline"
-            slot="secondary"
-            width="full"
-            onclick={this.download.bind(this, _fileName, _url)}
-          >
+          <calcite-button appearance="outline" slot="footer-end" onclick={this.download.bind(this, _fileName, _url)}>
             Download
           </calcite-button>
         ) : null}
-        <calcite-button slot="primary" width="full" onclick={this._close.bind(this)}>
+        <calcite-button slot="footer-end" onclick={this._close.bind(this)}>
           Close
         </calcite-button>
-      </calcite-modal>
+      </calcite-dialog>
     );
   }
 }

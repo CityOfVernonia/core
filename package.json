@@ -1,6 +1,6 @@
 {
   "name": "@vernonia/core",
-  "version": "4.0.28",
+  "version": "4.0.29",
   "description": "City of Vernonia friends for ArcGIS Maps SDK for JavaScript.",
   "type": "module",
   "scripts": {
@@ -40,18 +40,18 @@
     "prettier": "^3.3.3",
     "replace-in-file": "^8.1.0",
     "rimraf": "^6.0.1",
-    "sass": "^1.77.8",
+    "sass": "^1.78.0",
     "terser": "^5.31.6",
     "tslib": "^2.7.0",
     "typedoc": "^0.26.6",
     "typescript": "^5.5.4",
-    "typescript-eslint": "^8.3.0",
-    "vite": "^5.4.2"
+    "typescript-eslint": "^8.4.0",
+    "vite": "^5.4.3"
   },
   "dependencies": {
     "@arcgis/core": "^4.30.9",
-    "@esri/calcite-components": "^2.12.0",
-    "fast-xml-parser": "^4.4.1",
+    "@esri/calcite-components": "^2.12.1",
+    "fast-xml-parser": "^4.5.0",
     "interactjs": "^1.10.27",
     "js-cookie": "^3.0.5",
     "luxon": "^3.5.0",

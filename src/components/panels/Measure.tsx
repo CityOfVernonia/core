@@ -1239,7 +1239,7 @@ class Measure extends Widget {
           closable=""
           heading="Options"
           overlay-positioning="fixed"
-          placement="bottom-start"
+          placement="bottom-end"
           scale="s"
           afterCreate={this._referenceElement.bind(this)}
         >

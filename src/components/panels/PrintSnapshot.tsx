@@ -35,14 +35,16 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
 import PrintViewModel from '@arcgis/core/widgets/Print/PrintViewModel';
 import PrintTemplate from '@arcgis/core/rest/support/PrintTemplate';
-import PhotoModal from './../modals/PhotoModal';
+// import PrintParameters from '@arcgis/core/rest/support/PrintParameters';
+// import PortalItem from '@arcgis/core/portal/PortalItem';
+import Photo from '../dialogs/Photo';
 
 //////////////////////////////////////
 // Constants
 //////////////////////////////////////
 const CSS = {
   content: 'cov-panels--print-snapshot_content',
-  printButton: 'cov-panels--print-snapshot_print-button',
+  footer: 'cov-panels--print-snapshot_footer',
   snapshotResult: 'cov-panels--print-snapshot_snapshot-result',
 };
 
@@ -56,7 +58,7 @@ let KEY = 0;
 /**
  * Panel component for printing with a print service and taking view snapshot images.
  */
-@subclass('cov.panels.PrintSnapshot')
+@subclass('cov.components.panels.PrintSnapshot')
 class PrintSnapshot extends Widget {
   //////////////////////////////////////
   // Lifecycle
@@ -119,34 +121,33 @@ class PrintSnapshot extends Widget {
       <calcite-button
         key={KEY++}
         appearance="outline-fill"
-        class={CSS.printButton}
         disabled=""
         loading=""
         width="full"
-        afterCreate={(button: HTMLCalciteButtonElement): void => {
-          _printer
-            .print(
+        afterCreate={async (button: HTMLCalciteButtonElement): Promise<void> => {
+          try {
+            const result = await _printer.print(
               new PrintTemplate({
                 format: 'pdf',
                 layout,
                 layoutOptions: {
                   titleText,
+                  scalebarUnit: 'Feet',
                 },
+                // outScale: 432,
               }),
-            )
-            .then((printResult: { url: string }): void => {
-              button.disabled = false;
-              button.loading = false;
-              button.addEventListener('click', (): void => {
-                window.open(printResult.url, '_blank');
-              });
-            })
-            .catch((printError: esri.Error): void => {
-              console.log(printError);
-              button.loading = false;
-              button.kind = 'danger';
-              button.iconStart = 'exclamation-mark-triangle';
+            );
+            button.disabled = false;
+            button.loading = false;
+            button.addEventListener('click', (): void => {
+              window.open(result.url, '_blank');
             });
+          } catch (error) {
+            console.log(error);
+            button.loading = false;
+            button.kind = 'danger';
+            button.iconStart = 'exclamation-mark-triangle';
+          }
         }}
       >
         {titleText}
@@ -159,13 +160,13 @@ class PrintSnapshot extends Widget {
   //////////////////////////////////////
   private _snapshotResults: esri.Collection<tsx.JSX.Element> = new Collection();
 
-  private _photoModal = new PhotoModal();
+  private _photo = new Photo();
 
   /**
    * Create a snapshot.
    */
   private async _snapshot(): Promise<void> {
-    const { container, view, _snapshotResults, _photoModal } = this;
+    const { container, view, _snapshotResults, _photo } = this;
 
     const title =
       (container.querySelector('[data-print-snapshot="snapshot title"]') as HTMLCalciteInputElement).value ||
@@ -187,15 +188,11 @@ class PrintSnapshot extends Widget {
 
     _snapshotResults.add(
       <div key={KEY++} class={CSS.snapshotResult} style={`background-image: url(${dataUrl});`}>
-        <calcite-action
-          icon="image"
-          text="View"
-          onclick={_photoModal.show.bind(_photoModal, fileName, dataUrl)}
-        ></calcite-action>
+        <calcite-action icon="image" text="View" onclick={_photo.show.bind(_photo, fileName, dataUrl)}></calcite-action>
         <calcite-action
           icon="download"
           text="Download"
-          onclick={_photoModal.download.bind(_photoModal, fileName, dataUrl)}
+          onclick={_photo.download.bind(_photo, fileName, dataUrl)}
         ></calcite-action>
       </div>,
     );
@@ -257,28 +254,32 @@ class PrintSnapshot extends Widget {
             Snapshot
           </calcite-tooltip>
         </calcite-action>
+
         {/* print */}
         <div class={CSS.content} hidden={_viewState !== 'print'}>
           <calcite-label>
             Title
             <calcite-input data-print-snapshot="print title" type="text" value={TITLES.print}></calcite-input>
           </calcite-label>
-          <calcite-label>
+          <calcite-label style="--calcite-label-margin-bottom:0;">
             Layout
             <calcite-select data-print-snapshot="print layout">{this._renderLayoutOptions()}</calcite-select>
           </calcite-label>
+        </div>
+        <div class={CSS.footer} hidden={_viewState !== 'print'} slot={_viewState === 'print' ? 'footer' : null}>
           <calcite-button width="full" onclick={this._print.bind(this)}>
             Print
           </calcite-button>
           {_printResults.toArray()}
         </div>
+
         {/* snapshot */}
         <div class={CSS.content} hidden={_viewState !== 'snapshot'}>
           <calcite-label>
             Title
             <calcite-input data-print-snapshot="snapshot title" type="text" value={TITLES.snapshot}></calcite-input>
           </calcite-label>
-          <calcite-label>
+          <calcite-label style="--calcite-label-margin-bottom:0;">
             Format
             <calcite-segmented-control data-print-snapshot="snapshot format">
               <calcite-segmented-control-item value="jpg" checked="">
@@ -287,6 +288,9 @@ class PrintSnapshot extends Widget {
               <calcite-segmented-control-item value="png">PNG</calcite-segmented-control-item>
             </calcite-segmented-control>
           </calcite-label>
+        </div>
+
+        <div class={CSS.footer} hidden={_viewState !== 'snapshot'} slot={_viewState === 'snapshot' ? 'footer' : null}>
           <calcite-button width="full" onclick={this._snapshot.bind(this)}>
             Snapshot
           </calcite-button>

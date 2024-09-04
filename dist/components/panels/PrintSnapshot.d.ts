@@ -41,7 +41,7 @@ declare class PrintSnapshot extends Widget {
      */
     private _print;
     private _snapshotResults;
-    private _photoModal;
+    private _photo;
     /**
      * Create a snapshot.
      */

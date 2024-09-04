@@ -6,7 +6,7 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
     /**
      * Disclaimer options.
      */
-    disclaimerOptions?: DisclaimerModalOptions;
+    disclaimerOptions?: DisclaimerOptions;
     /**
      * Component with an action at the end (bottom) of the action bar.
      *
@@ -89,7 +89,7 @@ export interface ShellPanelComponentInfo {
     icon: string;
     groupEnd?: boolean;
     text: string;
-    type: 'flow' | 'modal' | 'panel';
+    type: 'flow' | 'modal' | 'dialog' | 'panel';
 }
 /**
  * Options to show alert.
@@ -146,7 +146,7 @@ export interface AlertOptions {
 }
 import type OAuth from './../support/OAuth';
 import type { LoaderOptions } from './support/Loader';
-import type { DisclaimerModalOptions } from './../components/modals/DisclaimerModal';
+import type { DisclaimerOptions } from './../components/dialogs/Disclaimer';
 import type { ViewControlOptions } from './support/ViewControl2D';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -167,7 +167,7 @@ declare class MapApplication extends Widget {
     container: HTMLCalciteShellElement;
     constructor(properties: MapApplicationProperties);
     postInitialize(): Promise<void>;
-    disclaimerOptions: DisclaimerModalOptions;
+    disclaimerOptions: DisclaimerOptions;
     endShellPanelComponent?: ShellPanelComponentInfo;
     header?: esri.Widget | false;
     headerCompact: boolean;

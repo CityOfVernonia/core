@@ -7,7 +7,7 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
   /**
    * Disclaimer options.
    */
-  disclaimerOptions?: DisclaimerModalOptions;
+  disclaimerOptions?: DisclaimerOptions;
   /**
    * Component with an action at the end (bottom) of the action bar.
    *
@@ -91,7 +91,7 @@ export interface ShellPanelComponentInfo {
   icon: string;
   groupEnd?: boolean;
   text: string;
-  type: 'flow' | 'modal' | 'panel';
+  type: 'flow' | 'modal' | 'dialog' | 'panel';
 }
 
 /**
@@ -153,7 +153,7 @@ export interface AlertOptions {
 //////////////////////////////////////
 import type OAuth from './../support/OAuth';
 import type { LoaderOptions } from './support/Loader';
-import type { DisclaimerModalOptions } from './../components/modals/DisclaimerModal';
+import type { DisclaimerOptions } from './../components/dialogs/Disclaimer';
 import type { ViewControlOptions } from './support/ViewControl2D';
 
 //////////////////////////////////////
@@ -168,7 +168,7 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
 import logoSvg from './support/logo';
 import Loader from './support/Loader';
-import DisclaimerModal from './../components/modals/DisclaimerModal';
+import Disclaimer from './../components/dialogs/Disclaimer';
 import ViewControl2D from './support/ViewControl2D';
 import basemapToggle from './support/basemapToggle';
 import { subscribe } from 'pubsub-js';
@@ -266,10 +266,11 @@ class MapApplication extends Widget {
     try {
       if (await IdentityManager.checkSignInStatus(esriConfig.portalUrl)) includeDisclaimer = false;
     } catch (error) {
-      console.log(error);
+      // @ts-expect-error checkSignInStatus returns object with message
+      if (error.message !== 'User is not signed in.') console.log(error);
       includeDisclaimer = true;
     }
-    if (includeDisclaimer && !DisclaimerModal.isAccepted()) new DisclaimerModal(disclaimerOptions);
+    if (includeDisclaimer && !Disclaimer.isAccepted()) new Disclaimer(disclaimerOptions);
 
     // subscribe to alerts
     subscribe(SHOW_ALERT_TOPIC, (message: string, options: AlertOptions): void => {
@@ -291,7 +292,7 @@ class MapApplication extends Widget {
   //////////////////////////////////////
   // Properties
   //////////////////////////////////////
-  disclaimerOptions: DisclaimerModalOptions = {};
+  disclaimerOptions: DisclaimerOptions = {};
 
   endShellPanelComponent?: ShellPanelComponentInfo;
 
@@ -394,6 +395,11 @@ class MapApplication extends Widget {
           document.body.append(component.container);
           break;
         }
+        case 'dialog': {
+          component.container = document.createElement('calcite-dialog');
+          document.body.append(component.container);
+          break;
+        }
         case 'panel': {
           element = (
             <calcite-panel
@@ -418,7 +424,7 @@ class MapApplication extends Widget {
         }
       }
 
-      if (type !== 'modal') component.visible = false;
+      if (type !== 'modal' && type !== 'dialog') component.visible = false;
 
       if (element) _shellPanelComponents.add(element);
 
@@ -427,9 +433,9 @@ class MapApplication extends Widget {
           icon={icon}
           text={text}
           afterCreate={(action: HTMLCalciteActionElement): void => {
-            if (type === 'modal') {
+            if (type === 'modal' || type === 'dialog') {
               action.addEventListener('click', (): void => {
-                (component.container as HTMLCalciteModalElement).open = true;
+                (component.container as HTMLCalciteModalElement | HTMLCalciteDialogElement).open = true;
               });
             } else {
               action.addEventListener('click', (): void => {

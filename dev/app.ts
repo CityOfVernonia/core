@@ -36,7 +36,9 @@ import SurveySearch from './../src/components/panels/SurveySearch';
 import TaxLotBuffer from './../src/components/panels/TaxLotBuffer';
 import TaxMaps from './../src/components/panels/TaxMaps';
 
-import TestModal from './../src/components/modals/TestModal';
+import TestDialog from './../src/components/dialogs/Test';
+// import AlertDialog from './../src/components/dialogs/Alert';
+// import ConfirmDialog from './../src/components/dialogs/Confirm';
 // import TestShellPanel from './../src/components/shellPanels/TestShellPanel';
 
 const load = async (): Promise<void> => {
@@ -114,10 +116,11 @@ const load = async (): Promise<void> => {
 
   const mapApplication = new MapApplication({
     endShellPanelComponent: {
-      component: new TestModal(),
+      component: new TestDialog(),
+      // component: new TestModal(),
       icon: 'lightbulb',
       text: 'Info',
-      type: 'modal',
+      type: 'dialog',
     },
     // footer: new TestShellPanel(),
     nextBasemap: hybridBasemap,
@@ -177,7 +180,11 @@ const load = async (): Promise<void> => {
         type: 'panel',
       },
       {
-        component: new PrintSnapshot({ view }),
+        component: new PrintSnapshot({
+          view,
+          printServiceUrl:
+            'https://gis.vernonia-or.gov/server/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task',
+        }),
         icon: 'print',
         text: 'Print',
         type: 'panel',
@@ -219,7 +226,19 @@ const load = async (): Promise<void> => {
     },
   });
 
-  mapApplication.on('load', (): void => {});
+  mapApplication.on('load', (): void => {
+    // const alertDialog = new AlertDialog();
+    // alertDialog.showAlert();
+    // alertDialog.on('alerted', (): void => {
+    //   console.log('alerted');
+    // });
+
+    // const confirmDialog = new ConfirmDialog();
+    // confirmDialog.showConfirm();
+    // confirmDialog.on('confirmed', (confirmed: boolean): void => {
+    //   console.log('confirmed', confirmed);
+    // });
+  });
 
   console.log(view);
 };
