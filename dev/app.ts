@@ -32,6 +32,7 @@ import LayersLegend from './../src/components/panels/LayersLegend';
 import Measure from './../src/components/panels/Measure';
 import PlanningFiles from './../src/components/panels/PlanningFiles';
 import PrintSnapshot from './../src/components/panels/PrintSnapshot';
+import Sketch from './../src/components/panels/Sketch';
 import SurveySearch from './../src/components/panels/SurveySearch';
 import TaxLotBuffer from './../src/components/panels/TaxLotBuffer';
 import TaxMaps from './../src/components/panels/TaxMaps';
@@ -114,6 +115,8 @@ const load = async (): Promise<void> => {
     },
   });
 
+  const sketch = new Sketch({ view, offsetProjectionWkid: 102970 });
+
   const mapApplication = new MapApplication({
     endShellPanelComponent: {
       component: new TestDialog(),
@@ -190,6 +193,12 @@ const load = async (): Promise<void> => {
         type: 'panel',
       },
       {
+        component: sketch,
+        icon: 'pencil',
+        text: 'Sketch',
+        type: 'panel',
+      },
+      {
         component: new SurveySearch({
           view,
           taxLots,
@@ -227,12 +236,13 @@ const load = async (): Promise<void> => {
   });
 
   mapApplication.on('load', (): void => {
+    mapApplication.showWidget(sketch.id);
+
     // const alertDialog = new AlertDialog();
     // alertDialog.showAlert();
     // alertDialog.on('alerted', (): void => {
     //   console.log('alerted');
     // });
-
     // const confirmDialog = new ConfirmDialog();
     // confirmDialog.showConfirm();
     // confirmDialog.on('confirmed', (confirmed: boolean): void => {
