@@ -55,6 +55,8 @@ export default class Sketch extends Widget {
     private _newTextGraphic;
     private _newTextInputAfterCreate;
     private _newTextSubmitEvent;
+    private _deleteConfirmModal?;
+    private _deleteAll;
     private _symbolEditorContainer;
     private _symbolEditor;
     private _selectState;

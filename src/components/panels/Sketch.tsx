@@ -22,6 +22,8 @@ interface I {
   };
 }
 
+import DeleteConfirmModal from './../dialogs/Confirm';
+
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -524,6 +526,34 @@ export default class Sketch extends Widget {
     event.preventDefault();
     this._setViewState('sketch');
     this._newTextInput.value = 'New text';
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Delete all properties and methods
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  private _deleteConfirmModal?: DeleteConfirmModal;
+
+  private _deleteAll(): void {
+    const { _deleteConfirmModal } = this;
+
+    if (!_deleteConfirmModal) {
+      this._deleteConfirmModal = new DeleteConfirmModal({
+        content: 'Delete all sketch graphics?',
+        kind: 'warning',
+        okText: 'Delete',
+      });
+
+      this._deleteConfirmModal.on('confirmed', (confirm: boolean): void => {
+        const { point, polyline, polygon, text } = this;
+        if (confirm) {
+          [point, polyline, polygon, text].forEach((layer: esri.GraphicsLayer): void => {
+            layer.removeAll();
+          });
+        }
+      });
+    }
+
+    this._deleteConfirmModal?.showConfirm();
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1217,6 +1247,12 @@ export default class Sketch extends Widget {
               appearance="transparent"
               icon-start="redo"
               onclick={_sketch.redo.bind(_sketch)}
+            ></calcite-button>
+            <calcite-button
+              disabled={!_hasGraphics}
+              appearance="transparent"
+              icon-start="trash"
+              onclick={this._deleteAll.bind(this)}
             ></calcite-button>
           </div>
           <div class={CSS.buttonRow}>
