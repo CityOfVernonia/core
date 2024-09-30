@@ -22,7 +22,7 @@ interface I {
   };
 }
 
-import DeleteConfirmModal from './../dialogs/Confirm';
+import type DeleteConfirmModal from './../dialogs/Confirm';
 
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
@@ -533,14 +533,15 @@ export default class Sketch extends Widget {
   /////////////////////////////////////////////////////////////////////////////////////////////////
   private _deleteConfirmModal?: DeleteConfirmModal;
 
-  private _deleteAll(): void {
+  private async _deleteAll(): Promise<void> {
     const { _deleteConfirmModal } = this;
 
     if (!_deleteConfirmModal) {
-      this._deleteConfirmModal = new DeleteConfirmModal({
+      this._deleteConfirmModal = new (await import('./../dialogs/Confirm')).default({
         content: 'Delete all sketch graphics?',
-        kind: 'warning',
+        kind: 'danger',
         okText: 'Delete',
+        okButtonDanger: true,
       });
 
       this._deleteConfirmModal.on('confirmed', (confirm: boolean): void => {

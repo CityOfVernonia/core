@@ -19,6 +19,11 @@ export interface ConfirmOptions {
    */
   okText?: string;
   /**
+   * Ok button danger kind.
+   * @default false
+   */
+  okButtonDanger?: boolean;
+  /**
    * Cancel button text.
    * @default 'Cancel'
    */
@@ -49,16 +54,19 @@ export default class Confirm extends Widget {
 
   okText = 'Ok';
 
+  okButtonDanger = false;
+
   cancelText = 'Cancel';
 
   showConfirm(options?: ConfirmOptions) {
     const { container } = this;
     if (options) {
-      const { content, heading, kind, okText, cancelText } = options;
+      const { content, heading, kind, okText, okButtonDanger, cancelText } = options;
       if (content) this.content = content;
       if (heading) this.heading = heading;
       if (kind) this.kind = kind;
       if (okText) this.okText = okText;
+      if (okButtonDanger) this.okButtonDanger = okButtonDanger;
       if (cancelText) this.cancelText = cancelText;
       this.renderNow();
     }
@@ -66,7 +74,7 @@ export default class Confirm extends Widget {
   }
 
   render(): tsx.JSX.Element {
-    const { container, content, heading, kind, okText, cancelText } = this;
+    const { container, content, heading, kind, okText, okButtonDanger, cancelText } = this;
     return (
       <calcite-dialog
         close-disabled=""
@@ -89,6 +97,7 @@ export default class Confirm extends Widget {
           {cancelText}
         </calcite-button>
         <calcite-button
+          kind={okButtonDanger ? 'danger' : ''}
           slot="footer-end"
           onclick={(): void => {
             container.open = false;

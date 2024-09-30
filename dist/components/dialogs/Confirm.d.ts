@@ -18,6 +18,11 @@ export interface ConfirmOptions {
      */
     okText?: string;
     /**
+     * Ok button danger kind.
+     * @default false
+     */
+    okButtonDanger?: boolean;
+    /**
      * Cancel button text.
      * @default 'Cancel'
      */
@@ -35,6 +40,7 @@ export default class Confirm extends Widget {
     heading: string;
     kind?: 'brand' | 'danger' | 'info' | 'success' | 'warning';
     okText: string;
+    okButtonDanger: boolean;
     cancelText: string;
     showConfirm(options?: ConfirmOptions): void;
     render(): tsx.JSX.Element;
