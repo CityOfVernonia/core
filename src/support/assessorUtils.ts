@@ -4,8 +4,8 @@
  * @param year number tax account year in YYYY format
  * @returns property info url string
  */
-export const propertyInfoUrl = (accountId: number | string, year?: number): string => {
-  return `https://propertyquery.columbiacountyor.gov/columbiaat/MainQueryDetails.aspx?AccountID=${accountId}&QueryYear=${year ? year : new Date().getFullYear() - 1}&Roll=R`;
+export const propertyInfoUrl = (accountId: number | string): string => {
+  return `https://propertysearch.columbiacountyor.gov/PSO/detail/${accountId}/R`;
 };
 
 /**

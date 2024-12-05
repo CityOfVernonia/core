@@ -4,7 +4,7 @@
  * @param year number tax account year in YYYY format
  * @returns property info url string
  */
-export declare const propertyInfoUrl: (accountId: number | string, year?: number) => string;
+export declare const propertyInfoUrl: (accountId: number | string) => string;
 /**
  * Create tax map url.
  * @param mapId
