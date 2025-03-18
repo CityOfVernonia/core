@@ -107,6 +107,7 @@ import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
+import { subscribe } from 'pubsub-js';
 
 //////////////////////////////////////
 // Constants
@@ -200,7 +201,11 @@ export default class MapApplication extends Widget {
       );
     }
 
-    (await import('pubsub-js')).subscribe(SHOW_ALERT_TOPIC, (message: string, options: AlertOptions): void => {
+    // (await import('pubsub-js')).subscribe(SHOW_ALERT_TOPIC, (message: string, options: AlertOptions): void => {
+    //   this._showAlert(options);
+    // });
+
+    subscribe(SHOW_ALERT_TOPIC, (message: string, options: AlertOptions): void => {
       this._showAlert(options);
     });
 
