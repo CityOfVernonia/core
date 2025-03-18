@@ -1,0 +1,31 @@
+.cov--sketch {
+  --calcite-panel-background-color: var(--calcite-color-foreground-1);
+  --calcite-panel-space: 0.5rem 0.75rem;
+}
+
+.cov--sketch_action-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cov--sketch_notice {
+  margin-bottom: 0.5rem;
+}
+
+.cov--sketch_options {
+  padding: 0.75rem;
+}
+
+// color picker
+.cov--sketch_color-picker {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.1875rem;
+  padding: 0.25rem 0;
+
+  calcite-color-picker-swatch {
+    cursor: pointer;
+  }
+}

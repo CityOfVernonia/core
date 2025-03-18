@@ -1,4 +1,6 @@
 import esri = __esri;
+export declare const buffer: (geometry: esri.Geometry, distance: number, unit: esri.LengthUnit) => Promise<esri.Polygon>;
+export declare const offset: (geometry: esri.Polyline, sides: "both" | "left" | "right", distance: number, unit: esri.LengthUnit, wkid?: number) => Promise<esri.Polyline[]>;
 /**
  * Distance between two points.
  * @param point1 esri.Point | x,y key/value pair
@@ -41,6 +43,8 @@ export declare const linearInterpolation: (point1: esri.Point, point2: esri.Poin
  * @returns esri.Point
  */
 export declare const midpoint: (polyline: esri.Polyline) => esri.Point;
+export declare const polygonVertices: (polygon: esri.Polygon, spatialReference: esri.SpatialReference) => esri.Point[];
+export declare const polylineVertices: (polyline: esri.Polyline, spatialReference: esri.SpatialReference) => esri.Point[];
 /**
  * Readable text angle between two points.
  * @param point1 esri.Point | x,y key/value pair
@@ -54,13 +58,3 @@ export declare const textAngle: (point1: esri.Point | {
     x: number;
     y: number;
 }) => number;
-export declare const queryFeatureGeometry: (options: {
-    layer: esri.FeatureLayer;
-    graphic: esri.Graphic;
-    outSpatialReference?: esri.SpatialReference;
-}) => Promise<esri.Geometry>;
-export declare const numberOfVertices: (geometry: esri.Polyline | esri.Polygon) => number;
-export declare const polylineVertices: (polyline: esri.Polyline, spatialReference: esri.SpatialReference) => esri.Point[];
-export declare const polygonVertices: (polygon: esri.Polygon, spatialReference: esri.SpatialReference) => esri.Point[];
-export declare const buffer: (geometry: esri.Geometry, distance: number, unit: esri.LinearUnits) => esri.Geometry;
-export declare const offset: (geometry: esri.Polyline, distance: number, unit: esri.LinearUnits, direction: "both" | "left" | "right", offsetProjectionWkid: number, spatialReference: esri.SpatialReference) => Promise<esri.Polyline[]>;

@@ -7,6 +7,7 @@ import esri = __esri;
 // Modules
 //////////////////////////////////////
 import { XMLParser } from 'fast-xml-parser';
+import { watch } from '@arcgis/core/core/reactiveUtils';
 import { Point, SpatialReference } from '@arcgis/core/geometry';
 import MediaLayer from '@arcgis/core/layers/MediaLayer';
 import ControlPointsGeoreference from '@arcgis/core/layers/support/ControlPointsGeoreference';
@@ -14,7 +15,7 @@ import ImageElement from '@arcgis/core/layers/support/ImageElement';
 import Graphic from '@arcgis/core/Graphic';
 import { SimpleMarkerSymbol } from '@arcgis/core/symbols';
 
-let _displayControlPoints: esri.Graphic[] = [];
+let DISPLAYED_CONTROL_POINTS: esri.Graphic[] = [];
 
 /**
  * Convert a `Blob` to an object URL.
@@ -85,7 +86,8 @@ export const auxiliaryXmlToControlPoints = async (
   const xml2json = new XMLParser().parse(xml);
 
   // find `Metadata` object with georeference information
-  const geoData = (xml2json.PAMDataset.Metadata as Array<any>).find((data: any): boolean => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const geoData = (xml2json.PAMDataset.Metadata as Array<any>).find((data: object): boolean => {
     return Object.prototype.hasOwnProperty.call(data, 'GeodataXform');
   }).GeodataXform;
 
@@ -159,9 +161,12 @@ const imageMediaLayer = async (
     }),
   });
 
-  imageElement.watch('loadError', (error: string): void => {
-    console.log(error);
-  });
+  watch(
+    (): esri.Error | nullish => imageElement.loadError,
+    (error: esri.Error | nullish): void => {
+      console.log(error);
+    },
+  );
 
   const layer = new MediaLayer({
     ...mediaLayerProperties,
@@ -180,11 +185,14 @@ const imageMediaLayer = async (
  * @param view View to display points in
  */
 export const displayControlPoints = (mediaLayer: esri.MediaLayer, view: esri.MapView): void => {
-  if (!mediaLayer.source || !(mediaLayer.source as esri.LocalMediaElementSource).elements.length) return;
-  (
-    ((mediaLayer.source as esri.LocalMediaElementSource).elements.getItemAt(0) as esri.ImageElement)
-      .georeference as esri.ControlPointsGeoreference
-  ).controlPoints.forEach((controlPoint: esri.ControlPoint): void => {
+  if (!mediaLayer.source) return;
+
+  const element = (mediaLayer.source as esri.LocalMediaElementSource).elements.getItemAt(0);
+
+  const controlPoints = ((element as esri.MediaElement).georeference as esri.ControlPointsGeoreference)
+    .controlPoints as esri.ControlPoint[];
+
+  controlPoints.forEach((controlPoint: esri.ControlPoint): void => {
     const graphic = new Graphic({
       geometry: controlPoint.mapPoint?.clone(),
       symbol: new SimpleMarkerSymbol({
@@ -198,7 +206,7 @@ export const displayControlPoints = (mediaLayer: esri.MediaLayer, view: esri.Map
       }),
     });
     view.graphics.add(graphic);
-    _displayControlPoints.push(graphic);
+    DISPLAYED_CONTROL_POINTS.push(graphic);
   });
 };
 
@@ -207,8 +215,8 @@ export const displayControlPoints = (mediaLayer: esri.MediaLayer, view: esri.Map
  * @param view View with media layer control points display in
  */
 export const clearControlPoints = (view: esri.MapView): void => {
-  view.graphics.removeMany(_displayControlPoints);
-  _displayControlPoints = [];
+  view.graphics.removeMany(DISPLAYED_CONTROL_POINTS);
+  DISPLAYED_CONTROL_POINTS = [];
 };
 
 export default imageMediaLayer;

@@ -1,7 +1,71 @@
 import esri = __esri;
-import { Point } from '@arcgis/core/geometry';
-import { geodesicBuffer, offset as _offset } from '@arcgis/core/geometry/geometryEngine';
-import * as projection from '@arcgis/core/geometry/projection';
+
+import { Point, SpatialReference } from '@arcgis/core/geometry';
+import {
+  load as bufferLoad,
+  isLoaded as bufferLoaded,
+  execute as geodesicBuffer,
+} from '@arcgis/core/geometry/operators/geodesicBufferOperator';
+import { execute as _offset } from '@arcgis/core/geometry/operators/offsetOperator';
+import {
+  load as projectLoad,
+  isLoaded as projectLoaded,
+  execute as project,
+} from '@arcgis/core/geometry/operators/projectOperator';
+
+export const buffer = async (
+  geometry: esri.Geometry,
+  distance: number,
+  unit: esri.LengthUnit,
+): Promise<esri.Polygon> => {
+  if (!bufferLoaded()) await bufferLoad();
+
+  return geodesicBuffer(geometry as esri.GeometryUnion, distance, { unit }) as esri.Polygon;
+};
+
+export const offset = async (
+  geometry: esri.Polyline,
+  sides: 'both' | 'left' | 'right',
+  distance: number,
+  unit: esri.LengthUnit,
+  wkid?: number,
+): Promise<esri.Polyline[]> => {
+  const offsets: esri.Polyline[] = [];
+
+  if (wkid && !projectLoaded()) await projectLoad();
+
+  let projected: esri.Polyline | nullish;
+
+  if (wkid) {
+    projected = project(geometry, new SpatialReference({ wkid })) as esri.Polyline;
+  }
+
+  let left: esri.Polyline | nullish;
+
+  let right: esri.Polyline | nullish;
+
+  if (sides === 'both' || sides === 'left') {
+    left = _offset(projected || geometry, distance, { unit }) as esri.Polyline;
+
+    if (projected) {
+      left = project(left, geometry.spatialReference) as esri.Polyline;
+    }
+  }
+
+  if (sides === 'both' || sides === 'right') {
+    right = _offset(projected || geometry, -distance, { unit }) as esri.Polyline;
+
+    if (projected) {
+      right = project(right, geometry.spatialReference) as esri.Polyline;
+    }
+  }
+
+  if (left) offsets.push(left);
+
+  if (right) offsets.push(right);
+
+  return offsets;
+};
 
 /**
  * Distance between two points.
@@ -30,7 +94,9 @@ export const distance3d = (
 ): number => {
   const { x: x1, y: y1, z: z1 } = point1;
   const { x: x2, y: y2, z: z2 } = point2;
-  return Math.sqrt(Math.pow(Math.abs(x1 - x2), 2) + Math.pow(Math.abs(y1 - y2), 2) + Math.pow(Math.abs(z1 - z2), 2));
+  return Math.sqrt(
+    Math.pow(Math.abs(x1 - x2), 2) + Math.pow(Math.abs(y1 - y2), 2) + Math.pow(Math.abs((z1 || 0) - (z2 || 0)), 2),
+  );
 };
 
 /**
@@ -92,6 +158,30 @@ export const midpoint = (polyline: esri.Polyline): esri.Point => {
   });
 };
 
+export const polygonVertices = (polygon: esri.Polygon, spatialReference: esri.SpatialReference): esri.Point[] => {
+  const vertices: esri.Point[] = [];
+
+  polygon.rings.forEach((ring: number[][]): void => {
+    ring.forEach((vertex: number[], index: number): void => {
+      if (index + 1 < ring.length) {
+        vertices.push(new Point({ x: vertex[0], y: vertex[1], spatialReference }));
+      }
+    });
+  });
+  return vertices;
+};
+
+export const polylineVertices = (polyline: esri.Polyline, spatialReference: esri.SpatialReference): esri.Point[] => {
+  const vertices: esri.Point[] = [];
+
+  polyline.paths.forEach((path: number[][]): void => {
+    path.forEach((vertex: number[]): void => {
+      vertices.push(new Point({ x: vertex[0], y: vertex[1], spatialReference }));
+    });
+  });
+  return vertices;
+};
+
 /**
  * Readable text angle between two points.
  * @param point1 esri.Point | x,y key/value pair
@@ -118,99 +208,4 @@ export const textAngle = (
           : Math.abs(angle) + 180;
 
   return angle;
-};
-
-export const queryFeatureGeometry = async (options: {
-  layer: esri.FeatureLayer;
-  graphic: esri.Graphic;
-  outSpatialReference?: esri.SpatialReference;
-}): Promise<esri.Geometry> => {
-  const {
-    layer,
-    layer: { objectIdField },
-    graphic,
-    outSpatialReference,
-  } = options;
-  return (
-    await layer.queryFeatures({
-      where: `${objectIdField} = ${graphic.attributes[objectIdField]}`,
-      returnGeometry: true,
-      outSpatialReference: outSpatialReference || layer.spatialReference,
-    })
-  ).features[0].geometry;
-};
-
-export const numberOfVertices = (geometry: esri.Polyline | esri.Polygon): number => {
-  const { type } = geometry;
-  let count = 0;
-  if (type === 'polyline') {
-    geometry.paths.forEach((path: number[][]): void => {
-      path.forEach((): void => {
-        ++count;
-      });
-    });
-  }
-  if (type === 'polygon') {
-    geometry.rings.forEach((ring: number[][]): void => {
-      ring.forEach((vertex: number[], index: number): void => {
-        if (index + 1 < ring.length) {
-          ++count;
-        }
-      });
-    });
-  }
-  return count;
-};
-
-export const polylineVertices = (polyline: esri.Polyline, spatialReference: esri.SpatialReference): esri.Point[] => {
-  const vertices: esri.Point[] = [];
-  polyline.paths.forEach((path: number[][]): void => {
-    path.forEach((vertex: number[]): void => {
-      vertices.push(new Point({ x: vertex[0], y: vertex[1], spatialReference }));
-    });
-  });
-  return vertices;
-};
-
-export const polygonVertices = (polygon: esri.Polygon, spatialReference: esri.SpatialReference): esri.Point[] => {
-  const vertices: esri.Point[] = [];
-  polygon.rings.forEach((ring: number[][]): void => {
-    ring.forEach((vertex: number[], index: number): void => {
-      if (index + 1 < ring.length) {
-        vertices.push(new Point({ x: vertex[0], y: vertex[1], spatialReference }));
-      }
-    });
-  });
-  return vertices;
-};
-
-export const buffer = (geometry: esri.Geometry, distance: number, unit: esri.LinearUnits): esri.Geometry => {
-  return geodesicBuffer(geometry, distance, unit as esri.LinearUnits) as esri.Geometry;
-};
-
-export const offset = async (
-  geometry: esri.Polyline,
-  distance: number,
-  unit: esri.LinearUnits,
-  direction: 'both' | 'left' | 'right',
-  offsetProjectionWkid: number,
-  spatialReference: esri.SpatialReference,
-): Promise<esri.Polyline[]> => {
-  if (!projection.isLoaded()) await projection.load();
-  const projected = projection.project(geometry, { wkid: offsetProjectionWkid }) as esri.Polyline;
-  const results: esri.Polyline[] = [];
-  if (direction === 'both' || direction === 'left') {
-    results.push(
-      projection.project(_offset(projected, distance, unit as esri.LinearUnits), spatialReference) as esri.Polyline,
-    );
-  }
-  if (direction === 'both' || direction === 'right') {
-    results.push(
-      projection.project(
-        _offset(projected, distance * -1, unit as esri.LinearUnits),
-        spatialReference,
-      ) as esri.Polyline,
-    );
-  }
-  return results;
 };

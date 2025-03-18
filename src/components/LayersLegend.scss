@@ -1,0 +1,58 @@
+@import "../../node_modules/@arcgis/core/assets/esri/themes/base/_color.scss";
+@import "../../node_modules/@arcgis/core/assets/esri/themes/base/_mixins.scss";
+@import "../../node_modules/@arcgis/core/assets/esri/themes/base/_sizes.scss";
+@import "../../node_modules/@arcgis/core/assets/esri/themes/base/_type.scss";
+
+$include_LayerList: true;
+@import "../../node_modules/@arcgis/core/assets/esri/themes/base/widgets/_LayerList.scss";
+
+$include_Legend: true;
+@import "../../node_modules/@arcgis/core/assets/esri/themes/base/widgets/_Legend.scss";
+
+.cov--layers-legend {
+  .esri-legend {
+    padding: 0;
+    // disable weird focusing with legend inside calcite component (still necessary?)
+    * {
+      pointer-events: none;
+    }
+
+    * {
+      font-size: var(--calcite-font-size--2);
+      font-weight: 100;
+    }
+
+    .esri-legend__service {
+      padding: 6px 7.5px;
+    }
+
+    .esri-legend__layer-table {
+      margin-bottom: 4px;
+    }
+
+    .esri-legend__layer-cell--symbols {
+      padding: 0;
+    }
+
+    .esri-legend__symbol {
+      svg {
+        transform: scale(75%);
+      }
+    }
+
+    .esri-widget__heading {
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  arcgis-legend {
+    background-color: var(--calcite-color-foreground-1);
+  }
+
+  arcgis-layer-list,
+  arcgis-legend {
+    &[hidden=""] {
+      display: none;
+    }
+  }
+}

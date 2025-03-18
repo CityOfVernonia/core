@@ -12,19 +12,17 @@
     "jsx": "react",
     "jsxFactory": "tsx",
     "target": "ES6",
-    "module": "es2022",
+    "module": "ES2022",
     "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
-    "types": ["@arcgis/core/interfaces.d.ts", "@esri/calcite-components", "node"]
+    "types": ["@arcgis/core/interfaces.d.ts", "@arcgis/map-components", "@esri/calcite-components"]
   },
   "typedocOptions": {
     "entryPoints": ["src"],
-    "entryPointStrategy": "Expand",
+    "entryPointStrategy": "expand",
     "out": "docs",
-    "plugin": ["@mxssfd/typedoc-theme"],
-    "theme": "my-theme",
-    "includeVersion": true,
+    "includeVersion": true
   },
   "include": ["src/**/*"],
   "exclude": ["dev", "node_modules"]

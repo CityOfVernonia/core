@@ -2,3 +2,8 @@
 dev
 docs
 scripts
+src
+.prettierignore
+eslint.config.js
+package-lock.json
+tsconfig.json

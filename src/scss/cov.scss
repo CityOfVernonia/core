@@ -1,0 +1,165 @@
+/////////////////////////////////////////////////////////////////////////////////////////
+// vernonia variables
+/////////////////////////////////////////////////////////////////////////////////////////
+@use "variables" as vars;
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// arcgis mixins variables
+/////////////////////////////////////////////////////////////////////////////////////////
+@use "../../node_modules/@arcgis/core/assets/esri/themes/base/_mixins.scss" as *;
+@use "../../node_modules/@arcgis/core/assets/esri/themes/base/_sizes.scss" as *;
+$font-family: var(--calcite-sans-family); // _View.scss
+$font-size: var(--calcite-font-size--1); // _OverlayItem.scss
+$line-height: 1.3em; // _OverlayItem.scss
+$background-color: #ffffff; // _Popup.scss
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// arcgis view and ui
+/////////////////////////////////////////////////////////////////////////////////////////
+@import "../../node_modules/@arcgis/core/assets/esri/themes/base/_View.scss";
+@import "../../node_modules/@arcgis/core/assets/esri/themes/base/_Overlay.scss";
+@import "../../node_modules/@arcgis/core/assets/esri/themes/base/_OverlayItem.scss";
+@import "../../node_modules/@arcgis/core/assets/esri/themes/base/_Ui.scss";
+
+.esri-view .esri-view-surface::after {
+  outline: none !important;
+  outline-offset: 0;
+}
+
+// tighten up ui
+.esri-ui-top-right {
+  top: -5px;
+  right: -5px;
+}
+
+.esri-ui-top-left {
+  top: -5px;
+  left: -5px;
+}
+
+.esri-ui-bottom-left {
+  bottom: -20px;
+  left: -5px;
+}
+
+.esri-ui-bottom-right {
+  bottom: -20px;
+  right: -5px;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// popup
+/////////////////////////////////////////////////////////////////////////////////////////
+$include_Popup: true;
+@import "../../node_modules/@arcgis/core/assets/esri/themes/base/widgets/_Popup.scss";
+
+.esri-popup h2.esri-widget__heading {
+  font-size: var(--calcite-font-size-0);
+}
+
+$include_Features: true;
+@import "../../node_modules/@arcgis/core/assets/esri/themes/base/widgets/_Features.scss";
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// esri feature table
+/////////////////////////////////////////////////////////////////////////////////////////
+.esri-widget__table {
+  background-color: transparent;
+  border: none;
+  width: 100%;
+  border-collapse: collapse;
+  line-height: 1.3em;
+  color: #323232;
+}
+
+.esri-widget__table tr td,
+.esri-widget__table tr th {
+  width: 50%;
+  padding: 0.5em 0.7em;
+  vertical-align: top;
+  word-break: break-word;
+  font-size: 12px;
+  font-weight: 400;
+  text-align: left;
+}
+
+.esri-widget__table tr th {
+  border-right: 3px solid rgba(vars.$brand, 0.125);
+}
+
+.esri-widget__table tr:nth-child(odd) {
+  background-color: rgba(vars.$brand, 0.05);
+}
+
+.esri-widget__table tr:nth-child(even) {
+  background-color: rgba($color: #ffffff, $alpha: 0) !important;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// cov--feature-table
+/////////////////////////////////////////////////////////////////////////////////////////
+.cov--feature-table {
+  background-color: transparent;
+  border: none;
+  width: 100%;
+  border-collapse: collapse;
+  line-height: 1.3em;
+  color: var(--calcite-color-text-2);
+
+  tr td,
+  tr th {
+    width: 50%;
+    padding: 0.5em 0.7em;
+    vertical-align: top;
+    word-break: break-word;
+    font-size: var(--calcite-font-size--2);
+    font-weight: 400;
+    text-align: left;
+  }
+
+  tr th {
+    border-right: 3px solid rgba(vars.$brand, 0.125);
+  }
+  
+  tr:nth-child(odd) {
+    background-color: rgba(vars.$brand, 0.05);
+  }
+  
+  tr:nth-child(even) {
+    background-color: rgba($color: #ffffff, $alpha: 0) !important;
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// font
+/////////////////////////////////////////////////////////////////////////////////////////
+@import url("https://fonts.googleapis.com/css?family=Roboto");
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// vernonia theme
+/////////////////////////////////////////////////////////////////////////////////////////
+:root,
+.calcite-mode-light,
+* .calcite-mode-light {
+  --calcite-color-brand: #{vars.$brand};
+  --calcite-color-brand-dark: #{vars.$brand-dark}; // custom vernonia color var
+  --calcite-color-off-white: #{vars.$brand-off-white}; // custom vernonia color var
+  --calcite-color-brand-hover: #{vars.$brand-hover};
+  --calcite-color-brand-press: #{vars.$brand-press};
+  --calcite-color-brand-underline: #{vars.$link-underline};
+  --calcite-sans-family: #{vars.$font-family};
+  --calcite-color-text-link: #{vars.$brand-hover};
+  --calcite-color-focus: #{vars.$brand};
+}
+
+calcite-button[kind="danger"] {
+  --calcite-color-focus: var(--calcite-color-status-danger);
+}
+
+calcite-tab {
+  --calcite-color-focus: transparent;
+}
+
+body {
+  font-family: var(--calcite-sans-family);
+}

@@ -1,17 +1,20 @@
-//////////////////////////////////////
+@use "sass:color";
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // vernonia brand colors and variables
-//////////////////////////////////////
-$brand: #6b9560 !default;
-$brand-hover: darken($brand, 7.5) !default;
-$brand-press: darken($brand, 13) !default;
-$link-underline: rgba($brand-press, 0.4) !default;
-$brand-dark: #44693d !default;
+/////////////////////////////////////////////////////////////////////////////////////////
+$brand: #6b9560;
+$brand-hover: color.scale($brand, $lightness: -15.612244898%);
+$brand-press: color.scale($brand, $lightness: -27.0612244898%);
+$link-underline: rgba($brand-press, 0.4);
+$brand-dark: #44693d;
+$brand-off-white: #fcfaf1;
 $brand-popup-button-hover-background: rgba(
   $color: $brand,
   $alpha: 0.05
-) !default;
+);
 $brand-popup-selected-background: rgba(
   $color: $brand,
   $alpha: 0.2
-) !default;
-$font-family: "Roboto", sans-serif !default;
+);
+$font-family: "Roboto", sans-serif;

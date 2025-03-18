@@ -3,11 +3,6 @@
 //////////////////////////////////////
 import esri = __esri;
 
-//////////////////////////////////////
-// Modules
-//////////////////////////////////////
-import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
-
 /**
  * Return City Limits feature layer and extents for initializing view.
  * @param id City Limits portal item id
@@ -19,7 +14,7 @@ const cityBoundaryExtents = async (
   extent: esri.Extent;
   constraintExtent: esri.Extent;
 }> => {
-  const cityLimits = new FeatureLayer({
+  const cityLimits = new (await import('@arcgis/core/layers/FeatureLayer')).default({
     portalItem: {
       id,
     },
@@ -27,7 +22,7 @@ const cityBoundaryExtents = async (
 
   await cityLimits.load();
 
-  const extent = cityLimits.fullExtent.clone();
+  const extent = (cityLimits.fullExtent as esri.Extent).clone();
 
   return {
     cityLimits,

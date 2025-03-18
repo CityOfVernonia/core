@@ -1,0 +1,72 @@
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2000;
+  user-select: none;
+  color: var(--calcite-color-text-2);
+  background-color: var(--calcite-color-background);
+  transition: opacity 1s;
+
+  * {
+    user-select: none;
+  }
+}
+
+.loading-indicator {
+  position: absolute;
+  top: 10vw;
+  left: 20vw;
+  min-width: 120px;
+  text-align: center;
+
+  div {
+    font-size: var(--calcite-font-size-2);
+    margin-bottom: 1rem;
+  }
+}
+
+.loading-logo {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  width: 12vw;
+  min-width: 4rem;
+  opacity: 0.2;
+  filter: invert(50%) sepia(6%) saturate(2318%) hue-rotate(62deg) brightness(107%) contrast(80%);
+}
+
+.loading-info {
+  position: absolute;
+  right: 2rem;
+  bottom: 2rem;
+  line-height: 1.5;
+  font-size: var(--calcite-font-size--1);
+
+  div {
+    display: flex;
+    flex-flow: row;
+    justify-content: flex-end;
+    align-items: center;
+  }
+}
+
+.loading-coffee,
+.loading-heart {
+  width: var(--calcite-font-size--1);
+  height: var(--calcite-font-size--1);
+  margin: 0 0.35rem;
+}
+
+.loading-coffee {
+  color: #be9969;
+}
+
+.loading-heart {
+  color: #d9534f;
+}

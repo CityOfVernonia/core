@@ -1,9 +1,6 @@
 import esri = __esri;
-/**
- * Set basic attributes popup to a layer.
- * @param layer
- */
-export declare const attributePopup: (layer: esri.FeatureLayer | esri.MapImageLayer | esri.GeoJSONLayer) => Promise<void>;
+export declare let APPLICATION_GRAPHICS_LAYER: esri.GroupLayer | null;
+export declare const applicationGraphicsLayer: (view: esri.MapView | esri.SceneView) => Promise<void>;
 /**
  * Create and return a CSVLayer from URL of layer properties JSON.
  * @param url URL of layer properties JSON
@@ -23,3 +20,8 @@ export declare const geojsonLayerFromJSON: (url: string, layerProperties?: esri.
  * @param layer esri.MapImageLayer
  */
 export declare const mapImageNoPopups: (layer: esri.MapImageLayer) => Promise<void>;
+export declare const queryFeatureGeometry: (options: {
+    layer: esri.FeatureLayer;
+    graphic: esri.Graphic;
+    outSpatialReference?: esri.SpatialReference;
+}) => Promise<esri.Geometry | nullish>;

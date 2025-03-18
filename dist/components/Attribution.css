@@ -1,0 +1,14 @@
+.cov--attribution {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.cov--attribution calcite-popover {
+  --calcite-popover-text-color: var(--calcite-color-text-2);
+}
+
+.cov--attribution_content {
+  max-width: 360px;
+  padding: var(--calcite-spacing-sm);
+  font-size: var(--calcite-font-size--2);
+}
+
+/*# sourceMappingURL=Attribution.css.map */

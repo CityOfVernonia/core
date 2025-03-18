@@ -1,102 +1,38 @@
 import esri = __esri;
-/**
- * Shared unit info properties.
- */
+interface I {
+    type: 'area' | 'coordinates' | 'elevation' | 'length';
+}
 interface UnitInfo {
-    /**
-     * Label for the unit, e.g., `ft²` for `feet`.
-     */
     label: string;
-    /**
-     * Name of the unit, e.g., `Sq feet` for `square-feet`.
-     */
     name: string;
 }
-/**
- * Available area unit infos.
- */
 export interface AreaUnitInfo extends UnitInfo {
-    /**
-     * Area unit.
-     */
-    unit: esri.AreaUnit;
+    unit: 'acres' | 'square-feet' | 'square-meters' | 'square-kilometers' | 'square-miles';
 }
-/**
- * Available coordinate unit infos.
- */
-export interface CoordinateUnitInfo extends UnitInfo {
-    /**
-     * Coordinate system latest WKID.
-     */
-    latestWkid: esri.SpatialReferenceProperties['wkid'];
-    /**
-     * Coordinate system unit.
-     */
-    unit: esri.LinearUnit;
-    /**
-     * Coordinate system WKID.
-     */
-    wkid: esri.SpatialReferenceProperties['wkid'];
-}
-/**
- * Available elevation unit infos.
- */
-export interface ElevationUnitInfo extends UnitInfo {
-    /**
-     * Elevation unit.
-     */
-    unit: esri.LinearUnit;
-}
-/**
- * Available latitude/longitude unit infos.
- */
-export interface LatitudeLongitudeUnitInfo extends UnitInfo {
-    /**
-     * Latitude/longitude unit.
-     */
+export interface CoordinatesUnitInfo extends UnitInfo {
     unit: 'decimal' | 'dms';
 }
-/**
- * Available length unit infos.
- */
-export interface LengthUnitInfo extends UnitInfo {
-    /**
-     * Length unit.
-     */
-    unit: esri.LinearUnit;
+export interface ElevationUnitInfo extends UnitInfo {
+    unit: 'feet' | 'meters';
 }
-/**
- * `Units` constructor properties.
- */
-export interface UnitsConstructorProperties {
-    areaUnit?: esri.AreaUnit;
-    areaUnitInfos?: AreaUnitInfo[];
-    coordinateUnit?: esri.LinearUnit;
-    coordinateUnitInfos?: CoordinateUnitInfo[];
-    elevationUnit?: esri.LinearUnit;
-    elevationUnitInfos?: ElevationUnitInfo[];
-    latitudeLongitudeUnit?: 'decimal' | 'dms';
-    latitudeLongitudeUnitInfos?: LatitudeLongitudeUnitInfo[];
-    lengthUnit?: esri.LinearUnit;
-    lengthUnitInfos?: LengthUnitInfo[];
+export interface LengthUnitInfo extends UnitInfo {
+    unit: 'feet' | 'meters' | 'miles' | 'kilometers';
 }
 import Accessor from '@arcgis/core/core/Accessor';
+export declare const FEET_IN_METERS = 3.28084;
 /**
- * Centralized units management Accessor.
+ * Accessor for handling units.
  */
 export default class Units extends Accessor {
-    constructor(properties?: UnitsConstructorProperties);
-    areaUnit: esri.AreaUnit;
+    areaUnit: AreaUnitInfo['unit'];
     areaUnitInfos: esri.Collection<AreaUnitInfo>;
-    coordinateUnit: esri.LinearUnit;
-    coordinateUnitInfos: esri.Collection<CoordinateUnitInfo>;
-    elevationUnit: esri.LinearUnit;
+    coordinatesUnit: CoordinatesUnitInfo['unit'];
+    coordinatesUnitInfos: esri.Collection<CoordinatesUnitInfo>;
+    elevationUnit: ElevationUnitInfo['unit'];
     elevationUnitInfos: esri.Collection<ElevationUnitInfo>;
-    latitudeLongitudeUnit: 'decimal' | 'dms';
-    latitudeLongitudeUnitInfos: esri.Collection<LatitudeLongitudeUnitInfo>;
-    lengthUnit: esri.LinearUnit;
+    lengthUnit: LengthUnitInfo['unit'];
     lengthUnitInfos: esri.Collection<LengthUnitInfo>;
-    getUnitLabel(type: 'area' | 'coordinate' | 'elevation' | 'latitudeLongitude' | 'length', unit: string): string;
-    getUnitName(type: 'area' | 'coordinate' | 'elevation' | 'latitudeLongitude' | 'length', unit: string): string;
+    getUnitLabel(type: I['type'], unit: string): string;
+    getUnitName(type: I['type'], unit: string): string;
 }
 export {};

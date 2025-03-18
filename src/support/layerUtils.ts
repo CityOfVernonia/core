@@ -2,29 +2,29 @@ import esri = __esri;
 
 import CSVLayer from '@arcgis/core/layers/CSVLayer';
 import GeoJSONLayer from '@arcgis/core/layers/GeoJSONLayer';
+import GroupLayer from '@arcgis/core/layers/GroupLayer';
 
 const _fetchLayerJSON = async (url: string): Promise<object> => {
   return await (await fetch(url, { cache: 'reload' })).json();
 };
 
-/**
- * Set basic attributes popup to a layer.
- * @param layer
- */
-export const attributePopup = async (
-  layer: esri.FeatureLayer | esri.MapImageLayer | esri.GeoJSONLayer,
-): Promise<void> => {
-  await layer.when();
-  const popupTemplate = (await import('../popups/Popup')).default;
-  if (layer.type === 'map-image') {
-    (layer as esri.MapImageLayer).sublayers.forEach((sublayer: esri.Sublayer): void => {
-      sublayer.popupEnabled = true;
-      sublayer.popupTemplate = popupTemplate;
-    });
-  } else {
-    layer.popupEnabled = true;
-    layer.popupTemplate = popupTemplate;
-  }
+export let APPLICATION_GRAPHICS_LAYER: esri.GroupLayer | null = null;
+
+export const applicationGraphicsLayer = async (view: esri.MapView | esri.SceneView): Promise<void> => {
+  await view.when();
+
+  if (APPLICATION_GRAPHICS_LAYER) return;
+
+  const layers = view.map.layers;
+
+  APPLICATION_GRAPHICS_LAYER = new GroupLayer({ listMode: 'hide' });
+
+  layers.add(APPLICATION_GRAPHICS_LAYER);
+
+  layers.on('after-add', (): void => {
+    // @ts-expect-error APPLICATION_GRAPHICS_LAYER will not be null here
+    layers.reorder(APPLICATION_GRAPHICS_LAYER, layers.length - 1);
+  });
 };
 
 /**
@@ -87,7 +87,33 @@ export const geojsonLayerFromJSON = async (
  */
 export const mapImageNoPopups = async (layer: esri.MapImageLayer): Promise<void> => {
   await layer.when();
-  layer.sublayers.forEach((sublayer: esri.Sublayer): void => {
+
+  layer.sublayers?.forEach((sublayer: esri.Sublayer): void => {
     sublayer.popupEnabled = false;
   });
+};
+
+export const queryFeatureGeometry = async (options: {
+  layer: esri.FeatureLayer;
+  graphic: esri.Graphic;
+  outSpatialReference?: esri.SpatialReference;
+}): Promise<esri.Geometry | nullish> => {
+  const {
+    layer,
+    layer: { objectIdField },
+    graphic,
+    outSpatialReference,
+  } = options;
+
+  try {
+    return (
+      await layer.queryFeatures({
+        where: `${objectIdField} = ${graphic.attributes[objectIdField]}`,
+        returnGeometry: true,
+        outSpatialReference: outSpatialReference || layer.spatialReference,
+      })
+    ).features[0].geometry;
+  } catch (error) {
+    console.log(error);
+  }
 };

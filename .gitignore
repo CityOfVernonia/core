@@ -1,3 +1,4 @@
-dev/public/calcite
 dev/public/arcgis
+dev/public/calcite
+dev/public/map-components
 node_modules

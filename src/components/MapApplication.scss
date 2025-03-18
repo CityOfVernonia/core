@@ -1,0 +1,12 @@
+@use "./../scss/variables" as vars;
+
+@use "./ApplicationHeader.scss";
+@use "./Attribution.scss";
+@use "./Basemap.scss";
+@use "./Loading.scss";
+@use "./ViewControl2D.scss";
+
+.cov--map-application_view {
+  width: 100%;
+  height: 100%;
+}

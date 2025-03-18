@@ -83,7 +83,9 @@ class OAuth extends Accessor {
    */
   load(): Promise<boolean> {
     const { portal, oAuthInfo } = this;
+
     esriId.registerOAuthInfos([oAuthInfo]);
+
     return new Promise((resolve, reject) => {
       if (portal.loaded) {
         // check for sign in
@@ -97,23 +99,31 @@ class OAuth extends Accessor {
             if (checkSignInError.message === 'User is not signed in.') {
               // check local storage
               const localStorageAuth = localStorage.getItem(LS_CRED);
+
               if (localStorageAuth) {
                 const cred = JSON.parse(localStorageAuth);
+
                 // check for stored credentials with null values
                 if (!cred.token) {
                   localStorage.removeItem(LS_CRED);
+
                   resolve(false);
+
                   return;
                 }
+
                 // register token
                 esriId.registerToken(cred);
+
                 // check for sign in
                 esriId
                   .checkSignInStatus(portal.url)
                   .then(async (credential: esri.Credential) => {
                     // replace portal instance
                     this.portal = new Portal();
+
                     await this.portal.load();
+
                     // complete successful sign in
                     this._completeSignIn(credential, resolve as (value?: boolean | PromiseLike<boolean>) => void);
                   })
@@ -140,14 +150,16 @@ class OAuth extends Accessor {
    */
   signIn(): void {
     const url = this.signInUrl || `${this.portal.url}/sharing/rest`;
+
     const auth = esriId as esri.IdentityManager & {
       oAuthSignIn: (
         url: string,
         serverInfo: esri.ServerInfo,
         oAuthInfo: esri.OAuthInfo,
         options: { oAuthPopupConfirmation?: boolean; signal: AbortSignal },
-      ) => Promise<any>;
+      ) => Promise<esri.Credential>;
     };
+
     auth
       .oAuthSignIn(url, esriId.findServerInfo(url), this.oAuthInfo, {
         oAuthPopupConfirmation: false,
@@ -166,7 +178,9 @@ class OAuth extends Accessor {
    */
   signOut(): void {
     esriId.destroyCredentials();
+
     localStorage.removeItem(LS_CRED);
+
     window.location.reload();
   }
 
@@ -183,18 +197,22 @@ class OAuth extends Accessor {
     resolve: (value?: boolean | PromiseLike<boolean>) => void,
   ): void {
     // set local storage
-    localStorage.setItem(LS_CRED, JSON.stringify((credential as esri.Credential & { toJSON: () => any }).toJSON()));
+    localStorage.setItem(LS_CRED, JSON.stringify((credential as esri.Credential & { toJSON: () => object }).toJSON()));
+
     // set class properties
     this.credential = credential;
+
     this.signedIn = true;
+
     // resolve signed in
     resolve(true);
+
     // reset local storage when token is changed
     // seems legit...but unsure if it will cause any issues at this point
     credential.on('token-change', (): void => {
       localStorage.setItem(
         LS_CRED,
-        JSON.stringify((this.credential as esri.Credential & { toJSON: () => any }).toJSON()),
+        JSON.stringify((this.credential as esri.Credential & { toJSON: () => object }).toJSON()),
       );
     });
   }

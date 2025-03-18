@@ -1,19 +1,6 @@
-////////////////////////////////////
-/// import css for vernonia defaults
-////////////////////////////////////
-
-// @import "./../dist/layouts/ShellApplicationMap.css";
-// @import "./../dist/widgets/Measure.css";
-
-/////////////////////////////////////////
-/// import scss for dev or custom theming
-/////////////////////////////////////////
-@import "./../src/layouts/MapApplication.scss";
-
-@import "./../src/components/panels/LayersLegend.scss";
-@import "./../src/components/panels/Measure.scss";
-@import "./../src/components/panels/PlanningFiles.scss";
-@import "./../src/components/panels/PrintSnapshot.scss";
-@import "./../src/components/panels/Sketch.scss";
-@import "./../src/components/panels/SurveySearch.scss";
-@import "./../src/components/panels/TaxLotBuffer.scss";
+body {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
