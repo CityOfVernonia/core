@@ -1,14 +1,14 @@
 {
   "name": "@vernonia/core",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "City of Vernonia friends for ArcGIS Maps SDK for JavaScript.",
   "type": "module",
   "scripts": {
+    "assets": "node ./scripts/assets.js",
     "build": "rimraf dist && tsc && sass src:dist && node ./scripts/minify.js",
     "dev": "vite --config ./dev/vite.config.js",
     "docs": "rimraf docs && typedoc",
     "lint": "eslint",
-    "postinstall": "node ./scripts/postinstall.js",
     "prettier": "prettier --write \"src/**/*.ts?(x)\"",
     "test": "npm run prettier && npm run lint"
   },
