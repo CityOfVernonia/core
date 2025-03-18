@@ -4,6 +4,7 @@ import '../src/scss/cov.scss';
 import './main.scss';
 import '../src/components/MapApplication.scss';
 import '../src/components/LayersLegend.scss';
+import '../src/components/PrintSnapshot.scss';
 
 // arcgis config
 import esriConfig from '@arcgis/core/config';
@@ -29,6 +30,7 @@ const load = async (): Promise<void> => {
 
   // components
   const LayersLegend = (await import('../src/components/LayersLegend')).default;
+  const PrintSnapshot = (await import('../src/components/PrintSnapshot')).default;
 
   const title = '@vernonia/core';
 
@@ -51,6 +53,17 @@ const load = async (): Promise<void> => {
     basemapOptions: { hillshade, imagery },
     components: [
       { component: new LayersLegend({ view, visible: false }), icon: 'layers', text: 'Layers', type: 'calcite-panel' },
+      {
+        component: new PrintSnapshot({
+          printServiceUrl:
+            'https://gis.vernonia-or.gov/server/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task',
+          view,
+          visible: false,
+        }),
+        icon: 'print',
+        text: 'Print',
+        type: 'calcite-panel',
+      },
     ],
     title,
     view,

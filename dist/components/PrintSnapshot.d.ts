@@ -1,8 +1,8 @@
 import esri = __esri;
 /**
- * PrintSnapshot constructor properties.
+ * PrintSnapshot properties.
  */
-export interface PrintSnapshotConstructorProperties extends esri.WidgetProperties {
+export interface PrintSnapshotProperties extends esri.WidgetProperties {
     /**
      * Key/value of layouts to include.
      * `<LAYOUT_NAME>: <SELECT_OPTION_LABEL>`
@@ -22,45 +22,34 @@ export interface PrintSnapshotConstructorProperties extends esri.WidgetPropertie
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 /**
- * Panel component for printing with a print service and taking view snapshot images.
+ * Print PDFs and snapshot a map.
  */
-declare class PrintSnapshot extends Widget {
+export default class PrintSnapshot extends Widget {
     private _container;
     get container(): HTMLCalcitePanelElement;
     set container(value: HTMLCalcitePanelElement);
-    constructor(properties: PrintSnapshotConstructorProperties);
+    constructor(properties: PrintSnapshotProperties);
     postInitialize(): Promise<void>;
     layouts: {
         [key: string]: string;
     };
     printServiceUrl: string;
     view: esri.MapView;
-    private _viewState;
+    private _photoDialog;
     private _printer;
     private _printResults;
-    /**
-     * Create a print.
-     */
-    private _print;
     private _snapshotResults;
-    private _photoDialog;
-    /**
-     * Create a snapshot.
-     */
-    private _snapshot;
+    private _viewState;
     /**
      * Add title to image and return data url.
-     * @param data Image data to be returned as data url string
+     * @param data ImageData to be returned as data url string
      * @param title Title of the image
      * @param format Format of the image
      * @returns Data url string
      */
     private _dataUrl;
+    private _print;
+    private _snapshot;
     render(): tsx.JSX.Element;
-    /**
-     * Create options for print layout select.
-     * @returns Array of tsx elements
-     */
     private _renderLayoutOptions;
 }
-export default PrintSnapshot;

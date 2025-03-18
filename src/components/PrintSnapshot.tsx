@@ -1,12 +1,13 @@
-//////////////////////////////////////
-// Interfaces and module imports
-//////////////////////////////////////
 import esri = __esri;
 
+interface I {
+  format: 'jpg' | 'png';
+}
+
 /**
- * PrintSnapshot constructor properties.
+ * PrintSnapshot properties.
  */
-export interface PrintSnapshotConstructorProperties extends esri.WidgetProperties {
+export interface PrintSnapshotProperties extends esri.WidgetProperties {
   /**
    * Key/value of layouts to include.
    * `<LAYOUT_NAME>: <SELECT_OPTION_LABEL>`
@@ -22,13 +23,6 @@ export interface PrintSnapshotConstructorProperties extends esri.WidgetPropertie
   view: esri.MapView;
 }
 
-/**
- * Internal types.
- */
-interface I {
-  format: 'jpg' | 'png';
-}
-
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -39,13 +33,12 @@ import PrintTemplate from '@arcgis/core/rest/support/PrintTemplate';
 // import PortalItem from '@arcgis/core/portal/PortalItem';
 import PhotoDialog from './PhotoDialog';
 
-//////////////////////////////////////
-// Constants
-//////////////////////////////////////
+const CSS_BASE = 'cov--print-snapshot';
+
 const CSS = {
-  content: 'cov-panels--print-snapshot_content',
-  footer: 'cov-panels--print-snapshot_footer',
-  snapshotResult: 'cov-panels--print-snapshot_snapshot-result',
+  base: CSS_BASE,
+  footer: `${CSS_BASE}_footer`,
+  snapshotResult: `${CSS_BASE}_snapshot-result`,
 };
 
 const TITLES = {
@@ -56,13 +49,10 @@ const TITLES = {
 let KEY = 0;
 
 /**
- * Panel component for printing with a print service and taking view snapshot images.
+ * Print PDFs and snapshot a map.
  */
 @subclass('cov.components.PrintSnapshot')
-class PrintSnapshot extends Widget {
-  //////////////////////////////////////
-  // Lifecycle
-  //////////////////////////////////////
+export default class PrintSnapshot extends Widget {
   private _container!: HTMLCalcitePanelElement;
 
   public get container(): HTMLCalcitePanelElement {
@@ -73,7 +63,7 @@ class PrintSnapshot extends Widget {
     this._container = value;
   }
 
-  constructor(properties: PrintSnapshotConstructorProperties) {
+  constructor(properties: PrintSnapshotProperties) {
     super(properties);
   }
 
@@ -85,9 +75,6 @@ class PrintSnapshot extends Widget {
     });
   }
 
-  //////////////////////////////////////
-  // Properties
-  //////////////////////////////////////
   layouts: { [key: string]: string } = {
     'Letter ANSI A Landscape': 'Letter Landscape',
     'Letter ANSI A Portrait': 'Letter Portrait',
@@ -100,22 +87,39 @@ class PrintSnapshot extends Widget {
 
   view!: esri.MapView;
 
-  //////////////////////////////////////
-  // Display state
-  //////////////////////////////////////
-  @property()
-  private _viewState: 'print' | 'snapshot' = 'print';
+  private _photoDialog = new PhotoDialog();
 
-  //////////////////////////////////////
-  // Print variables and methods
-  //////////////////////////////////////
   private _printer!: esri.PrintViewModel;
 
   private _printResults: esri.Collection<tsx.JSX.Element> = new Collection();
 
+  private _snapshotResults: esri.Collection<tsx.JSX.Element> = new Collection();
+
+  @property()
+  private _viewState: 'print' | 'snapshot' = 'print';
+
   /**
-   * Create a print.
+   * Add title to image and return data url.
+   * @param data ImageData to be returned as data url string
+   * @param title Title of the image
+   * @param format Format of the image
+   * @returns Data url string
    */
+  private _dataUrl(data: ImageData, title: string, format: I['format']): string {
+    const canvas = document.createElement('canvas') as HTMLCanvasElement;
+    const context = canvas.getContext('2d') as CanvasRenderingContext2D;
+    canvas.width = data.width;
+    canvas.height = data.height;
+    context.putImageData(data, 0, 0);
+    context.font = 'bold 20px Arial';
+    context.strokeStyle = '#fff';
+    context.strokeText(`${title}`, 5, data.height - 5, data.width - 5);
+    context.font = 'bold 20px Arial';
+    context.fillStyle = '#000';
+    context.fillText(`${title}`, 5, data.height - 5, data.width - 5);
+    return canvas.toDataURL(format === 'jpg' ? 'image/jpeg' : 'image/png') as string;
+  }
+
   private _print(): void {
     const { container, _printer, _printResults } = this;
 
@@ -129,8 +133,8 @@ class PrintSnapshot extends Widget {
       <calcite-button
         key={KEY++}
         appearance="outline-fill"
-        disabled=""
-        loading=""
+        disabled
+        loading
         width="full"
         afterCreate={async (button: HTMLCalciteButtonElement): Promise<void> => {
           try {
@@ -163,16 +167,6 @@ class PrintSnapshot extends Widget {
     );
   }
 
-  //////////////////////////////////////
-  // Snapshot variables and methods
-  //////////////////////////////////////
-  private _snapshotResults: esri.Collection<tsx.JSX.Element> = new Collection();
-
-  private _photoDialog = new PhotoDialog();
-
-  /**
-   * Create a snapshot.
-   */
   private async _snapshot(): Promise<void> {
     const { container, view, _snapshotResults, _photoDialog } = this;
 
@@ -210,35 +204,10 @@ class PrintSnapshot extends Widget {
     );
   }
 
-  /**
-   * Add title to image and return data url.
-   * @param data Image data to be returned as data url string
-   * @param title Title of the image
-   * @param format Format of the image
-   * @returns Data url string
-   */
-  private _dataUrl(data: ImageData, title: string, format: I['format']): string {
-    const canvas = document.createElement('canvas') as HTMLCanvasElement;
-    const context = canvas.getContext('2d') as CanvasRenderingContext2D;
-    canvas.width = data.width;
-    canvas.height = data.height;
-    context.putImageData(data, 0, 0);
-    context.font = 'bold 20px Arial';
-    context.strokeStyle = '#fff';
-    context.strokeText(`${title}`, 5, data.height - 5, data.width - 5);
-    context.font = 'bold 20px Arial';
-    context.fillStyle = '#000';
-    context.fillText(`${title}`, 5, data.height - 5, data.width - 5);
-    return canvas.toDataURL(format === 'jpg' ? 'image/jpeg' : 'image/png') as string;
-  }
-
-  //////////////////////////////////////
-  // Render and rendering methods
-  //////////////////////////////////////
-  render(): tsx.JSX.Element {
+  override render(): tsx.JSX.Element {
     const { _printResults, _snapshotResults, _viewState } = this;
     return (
-      <calcite-panel heading={_viewState === 'print' ? 'Print' : 'Snapshot'}>
+      <calcite-panel class={CSS.base} heading={_viewState === 'print' ? 'Print' : 'Snapshot'}>
         {/* header actions */}
         <calcite-action
           active={_viewState === 'print'}
@@ -268,7 +237,7 @@ class PrintSnapshot extends Widget {
         </calcite-action>
 
         {/* print */}
-        <div class={CSS.content} hidden={_viewState !== 'print'}>
+        <div hidden={_viewState !== 'print'}>
           <calcite-label>
             Title
             <calcite-input data-print-snapshot="print title" type="text" value={TITLES.print}></calcite-input>
@@ -286,7 +255,7 @@ class PrintSnapshot extends Widget {
         </div>
 
         {/* snapshot */}
-        <div class={CSS.content} hidden={_viewState !== 'snapshot'}>
+        <div hidden={_viewState !== 'snapshot'}>
           <calcite-label>
             Title
             <calcite-input data-print-snapshot="snapshot title" type="text" value={TITLES.snapshot}></calcite-input>
@@ -312,10 +281,6 @@ class PrintSnapshot extends Widget {
     );
   }
 
-  /**
-   * Create options for print layout select.
-   * @returns Array of tsx elements
-   */
   private _renderLayoutOptions(): tsx.JSX.Element[] {
     const { layouts } = this;
     const options = [];
@@ -325,5 +290,3 @@ class PrintSnapshot extends Widget {
     return options;
   }
 }
-
-export default PrintSnapshot;

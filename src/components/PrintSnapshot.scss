@@ -1,8 +1,9 @@
-.cov-panels--print-snapshot_content {
-  padding: 0.75rem;
+.cov--print-snapshot {
+  --calcite-panel-background-color: var(--calcite-color-foreground-1);
+  --calcite-panel-space: 0.75rem;
 }
 
-.cov-panels--print-snapshot_footer {
+.cov--print-snapshot_footer {
   width: 100%;
   display: flex;
   flex-flow: column;
@@ -13,7 +14,7 @@
   }
 }
 
-.cov-panels--print-snapshot_snapshot-result {
+.cov--print-snapshot_snapshot-result {
   width: 100%;
   display: flex;
   flex-flow: row;
