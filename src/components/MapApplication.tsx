@@ -201,10 +201,6 @@ export default class MapApplication extends Widget {
       );
     }
 
-    // (await import('pubsub-js')).subscribe(SHOW_ALERT_TOPIC, (message: string, options: AlertOptions): void => {
-    //   this._showAlert(options);
-    // });
-
     subscribe(SHOW_ALERT_TOPIC, (message: string, options: AlertOptions): void => {
       this._showAlert(options);
     });

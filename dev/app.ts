@@ -1,7 +1,6 @@
 import '@esri/calcite-components/dist/calcite/calcite.css';
 import '@arcgis/map-components/arcgis-map-components/arcgis-map-components.css';
 import '../src/scss/cov.scss';
-import './main.scss';
 import '../src/components/MapApplication.scss';
 import '../src/components/LayersLegend.scss';
 import '../src/components/PrintSnapshot.scss';
