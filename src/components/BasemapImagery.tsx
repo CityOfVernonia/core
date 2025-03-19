@@ -52,15 +52,15 @@ export const DEFAULT_LAYER_INFOS: LayerInfo[] = [
   },
   {
     description: '2009 (unknown resolution)',
-    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2009/NAIP_2009_WM/ImageServer',
+    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2009/NAIP_2009_SL/ImageServer',
   },
   {
     description: '2005 (0.5m resolution)',
-    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2005/NAIP_2005_WM/ImageServer',
+    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2005/NAIP_2005_SL/ImageServer',
   },
   {
     description: '2000 (1m resolution)',
-    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2000/NAIP_2000_WM/ImageServer',
+    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2000/NAIP_2000_SL/ImageServer',
   },
   {
     description: '1995 (1m resolution)',

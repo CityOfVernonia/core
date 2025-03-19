@@ -50,6 +50,8 @@ const load = async (): Promise<void> => {
   const TaxLotBuffer = (await import('../src/components/TaxLotBuffer')).default;
   const TaxMaps = (await import('../src/components/TaxMaps')).default;
 
+  const MarkdownDialog = (await import('../src/components/MarkdownDialog')).default;
+
   const { applicationGraphicsLayer } = await import('../src/support/layerUtils');
 
   const { geojsonLayerFromJSON } = await import('../src/support/layerUtils');
@@ -155,6 +157,12 @@ const load = async (): Promise<void> => {
   new MapApplication({
     basemapOptions: { hillshade, imagery },
     components: [
+      {
+        component: new (await import('../src/components/BasemapImagery')).default(),
+        icon: 'basemap',
+        text: 'Basemap Imagery',
+        type: 'calcite-panel',
+      },
       { component: new LayersLegend({ view, visible: false }), icon: 'layers', text: 'Layers', type: 'calcite-panel' },
       {
         component: new PrintSnapshot({
@@ -201,6 +209,12 @@ const load = async (): Promise<void> => {
         icon: 'buffer-polygon',
         text: 'Tax Lot Buffer',
         type: 'calcite-panel',
+      },
+      {
+        component: new MarkdownDialog({ title: 'Info', url: '/test.markdown' }),
+        icon: 'information',
+        text: 'Information',
+        type: 'calcite-dialog',
       },
     ],
     headerOptions: { search },

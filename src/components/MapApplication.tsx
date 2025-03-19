@@ -260,11 +260,15 @@ export default class MapApplication extends Widget {
 
       switch (type) {
         case 'calcite-dialog': {
-          component.container = document.createElement(type);
+          if (!component.container) {
+            component.container = document.createElement(type);
+
+            document.body.append(component.container);
+          }
+
+          component.visible = true; // ensure visible
 
           (component.container as HTMLCalciteDialogElement).open = false; // ensure closed
-
-          document.body.append(component.container);
 
           break;
         }
