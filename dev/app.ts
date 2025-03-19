@@ -211,7 +211,7 @@ const load = async (): Promise<void> => {
         type: 'calcite-panel',
       },
       {
-        component: new MarkdownDialog({ title: 'Info', url: '/test.markdown' }),
+        component: new MarkdownDialog({ heading: 'Info', url: '/test.markdown' }),
         icon: 'information',
         text: 'Information',
         type: 'calcite-dialog',

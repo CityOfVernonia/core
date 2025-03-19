@@ -248,8 +248,6 @@ class HeaderSearch extends Widget {
     _input.value = suggestion.text || '';
 
     try {
-      // const feature = (await search.search(suggestion)).results[0].results[0].feature;
-
       const response = (await search.search(suggestion)) as esri.SearchViewModelSearchResponse;
 
       const results = response.results[0];
@@ -355,17 +353,20 @@ class HeaderSearch extends Widget {
   }
 
   private _searchFormAfterCreate(form: HTMLFormElement): void {
-    const { _suggestions } = this;
-
     form.addEventListener('submit', (event: Event): void => {
       event.preventDefault();
 
+      const {
+        _input: { value },
+        _suggestions,
+      } = this;
+
       if (_suggestions.length) {
-        const item = _suggestions.getItemAt(0);
+        const item = _suggestions.find((suggestion: esri.SuggestResult): boolean => {
+          return value === suggestion.text;
+        });
 
         if (item) this._selectResult(item);
-
-        _suggestions.removeAll();
       }
     });
   }

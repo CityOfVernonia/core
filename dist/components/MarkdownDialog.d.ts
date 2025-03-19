@@ -5,7 +5,7 @@ import esri = __esri;
 export interface MarkdownDialogProperties extends esri.WidgetProperties {
     cssClass?: string;
     closeText?: string;
-    title: string;
+    heading: string;
     url: string;
 }
 import Widget from '@arcgis/core/widgets/Widget';
@@ -21,7 +21,7 @@ export default class MarkdownDialog extends Widget {
     postInitialize(): Promise<void>;
     readonly cssClass?: string;
     readonly closeText = "Close";
-    readonly title: string;
+    readonly heading: string;
     readonly url: string;
     render(): tsx.JSX.Element;
 }

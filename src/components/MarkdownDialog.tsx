@@ -6,7 +6,7 @@ import esri = __esri;
 export interface MarkdownDialogProperties extends esri.WidgetProperties {
   cssClass?: string;
   closeText?: string;
-  title: string;
+  heading: string;
   url: string;
 }
 
@@ -42,9 +42,29 @@ export default class MarkdownDialog extends Widget {
 
     const markdown = await (await fetch(url, { cache: 'reload' })).text();
 
-    const parse = (await import('marked')).parse;
+    const marked = await import('marked');
 
-    (container.querySelector('div') as HTMLDivElement).innerHTML = await parse(markdown);
+    marked.use({
+      gfm: true,
+      extensions: [
+        {
+          name: 'link',
+          renderer: (token): string | false | undefined => {
+            const { href, text } = token;
+
+            const blank = '::_blank';
+
+            if (text.includes(blank)) {
+              return `<a href=${href} target="_blank">${text.replace(blank, '')}</a>`;
+            } else {
+              return `<a href=${href}>${text}</a>`;
+            }
+          },
+        },
+      ],
+    });
+
+    (container.querySelector('div') as HTMLDivElement).innerHTML = await marked.parse(markdown);
   }
 
   readonly cssClass?: string;
@@ -52,14 +72,14 @@ export default class MarkdownDialog extends Widget {
   @property()
   readonly closeText = 'Close';
 
-  readonly title!: string;
+  readonly heading!: string;
 
   readonly url!: string;
 
   override render(): tsx.JSX.Element {
-    const { cssClass, closeText, title } = this;
+    const { cssClass, closeText, heading } = this;
     return (
-      <calcite-dialog heading={title} modal>
+      <calcite-dialog heading={heading} modal>
         <div class={cssClass}></div>
         <calcite-button
           slot="footer-end"
