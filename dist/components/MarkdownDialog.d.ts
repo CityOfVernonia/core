@@ -7,6 +7,7 @@ export interface MarkdownDialogProperties extends esri.WidgetProperties {
     closeText?: string;
     heading: string;
     url: string;
+    width?: 's' | 'm' | 'l';
 }
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
@@ -19,9 +20,10 @@ export default class MarkdownDialog extends Widget {
     set container(value: HTMLCalciteDialogElement);
     constructor(properties: MarkdownDialogProperties);
     postInitialize(): Promise<void>;
-    readonly cssClass?: string;
+    readonly cssClass = "cov--markdown-dialog";
     readonly closeText = "Close";
     readonly heading: string;
     readonly url: string;
+    readonly width: 's' | 'm' | 'l';
     render(): tsx.JSX.Element;
 }

@@ -882,6 +882,22 @@
   background-color: rgba(255, 255, 255, 0) !important;
 }
 
+.cov--markdown-dialog a {
+  text-decoration: none;
+  color: #6b9560;
+}
+.cov--markdown-dialog a:hover {
+  color: #44693d;
+}
+.cov--markdown-dialog :first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+.cov--markdown-dialog :last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
 :root,
 .calcite-mode-light,
 * .calcite-mode-light {

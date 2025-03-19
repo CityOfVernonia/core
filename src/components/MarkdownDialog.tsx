@@ -8,6 +8,7 @@ export interface MarkdownDialogProperties extends esri.WidgetProperties {
   closeText?: string;
   heading: string;
   url: string;
+  width?: 's' | 'm' | 'l';
 }
 
 import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators';
@@ -67,7 +68,7 @@ export default class MarkdownDialog extends Widget {
     (container.querySelector('div') as HTMLDivElement).innerHTML = await marked.parse(markdown);
   }
 
-  readonly cssClass?: string;
+  readonly cssClass = 'cov--markdown-dialog';
 
   @property()
   readonly closeText = 'Close';
@@ -76,10 +77,12 @@ export default class MarkdownDialog extends Widget {
 
   readonly url!: string;
 
+  readonly width: 's' | 'm' | 'l' = 'm';
+
   override render(): tsx.JSX.Element {
-    const { cssClass, closeText, heading } = this;
+    const { cssClass, closeText, heading, width } = this;
     return (
-      <calcite-dialog heading={heading} modal>
+      <calcite-dialog heading={heading} modal width={width}>
         <div class={cssClass}></div>
         <calcite-button
           slot="footer-end"
