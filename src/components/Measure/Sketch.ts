@@ -11,7 +11,7 @@ import Graphic from '@arcgis/core/Graphic';
 import { Point } from '@arcgis/core/geometry';
 import { CIMSymbol, SimpleMarkerSymbol, TextSymbol } from '@arcgis/core/symbols';
 
-import { APPLICATION_GRAPHICS_LAYER } from '../../support/layerUtils';
+import { APPLICATION_MEASURE_LAYER } from '../../support/layerUtils';
 
 const COLORS = {
   PRIMARY: [237, 81, 81],
@@ -138,8 +138,8 @@ export default class Sketch extends SketchViewModel {
       async (view: esri.MapView | esri.SceneView): Promise<void> => {
         await view.when();
 
-        if (APPLICATION_GRAPHICS_LAYER) {
-          APPLICATION_GRAPHICS_LAYER.add(this.layers);
+        if (APPLICATION_MEASURE_LAYER) {
+          APPLICATION_MEASURE_LAYER.add(this.layers);
         } else {
           view.map.add(this.layers);
         }

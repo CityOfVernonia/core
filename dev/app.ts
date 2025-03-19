@@ -4,6 +4,8 @@ import '../src/scss/cov.scss';
 import '../src/components/MapApplication.scss';
 import '../src/components/LayersLegend.scss';
 import '../src/components/PrintSnapshot.scss';
+import '../src/components/Measure.scss';
+import '../src/components/Sketch.scss';
 
 // arcgis config
 import esriConfig from '@arcgis/core/config';
@@ -30,6 +32,10 @@ const load = async (): Promise<void> => {
   // components
   const LayersLegend = (await import('../src/components/LayersLegend')).default;
   const PrintSnapshot = (await import('../src/components/PrintSnapshot')).default;
+  const Measure = (await import('../src/components/Measure')).default;
+  const Sketch = (await import('../src/components/Sketch')).default;
+
+  const { applicationGraphicsLayer } = await import('../src/support/layerUtils');
 
   const title = '@vernonia/core';
 
@@ -48,6 +54,8 @@ const load = async (): Promise<void> => {
     popup: { dockEnabled: true, dockOptions: { breakpoint: false, buttonEnabled: false, position: 'bottom-left' } },
   });
 
+ applicationGraphicsLayer(view);
+
   new MapApplication({
     basemapOptions: { hillshade, imagery },
     components: [
@@ -61,6 +69,18 @@ const load = async (): Promise<void> => {
         }),
         icon: 'print',
         text: 'Print',
+        type: 'calcite-panel',
+      },
+      {
+        component: new Measure({ view, visible: false }),
+        icon: 'measure',
+        text: 'Measure',
+        type: 'calcite-panel',
+      },
+      {
+        component: new Sketch({ view, visible: false }),
+        icon: 'pencil',
+        text: 'Sketch',
         type: 'calcite-panel',
       },
     ],

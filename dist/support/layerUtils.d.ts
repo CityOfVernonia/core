@@ -1,6 +1,13 @@
 import esri = __esri;
 export declare let APPLICATION_GRAPHICS_LAYER: esri.GroupLayer | null;
-export declare const applicationGraphicsLayer: (view: esri.MapView | esri.SceneView) => Promise<void>;
+export declare let APPLICATION_MEASURE_LAYER: esri.GroupLayer | null;
+export declare let APPLICATION_SKETCH_LAYER: esri.GroupLayer | null;
+/**
+ * Create layer for components and keep it atop all layers.
+ * @param view `esri.MapView` | `esri.SceneView`
+ * @returns `esri.GroupLayer` | `undefined`
+ */
+export declare const applicationGraphicsLayer: (view: esri.MapView | esri.SceneView) => esri.GroupLayer | nullish;
 /**
  * Create and return a CSVLayer from URL of layer properties JSON.
  * @param url URL of layer properties JSON

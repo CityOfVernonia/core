@@ -4,20 +4,39 @@ import CSVLayer from '@arcgis/core/layers/CSVLayer';
 import GeoJSONLayer from '@arcgis/core/layers/GeoJSONLayer';
 import GroupLayer from '@arcgis/core/layers/GroupLayer';
 
-const _fetchLayerJSON = async (url: string): Promise<object> => {
+/**
+ * Fetch url and return JSON
+ * @param url string
+ * @returns JSON object
+ */
+const _fetchJSON = async (url: string): Promise<object> => {
   return await (await fetch(url, { cache: 'reload' })).json();
 };
 
 export let APPLICATION_GRAPHICS_LAYER: esri.GroupLayer | null = null;
 
-export const applicationGraphicsLayer = async (view: esri.MapView | esri.SceneView): Promise<void> => {
-  await view.when();
+export let APPLICATION_MEASURE_LAYER: esri.GroupLayer | null = null;
 
+export let APPLICATION_SKETCH_LAYER: esri.GroupLayer | null = null;
+
+/**
+ * Create layer for components and keep it atop all layers.
+ * @param view `esri.MapView` | `esri.SceneView`
+ * @returns `esri.GroupLayer` | `undefined`
+ */
+export const applicationGraphicsLayer = (view: esri.MapView | esri.SceneView): esri.GroupLayer | nullish => {
   if (APPLICATION_GRAPHICS_LAYER) return;
 
   const layers = view.map.layers;
 
-  APPLICATION_GRAPHICS_LAYER = new GroupLayer({ listMode: 'hide' });
+  APPLICATION_MEASURE_LAYER = new GroupLayer({ listMode: 'hide' });
+
+  APPLICATION_SKETCH_LAYER = new GroupLayer({ listMode: 'hide' });
+
+  APPLICATION_GRAPHICS_LAYER = new GroupLayer({
+    listMode: 'hide',
+    layers: [APPLICATION_SKETCH_LAYER, APPLICATION_MEASURE_LAYER],
+  });
 
   layers.add(APPLICATION_GRAPHICS_LAYER);
 
@@ -25,6 +44,8 @@ export const applicationGraphicsLayer = async (view: esri.MapView | esri.SceneVi
     // @ts-expect-error APPLICATION_GRAPHICS_LAYER will not be null here
     layers.reorder(APPLICATION_GRAPHICS_LAYER, layers.length - 1);
   });
+
+  return APPLICATION_GRAPHICS_LAYER;
 };
 
 /**
@@ -39,7 +60,7 @@ export const csvLayerFromJSON = async (
 ): Promise<esri.CSVLayer> => {
   try {
     const csvLayerProperties: esri.CSVLayerProperties = {
-      ...(await _fetchLayerJSON(url)),
+      ...(await _fetchJSON(url)),
       ...{
         customParameters: {
           d: new Date().getTime(),
@@ -66,7 +87,7 @@ export const geojsonLayerFromJSON = async (
 ): Promise<esri.GeoJSONLayer> => {
   try {
     const geojsonLayerProperties: esri.GeoJSONLayerProperties = {
-      ...(await _fetchLayerJSON(url)),
+      ...(await _fetchJSON(url)),
       ...{
         customParameters: {
           d: new Date().getTime(),

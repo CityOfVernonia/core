@@ -10,7 +10,7 @@ import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Graphic from '@arcgis/core/Graphic';
 import { CIMSymbol, SimpleFillSymbol, SimpleLineSymbol, SimpleMarkerSymbol, TextSymbol } from '@arcgis/core/symbols';
 
-import { APPLICATION_GRAPHICS_LAYER } from '../../support/layerUtils';
+import { APPLICATION_SKETCH_LAYER } from '../../support/layerUtils';
 
 // arcgis `Candy Shop` plus black, white and grey
 export const COLORS: { [key: string]: number[] } = {
@@ -160,8 +160,8 @@ export default class Sketch extends SketchViewModel {
       async (view: esri.MapView | esri.SceneView): Promise<void> => {
         await view.when();
 
-        if (APPLICATION_GRAPHICS_LAYER) {
-          APPLICATION_GRAPHICS_LAYER.add(this.layers);
+        if (APPLICATION_SKETCH_LAYER) {
+          APPLICATION_SKETCH_LAYER.add(this.layers);
         } else {
           view.map.add(this.layers);
         }
