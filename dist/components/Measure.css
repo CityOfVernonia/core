@@ -1,9 +1,13 @@
+.cov--measure {
+  --calcite-panel-background-color: var(--calcite-color-foreground-1);
+  --calcite-panel-space: 0.75rem;
+}
+
 .cov--measure_buttons {
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
-  padding: 0.75rem;
-  background-color: var(--calcite-color-foreground-1);
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--calcite-color-border-3);
 }
 
@@ -12,14 +16,14 @@
 }
 
 .cov--measure_results {
-  padding: 0.75rem;
+  padding-top: 0.75rem;
   line-height: 1.25rem;
 }
 .cov--measure_results hr {
   border: none;
   height: 1px;
-  margin-block-start: 0.75em;
-  margin-block-end: 0.75em;
+  margin-block-start: 0.75rem;
+  margin-block-end: 0.75rem;
   background-color: var(--calcite-color-border-3);
 }
 

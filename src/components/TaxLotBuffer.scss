@@ -1,0 +1,13 @@
+.cov--tax-lot-buffer {
+  --calcite-panel-space: 0.75rem;
+}
+
+.cov--tax-lot-buffer_background {
+  --calcite-panel-background-color: var(--calcite-color-foreground-1);
+}
+
+.cov--tax-lot-buffer_buffering {
+  display: flex;
+  align-items: center;
+  min-height: 6rem;
+}

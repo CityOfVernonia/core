@@ -28,12 +28,15 @@ import {
   execute as geodesicBuffer,
 } from '@arcgis/core/geometry/operators/geodesicBufferOperator';
 
-let KEY = 0;
+const CSS_BASE = 'cov--record-surveys';
 
-const STYLE = {
-  searching: 'display: flex; align-items: center; min-height: 6rem;',
-  infoPagination: 'width: 100%; display: flex; justify-content: center;',
+const CSS = {
+  background: `${CSS_BASE}_background`,
+  infoPagination: `${CSS_BASE}_info-pagination`,
+  searching: `${CSS_BASE}_searching`,
 };
+
+let KEY = 0;
 
 @subclass('cov.components.RecordSurveys')
 export default class RecordSurveys extends Widget {
@@ -339,7 +342,10 @@ export default class RecordSurveys extends Widget {
     return (
       <calcite-panel
         heading="Record Surveys"
-        style={_viewState !== 'results' && _viewState !== 'info' ? '--calcite-panel-space: 0.75rem;' : null}
+        class={this.classes(
+          _viewState !== 'results' && _viewState !== 'info' ? CSS_BASE : null,
+          _viewState === 'searching' || _viewState === 'info' ? CSS.background : null,
+        )}
       >
         {/* ready */}
         {_viewState === 'ready' ? (
@@ -360,7 +366,7 @@ export default class RecordSurveys extends Widget {
 
         {/* searching */}
         {_viewState === 'searching' ? (
-          <div style={STYLE.searching}>
+          <div class={CSS.searching}>
             <calcite-progress text="Searching related surveys" type="indeterminate"></calcite-progress>
           </div>
         ) : null}
@@ -419,7 +425,7 @@ export default class RecordSurveys extends Widget {
     if (!_surveyInfos.length || _surveyInfoIndex === null) return null;
 
     return (
-      <div slot="content-top" style={STYLE.infoPagination}>
+      <div slot="content-top" class={CSS.infoPagination}>
         <calcite-pagination
           page-size="1"
           start-item={`${_surveyInfoIndex + 1}`}

@@ -185,7 +185,10 @@ export default class TaxMaps extends Widget {
     const { _options, _visibleLayer } = this;
 
     return (
-      <calcite-panel heading="Tax Maps" style="--calcite-panel-content-space: 0.75rem;">
+      <calcite-panel
+        heading="Tax Maps"
+        style="--calcite-panel-space: 0.75rem; --calcite-panel-background-color: var(--calcite-color-foreground-1);"
+      >
         <calcite-label style={_visibleLayer ? '' : '--calcite-label-margin-bottom: 0;'}>
           Select tax map
           <calcite-select afterCreate={this._selectAfterCreate.bind(this)}>{_options.toArray()}</calcite-select>

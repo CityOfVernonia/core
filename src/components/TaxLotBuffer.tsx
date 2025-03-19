@@ -24,8 +24,11 @@ import {
 import { propertyInfoUrl } from './../support/taxLotUtils';
 import { unparse } from 'papaparse';
 
-const STYLE = {
-  buffering: 'display: flex; align-items: center; min-height: 6rem;',
+const CSS_BASE = 'cov--tax-lot-buffer';
+
+const CSS = {
+  background: `${CSS_BASE}_background`,
+  buffering: `${CSS_BASE}_buffering`,
 };
 
 @subclass('cov.components.TaxLotBuffer')
@@ -321,7 +324,10 @@ export default class TaxLotBuffer extends Widget {
     } = this;
 
     return (
-      <calcite-panel heading="Tax Lot Buffer" style="--calcite-panel-space: 0.75rem;">
+      <calcite-panel
+        heading="Tax Lot Buffer"
+        class={this.classes(CSS_BASE, _viewState === 'buffering' || _viewState === 'selected' ? CSS.background : null)}
+      >
         {/* ready */}
         {_viewState === 'ready' ? (
           <calcite-notice icon="cursor-click" kind="brand" open style="width: 100%;">
@@ -354,7 +360,7 @@ export default class TaxLotBuffer extends Widget {
 
         {/* buffering */}
         {_viewState === 'buffering' ? (
-          <div style={STYLE.buffering}>
+          <div class={CSS.buffering}>
             <calcite-progress text="Buffering tax lot" type="indeterminate"></calcite-progress>
           </div>
         ) : null}

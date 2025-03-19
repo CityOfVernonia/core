@@ -611,7 +611,7 @@ export default class Measure extends Widget {
     } = this;
 
     return (
-      <calcite-panel heading="Measure">
+      <calcite-panel class={CSS_BASE} heading="Measure">
         {/* options */}
         <calcite-action icon="gear" slot="header-actions-end" text="Options">
           <calcite-tooltip close-on-click="" placement="bottom" slot="tooltip">

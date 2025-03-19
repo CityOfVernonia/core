@@ -1,0 +1,19 @@
+.cov--record-surveys {
+  --calcite-panel-space: 0.75rem;
+}
+
+.cov--record-surveys_background {
+  --calcite-panel-background-color: var(--calcite-color-foreground-1);
+}
+
+.cov--record-surveys_info-pagination {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.cov--record-surveys_searching {
+  display: flex;
+  align-items: center;
+  min-height: 6rem;
+}
