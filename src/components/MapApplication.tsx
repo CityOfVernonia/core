@@ -1,6 +1,3 @@
-//////////////////////////////////////
-// Namespaces, interfaces and types
-//////////////////////////////////////
 import esri = __esri;
 
 import type { BasemapOptions } from './Basemap';
@@ -93,6 +90,8 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
 
   position?: 'end' | 'start';
 
+  shellPanel?: esri.Widget;
+
   title: string;
 
   view: esri.MapView;
@@ -109,9 +108,6 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
 import { subscribe } from 'pubsub-js';
 
-//////////////////////////////////////
-// Constants
-//////////////////////////////////////
 const CSS = {
   view: 'cov--map-application_view',
 };
@@ -125,9 +121,6 @@ export const SHOW_ALERT_TOPIC = 'map-application-show-alert';
  */
 @subclass('cov.components.MapApplication')
 export default class MapApplication extends Widget {
-  //////////////////////////////////////
-  // Lifecycle
-  //////////////////////////////////////
   private _container = document.createElement('calcite-shell');
 
   get container(): HTMLCalciteShellElement {
@@ -156,6 +149,7 @@ export default class MapApplication extends Widget {
       float,
       position,
       title,
+      shellPanel,
       view,
       view: { ui },
       viewControlOptions,
@@ -178,9 +172,9 @@ export default class MapApplication extends Widget {
     }
     if (includeDisclaimer && !Disclaimer.isAccepted()) new Disclaimer(disclaimerOptions);
 
-    if (components && components.length) this._addComponents(components);
+    if (!shellPanel && components && components.length) this._addComponents(components);
 
-    if (endComponent) this._addComponents(new Collection([endComponent]), true);
+    if (!shellPanel && endComponent) this._addComponents(new Collection([endComponent]), true);
 
     ui.remove(['attribution', 'zoom']);
 
@@ -210,9 +204,6 @@ export default class MapApplication extends Widget {
     loading.end();
   }
 
-  //////////////////////////////////////
-  // Properties
-  //////////////////////////////////////
   readonly basemapOptions?: BasemapOptions;
 
   @property({ type: Collection })
@@ -230,16 +221,17 @@ export default class MapApplication extends Widget {
 
   readonly position: 'end' | 'start' = 'end';
 
+  readonly shellPanel?: esri.Widget;
+
   readonly title!: string;
 
   readonly view!: esri.MapView;
 
   readonly viewControlOptions?: ViewControlOptions;
 
-  //////////////////////////////////////
-  // Component variables and methods
-  //////////////////////////////////////
   private _actionGroups: esri.Collection<tsx.JSX.Element> = new Collection();
+
+  private _alerts: Collection<tsx.JSX.Element> = new Collection([<calcite-alert></calcite-alert>]); // load with dummy alert to prevent rendering errors
 
   private _components: esri.Collection<tsx.JSX.Element> = new Collection();
 
@@ -350,10 +342,29 @@ export default class MapApplication extends Widget {
     });
   }
 
-  //////////////////////////////////////
-  // Alert variables and methods
-  //////////////////////////////////////
-  private _alerts: Collection<tsx.JSX.Element> = new Collection([<calcite-alert></calcite-alert>]); // load with dummy alert to prevent rendering errors
+  private _shellPanelActionBarViewPadding(actionBar: HTMLCalciteActionBarElement): void {
+    const { position, view } = this;
+
+    const setPadding = (): void => {
+      const width = actionBar.getBoundingClientRect().width;
+      view.padding =
+        position === 'start'
+          ? {
+              ...view.padding,
+              left: width,
+            }
+          : {
+              ...view.padding,
+              right: width,
+            };
+    };
+
+    setPadding();
+
+    new ResizeObserver((): void => {
+      setPadding();
+    }).observe(actionBar);
+  }
 
   private _showAlert(options: AlertOptions): void {
     const { _alerts } = this;
@@ -391,12 +402,19 @@ export default class MapApplication extends Widget {
     );
   }
 
-  //////////////////////////////////////
-  // Rendering
-  //////////////////////////////////////
   override render(): tsx.JSX.Element {
-    const { header, headerOptions, float, position, title, _actionGroups, _alerts, _components, _visibleComponent } =
-      this;
+    const {
+      header,
+      headerOptions,
+      float,
+      position,
+      shellPanel,
+      title,
+      _actionGroups,
+      _alerts,
+      _components,
+      _visibleComponent,
+    } = this;
 
     return (
       <calcite-shell>
@@ -412,8 +430,13 @@ export default class MapApplication extends Widget {
         {/* view */}
         <div class={CSS.view} afterCreate={this._viewAfterCreate.bind(this)}></div>
 
+        {/* shell panel */}
+        {shellPanel ? (
+          <calcite-shell-panel afterCreate={this._shellPanelAfterCreate.bind(this)}></calcite-shell-panel>
+        ) : null}
+
         {/* component shell panel */}
-        {_components.length ? (
+        {!shellPanel && _components.length ? (
           <calcite-shell-panel
             collapsed={_visibleComponent === null}
             display-mode={float ? 'float-content' : 'dock'}
@@ -434,33 +457,30 @@ export default class MapApplication extends Widget {
     );
   }
 
-  //////////////////////////////////////
-  // Render support methods
-  //////////////////////////////////////
   private _actionBarAfterCreate(actionBar: HTMLCalciteActionBarElement): void {
-    const { float, position, view } = this;
+    const { float } = this;
 
-    if (!float) return;
+    if (float) this._shellPanelActionBarViewPadding(actionBar);
+  }
 
-    const setPadding = (): void => {
-      const width = actionBar.getBoundingClientRect().width;
-      view.padding =
-        position === 'start'
-          ? {
-              ...view.padding,
-              left: width,
-            }
-          : {
-              ...view.padding,
-              right: width,
-            };
-    };
+  private _shellPanelAfterCreate(shellPanel: HTMLCalciteShellPanelElement): void {
+    const { float, position } = this;
 
-    setPadding();
+    shellPanel.displayMode = float ? 'float-content' : 'dock';
 
-    new ResizeObserver((): void => {
-      setPadding();
-    }).observe(actionBar);
+    shellPanel.position = position;
+
+    shellPanel.slot = `panel-${position}`;
+
+    if (this.shellPanel) this.shellPanel.container = shellPanel;
+
+    setTimeout((): void => {
+      const actionBar = shellPanel.querySelector('calcite-action-bar[slot="action-bar"]') as
+        | HTMLCalciteActionBarElement
+        | nullish;
+
+      if (actionBar && float) this._shellPanelActionBarViewPadding(actionBar);
+    }, 0);
   }
 
   private _viewAfterCreate(div: HTMLDivElement): void {

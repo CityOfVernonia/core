@@ -9,7 +9,7 @@ import '../src/components/Sketch.scss';
 import '../src/components/TaxLotBuffer.scss';
 import '../src/components/RecordSurveys.scss';
 
-import esri = __esri;
+// import esri = __esri;
 
 // arcgis config
 import esriConfig from '@arcgis/core/config';
@@ -32,8 +32,6 @@ const load = async (): Promise<void> => {
   const FeatureLayer = (await import('@arcgis/core/layers/FeatureLayer')).default;
   const SearchViewModel = (await import('@arcgis/core/widgets/Search/SearchViewModel')).default;
   const LayerSearchSource = (await import('@arcgis/core/widgets/Search/LayerSearchSource')).default;
-  const Color = (await import('@arcgis/core/Color')).default;
-  const { watch } = await import('@arcgis/core/core/reactiveUtils');
 
   // popups
   const TaxLotPopupTemplate = (await import('../src/popups/TaxLotPopupTemplate')).default;
@@ -51,6 +49,8 @@ const load = async (): Promise<void> => {
   const TaxMaps = (await import('../src/components/TaxMaps')).default;
 
   const MarkdownDialog = (await import('../src/components/MarkdownDialog')).default;
+
+  const { taxLotColor } = await import('../src/support/taxLotUtils');
 
   const { applicationGraphicsLayer } = await import('../src/support/layerUtils');
 
@@ -83,23 +83,6 @@ const load = async (): Promise<void> => {
     }),
   });
 
-  taxLots.when((): void => {
-    const tlr = taxLots.renderer as esri.SimpleRenderer;
-
-    const tls = tlr.symbol as esri.SimpleFillSymbol;
-
-    const hillshadeColor = new Color([152, 114, 11, 0.5]);
-
-    const imageryColor = new Color([246, 213, 109, 0.5]);
-
-    watch(
-      (): esri.Basemap | nullish => view.map.basemap,
-      (basemap: esri.Basemap | nullish): void => {
-        if (basemap && tls && tls.outline) tls.outline.color = basemap === imagery ? imageryColor : hillshadeColor;
-      },
-    );
-  });
-
   const taxMaps = await geojsonLayerFromJSON(
     'https://cityofvernonia.github.io/geospatial-data/tax-maps/tax-map-boundaries.json',
     { visible: false, listMode: 'hide' },
@@ -113,6 +96,8 @@ const load = async (): Promise<void> => {
   });
 
   applicationGraphicsLayer(view);
+
+  taxLotColor(imagery, taxLots, view);
 
   const search = new SearchViewModel({
     view,
@@ -219,6 +204,7 @@ const load = async (): Promise<void> => {
     ],
     headerOptions: { search },
     title,
+    // shellPanel: new (await import('../src/components/TestShellPanel')).default(),
     view,
     viewControlOptions: { includeFullscreen: true, includeLocate: true },
   });

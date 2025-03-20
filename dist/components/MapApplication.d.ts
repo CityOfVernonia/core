@@ -78,6 +78,7 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
     header?: boolean;
     headerOptions?: ApplicationHeaderOptions;
     position?: 'end' | 'start';
+    shellPanel?: esri.Widget;
     title: string;
     view: esri.MapView;
     viewControlOptions?: ViewControlOptions;
@@ -102,16 +103,19 @@ export default class MapApplication extends Widget {
     readonly header = true;
     readonly headerOptions: ApplicationHeaderOptions;
     readonly position: 'end' | 'start';
+    readonly shellPanel?: esri.Widget;
     readonly title: string;
     readonly view: esri.MapView;
     readonly viewControlOptions?: ViewControlOptions;
     private _actionGroups;
+    private _alerts;
     private _components;
     private _visibleComponent;
     private _addComponents;
-    private _alerts;
+    private _shellPanelActionBarViewPadding;
     private _showAlert;
     render(): tsx.JSX.Element;
     private _actionBarAfterCreate;
+    private _shellPanelAfterCreate;
     private _viewAfterCreate;
 }
