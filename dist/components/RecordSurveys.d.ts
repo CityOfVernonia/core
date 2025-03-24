@@ -19,6 +19,7 @@ export default class RecordSurveys extends Widget {
     private _surveys;
     private _surveyInfoIndex;
     private _surveyInfos;
+    private _surveySearchDialog?;
     private _symbols;
     private _viewState;
     private _clear;
@@ -26,6 +27,7 @@ export default class RecordSurveys extends Widget {
     private _setState;
     private _search;
     private _selectHighlightResult;
+    private _showSurveySearch;
     private _taxLotSelected;
     render(): tsx.JSX.Element;
     private _renderInfo;

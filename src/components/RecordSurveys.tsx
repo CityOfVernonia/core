@@ -15,6 +15,8 @@ export interface RecordSurveyProperties extends esri.WidgetProperties {
   view: esri.MapView;
 }
 
+import type SurveySearchDialog from './SurveySearchDialog';
+
 import { watch } from '@arcgis/core/core/reactiveUtils';
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
@@ -76,6 +78,8 @@ export default class RecordSurveys extends Widget {
   private _surveyInfoIndex: number | null = null;
 
   private _surveyInfos: esri.Collection<I['surveyInfo']> = new Collection();
+
+  private _surveySearchDialog?: SurveySearchDialog;
 
   private _symbols = {
     highlight: new SimpleFillSymbol({
@@ -330,6 +334,20 @@ export default class RecordSurveys extends Widget {
     graphics.reorder(feature, graphics.length - 1);
   }
 
+  private async _showSurveySearch(): Promise<void> {
+    const { _surveys, _surveySearchDialog } = this;
+
+    if (!_surveySearchDialog) {
+      if (!_surveys) await this._loadLayers();
+
+      this._surveySearchDialog = new (await import('./SurveySearchDialog')).default({ surveys: this._surveys });
+
+      this._surveySearchDialog.container.open = true;
+    } else {
+      _surveySearchDialog.container.open = true;
+    }
+  }
+
   private _taxLotSelected(): boolean {
     const { taxLots, _selectedFeature } = this;
 
@@ -347,6 +365,15 @@ export default class RecordSurveys extends Widget {
           _viewState === 'searching' || _viewState === 'info' ? CSS.background : null,
         )}
       >
+        <calcite-action
+          icon="search"
+          slot="header-actions-end"
+          text="Survey Search"
+          onclick={this._showSurveySearch.bind(this)}
+        >
+          <calcite-tooltip slot="tooltip">Survey Search</calcite-tooltip>
+        </calcite-action>
+
         {/* ready */}
         {_viewState === 'ready' ? (
           <calcite-notice icon="cursor-click" kind="brand" open>
