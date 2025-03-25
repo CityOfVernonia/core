@@ -1,0 +1,28 @@
+.cov--cemetery-shell-panel {
+  --calcite-panel-background-color: var(--calcite-color-foreground-1);
+}
+.cov--cemetery-shell-panel calcite-notice {
+  width: 100%;
+}
+
+.cov--cemetery-shell-panel_plots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cov--cemetery-shell-panel_print {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cov--cemetery-shell-panel_search {
+  padding: 0.75rem 0.75rem 0;
+}
+
+.cov--cemetery-shell-panel_spacing {
+  --calcite-panel-space: 0.75rem;
+}
+
+/*# sourceMappingURL=CemeteryShellPanel.css.map */
