@@ -128,7 +128,7 @@ export const midpoint = (polyline: esri.Polyline): esri.Point => {
     spatialReference,
   } = polyline;
 
-  const segements = path.map((p: number[]) => {
+  const segments = path.map((p: number[]) => {
     const [x, y] = p;
     return { x, y };
   });
@@ -136,24 +136,24 @@ export const midpoint = (polyline: esri.Polyline): esri.Point => {
   let td = 0;
   let dsf = 0;
 
-  for (let i = 0; i < segements.length - 1; i += 1) {
-    td += distance(new Point({ ...segements[i] }), new Point({ ...segements[i + 1] }));
+  for (let i = 0; i < segments.length - 1; i += 1) {
+    td += distance(new Point({ ...segments[i] }), new Point({ ...segments[i + 1] }));
   }
 
-  for (let i = 0; i < segements.length - 1; i += 1) {
-    if (dsf + distance(new Point({ ...segements[i] }), new Point({ ...segements[i + 1] })) > td / 2) {
+  for (let i = 0; i < segments.length - 1; i += 1) {
+    if (dsf + distance(new Point({ ...segments[i] }), new Point({ ...segments[i + 1] })) > td / 2) {
       const distanceToMidpoint = td / 2 - dsf;
       return linearInterpolation(
-        new Point({ ...segements[i], spatialReference }),
-        new Point({ ...segements[i + 1], spatialReference }),
+        new Point({ ...segments[i], spatialReference }),
+        new Point({ ...segments[i + 1], spatialReference }),
         distanceToMidpoint,
       );
     }
-    dsf += distance(new Point({ ...segements[i] }), new Point({ ...segements[i + 1] }));
+    dsf += distance(new Point({ ...segments[i] }), new Point({ ...segments[i + 1] }));
   }
 
   return new Point({
-    ...segements[0],
+    ...segments[0],
     spatialReference,
   });
 };
