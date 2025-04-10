@@ -2,6 +2,11 @@ import esri = __esri;
 export interface TaxLotPopupInfoLayers {
     flood: esri.FeatureLayer;
     zoning: esri.FeatureLayer;
+    wetlands: {
+        lwi: esri.FeatureLayer;
+        nwi: esri.FeatureLayer;
+        mow: esri.FeatureLayer;
+    };
 }
 export interface TaxLotPopupTemplateProperties extends esri.PopupTemplateProperties {
     infoLayers?: TaxLotPopupInfoLayers;

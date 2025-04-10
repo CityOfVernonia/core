@@ -79,12 +79,23 @@ const load = async (): Promise<void> => {
         flood: new FeatureLayer({
           url: 'https://gis.vernonia-or.gov/server/rest/services/LandUse/Vernonia_Flood/MapServer/4',
         }),
+        wetlands: {
+          lwi: new FeatureLayer({
+            url: 'https://gis.vernonia-or.gov/server/rest/services/Hosted/Oregon_Wetlands_2019/FeatureServer/0',
+          }),
+          nwi: new FeatureLayer({
+            url: 'https://gis.vernonia-or.gov/server/rest/services/Hosted/Oregon_Wetlands_2019/FeatureServer/1',
+          }),
+          mow: new FeatureLayer({
+            url: 'https://gis.vernonia-or.gov/server/rest/services/Hosted/Oregon_Wetlands_2019/FeatureServer/2',
+          }),
+        }
       },
     }),
   });
 
   const taxMaps = await geojsonLayerFromJSON(
-    'https://cityofvernonia.github.io/geospatial-data/tax-maps/tax-map-boundaries.json',
+    'https://cityofvernonia.github.io/geospatial-data/tax-map-boundaries/tax-map-boundaries.json',
     { visible: false, listMode: 'hide' },
   );
 

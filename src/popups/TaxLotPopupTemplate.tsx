@@ -3,6 +3,11 @@ import esri = __esri;
 export interface TaxLotPopupInfoLayers {
   flood: esri.FeatureLayer;
   zoning: esri.FeatureLayer;
+  wetlands: {
+    lwi: esri.FeatureLayer;
+    nwi: esri.FeatureLayer;
+    mow: esri.FeatureLayer;
+  };
 }
 
 export interface TaxLotPopupTemplateProperties extends esri.PopupTemplateProperties {
@@ -90,6 +95,8 @@ class PopupContent extends Widget {
     this._zoningInfo(_geometry);
 
     this._floodInfo(_geometry);
+
+    this._wetlandInfo(_geometry);
   }
 
   graphic!: esri.Graphic;
@@ -108,6 +115,15 @@ class PopupContent extends Widget {
   private _mailing = (
     <tr>
       <th>Mailing address</th>
+      <td style={STYLE.loader}>
+        <calcite-loader inline label="Loading" scale="s" text="Loading"></calcite-loader>
+      </td>
+    </tr>
+  );
+
+  private _wetlands = (
+    <tr>
+      <th>Wetlands</th>
       <td style={STYLE.loader}>
         <calcite-loader inline label="Loading" scale="s" text="Loading"></calcite-loader>
       </td>
@@ -144,7 +160,7 @@ class PopupContent extends Widget {
         if (floodZones.indexOf(flood_zone) === -1) floodZones.push(flood_zone);
       });
 
-      this._flood = (
+      this._flood = floodZones.length ? (
         <tr>
           <th>
             <calcite-link icon-end="information">Flood zones</calcite-link>
@@ -156,12 +172,15 @@ class PopupContent extends Widget {
             </calcite-popover>
           </th>
           <td>
-            {!floodZones.length
-              ? 'None'
-              : floodZones.map((zone: string): tsx.JSX.Element => {
-                  return <div key={KEY++}>{zone}</div>;
-                })}
+            {floodZones.map((zone: string): tsx.JSX.Element => {
+              return <div key={KEY++}>{zone}</div>;
+            })}
           </td>
+        </tr>
+      ) : (
+        <tr>
+          <th>Flood zones</th>
+          <td>None</td>
         </tr>
       );
 
@@ -235,6 +254,73 @@ class PopupContent extends Widget {
     }
   }
 
+  private async _wetlandInfo(geometry: esri.Polygon): Promise<void> {
+    const { infoLayers } = this;
+
+    if (!infoLayers) return;
+
+    const {
+      wetlands: { lwi, nwi, mow },
+    } = infoLayers;
+
+    try {
+      const lwiResult = (
+        await lwi.queryFeatures({
+          geometry,
+          returnGeometry: false,
+        })
+      ).features.length;
+
+      const nwiResult = (
+        await nwi.queryFeatures({
+          geometry,
+          returnGeometry: false,
+        })
+      ).features.length;
+
+      const mowResult = (
+        await mow.queryFeatures({
+          geometry,
+          returnGeometry: false,
+        })
+      ).features.length;
+
+      this._wetlands =
+        lwiResult + nwiResult + mowResult > 0 ? (
+          <tr>
+            <th>
+              <calcite-link icon-end="information">Wetlands</calcite-link>
+              <calcite-popover auto-close="" closable scale="s" afterCreate={referenceElement}>
+                <div style={STYLE.popover}>
+                  Some portion of the tax lot may be affected by wetlands. Turn on wetlands layer to view potential
+                  wetlands.
+                </div>
+              </calcite-popover>
+            </th>
+            <td>Yes</td>
+          </tr>
+        ) : (
+          <tr>
+            <th>Wetlands</th>
+            <td>No</td>
+          </tr>
+        );
+
+      this.scheduleRender();
+    } catch (error) {
+      console.log(error);
+
+      this._wetlands = (
+        <tr>
+          <th>Wetlands</th>
+          <td>An error occurred</td>
+        </tr>
+      );
+
+      this.scheduleRender();
+    }
+  }
+
   private async _zoningInfo(geometry: esri.Polygon): Promise<void> {
     const { infoLayers } = this;
 
@@ -284,7 +370,7 @@ class PopupContent extends Widget {
   }
 
   override render(): tsx.JSX.Element {
-    const { infoLayers, _flood, _mailing, _zoning } = this;
+    const { infoLayers, _flood, _mailing, _wetlands, _zoning } = this;
     const { VERNONIA } = this.graphic.attributes;
     return (
       <table class="cov--feature-table">
@@ -292,6 +378,7 @@ class PopupContent extends Widget {
         {_mailing}
         {infoLayers && VERNONIA === 1 ? _zoning : null}
         {infoLayers && VERNONIA === 1 ? _flood : null}
+        {infoLayers && VERNONIA === 1 ? _wetlands : null}
       </table>
     );
   }
