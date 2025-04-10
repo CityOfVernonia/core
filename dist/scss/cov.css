@@ -720,6 +720,15 @@
     animation: none;
   }
 }
+.esri-popup a {
+  color: #6b9560;
+  text-decoration: none;
+}
+.esri-popup a:hover {
+  color: #44693d;
+  text-decoration: underline;
+}
+
 .esri-popup h2.esri-widget__heading {
   font-size: var(--calcite-font-size-0);
 }

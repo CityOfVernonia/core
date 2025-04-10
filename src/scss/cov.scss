@@ -53,6 +53,18 @@ $background-color: #ffffff; // _Popup.scss
 $include_Popup: true;
 @import "../../node_modules/@arcgis/core/assets/esri/themes/base/widgets/_Popup.scss";
 
+.esri-popup {
+  a {
+    color: vars.$brand;
+    text-decoration: none;
+
+    &:hover {
+      color: vars.$brand-dark;
+      text-decoration: underline;
+    }
+  }
+}
+
 .esri-popup h2.esri-widget__heading {
   font-size: var(--calcite-font-size-0);
 }
@@ -120,11 +132,11 @@ $include_Features: true;
   tr th {
     border-right: 3px solid rgba(vars.$brand, 0.125);
   }
-  
+
   tr:nth-child(odd) {
     background-color: rgba(vars.$brand, 0.05);
   }
-  
+
   tr:nth-child(even) {
     background-color: rgba($color: #ffffff, $alpha: 0) !important;
   }
