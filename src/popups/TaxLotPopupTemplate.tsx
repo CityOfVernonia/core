@@ -1,16 +1,6 @@
 import esri = __esri;
 
-// typescript is being weird
-// import type TaxLotInfoTableInfoLayers from '../components/TaxLotInfoTable';
-interface TaxLotInfoTableInfoLayers {
-  flood: esri.FeatureLayer;
-  zoning: esri.FeatureLayer;
-  wetlands: {
-    lwi: esri.FeatureLayer;
-    nwi: esri.FeatureLayer;
-    mow: esri.FeatureLayer;
-  };
-}
+import type { TaxLotInfoTableInfoLayers } from '../components/TaxLotInfoTable';
 
 export interface TaxLotPopupTemplateProperties extends esri.PopupTemplateProperties {
   infoLayers: TaxLotInfoTableInfoLayers;
