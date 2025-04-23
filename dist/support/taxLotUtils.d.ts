@@ -1,6 +1,12 @@
 import esri = __esri;
 export declare const TAX_LOT_HILLSHADE_COLOR: esri.Color;
 export declare const TAX_LOT_IMAGERY_COLOR: esri.Color;
+/**
+ * Change tax lot color imagery basemaps.
+ * @param imagery esri.Basemap
+ * @param layer esri.FeatureLayer
+ * @param view esri.MapView
+ */
 export declare const taxLotColor: (imagery: esri.Basemap, layer: esri.FeatureLayer, view: esri.MapView) => Promise<void>;
 /**
  * Create property info URL.

@@ -1,5 +1,5 @@
 import esri = __esri;
-export interface TaxLotPopupInfoLayers {
+interface TaxLotInfoTableInfoLayers {
     flood: esri.FeatureLayer;
     zoning: esri.FeatureLayer;
     wetlands: {
@@ -9,15 +9,16 @@ export interface TaxLotPopupInfoLayers {
     };
 }
 export interface TaxLotPopupTemplateProperties extends esri.PopupTemplateProperties {
-    infoLayers?: TaxLotPopupInfoLayers;
+    infoLayers: TaxLotInfoTableInfoLayers;
 }
 import PopupTemplate from '@arcgis/core/PopupTemplate';
 export default class TaxLotPopupTemplate extends PopupTemplate {
-    constructor(properties?: TaxLotPopupTemplateProperties);
-    infoLayers?: TaxLotPopupInfoLayers;
+    constructor(properties: TaxLotPopupTemplateProperties);
+    infoLayers: TaxLotInfoTableInfoLayers;
     outFields: string[];
     title: string;
     content: (event: {
         graphic: esri.Graphic;
     }) => HTMLElement;
 }
+export {};
