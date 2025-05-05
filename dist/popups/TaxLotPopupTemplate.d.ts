@@ -1,13 +1,5 @@
 import esri = __esri;
-interface TaxLotInfoTableInfoLayers {
-    flood: esri.FeatureLayer;
-    zoning: esri.FeatureLayer;
-    wetlands: {
-        lwi: esri.FeatureLayer;
-        nwi: esri.FeatureLayer;
-        mow: esri.FeatureLayer;
-    };
-}
+import type { TaxLotInfoTableInfoLayers } from '../components/TaxLotInfoTable';
 export interface TaxLotPopupTemplateProperties extends esri.PopupTemplateProperties {
     infoLayers: TaxLotInfoTableInfoLayers;
 }
@@ -21,4 +13,3 @@ export default class TaxLotPopupTemplate extends PopupTemplate {
         graphic: esri.Graphic;
     }) => HTMLElement;
 }
-export {};
