@@ -11,16 +11,17 @@ export interface TaxLotInfoTableInfoLayers {
 }
 
 export interface TaxLotInfoTableProperties extends esri.WidgetProperties {
-  accelaParcelURLTemplate?: string;
   graphic: esri.Graphic;
   infoLayers?: TaxLotInfoTableInfoLayers;
 }
 
+import esriId from '@arcgis/core/identity/IdentityManager';
+import Portal from '@arcgis/core/portal/Portal';
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import { referenceElement } from './../components/support';
-import { propertyInfoUrl, taxMapUrl } from './../support/taxLotUtils';
+import { propertyInfoUrl, taxMapUrl, accelaUrl, ePermittingUrl } from './../support/taxLotUtils';
 import {
   load as bufferLoad,
   isLoaded as bufferLoaded,
@@ -53,6 +54,10 @@ export default class TaxLotInfoTable extends Widget {
 
     if (!geometry || VERNONIA === 0) return;
 
+    esriId.checkSignInStatus(new Portal().url).then((): void => {
+      this._authed = true;
+    });
+
     if (!bufferLoaded()) await bufferLoad();
 
     const _geometry = geodesicBuffer(geometry, -1, { unit: 'feet' }) as esri.Polygon;
@@ -64,11 +69,12 @@ export default class TaxLotInfoTable extends Widget {
     this._wetlandInfo(_geometry);
   }
 
-  accelaParcelURLTemplate?: string;
-
   graphic!: esri.Graphic;
 
   infoLayers!: TaxLotInfoTableInfoLayers;
+
+  @property()
+  private _authed = false;
 
   @property()
   private _flood = (
@@ -339,7 +345,36 @@ export default class TaxLotInfoTable extends Widget {
   }
 
   private _renderTaxLotInfo(): tsx.JSX.Element | null[] {
-    const { TAXLOT_ID, ACCELA_MT, ACCOUNT_IDS, TAXMAP, ADDRESS, OWNER, ACRES, SQ_FEET } = this.graphic.attributes;
+    const { _authed } = this;
+
+    const { TAXLOT_ID, ACCELA_MT, ACCOUNT_IDS, TAXMAP, ADDRESS, OWNER, ACRES, SQ_FEET, VERNONIA } =
+      this.graphic.attributes;
+
+    let permits: tsx.JSX.Element | null = null;
+
+    if (VERNONIA === 1 && _authed) {
+      permits = (
+        <tr>
+          <th>Accela</th>
+          <td>
+            <calcite-link href={accelaUrl(ACCELA_MT)} target="_blank">
+              {ACCELA_MT}
+            </calcite-link>
+          </td>
+        </tr>
+      );
+    } else if (VERNONIA === 1 && !_authed) {
+      permits = (
+        <tr>
+          <th>ePermitting</th>
+          <td>
+            <calcite-link href={ePermittingUrl()} target="_blank">
+              {ACCELA_MT}
+            </calcite-link>
+          </td>
+        </tr>
+      );
+    }
 
     const address = ADDRESS ? (
       <tr>
@@ -383,10 +418,7 @@ export default class TaxLotInfoTable extends Widget {
           </calcite-link>
         </td>
       </tr>,
-      <tr>
-        <th>Accela id</th>
-        <td>{this._renderAccela(ACCELA_MT)}</td>
-      </tr>,
+      permits,
       <tr>
         <th>Tax map</th>
         <td>
@@ -411,19 +443,5 @@ export default class TaxLotInfoTable extends Widget {
         <td>{accounts}</td>
       </tr>,
     ];
-  }
-
-  private _renderAccela(id: string): tsx.JSX.Element | string {
-    const { accelaParcelURLTemplate } = this;
-
-    if (!accelaParcelURLTemplate) {
-      return id;
-    }
-
-    return (
-      <calcite-link href={accelaParcelURLTemplate.replace('{id}', id)} target="_blank">
-        {id}
-      </calcite-link>
-    );
   }
 }

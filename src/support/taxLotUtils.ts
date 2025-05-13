@@ -50,3 +50,11 @@ export const propertyInfoUrl = (accountId: number | string): string => {
 export const taxMapUrl = (mapId: string): string => {
   return `https://gis.columbiacountymaps.com/TaxMaps/${mapId}.pdf`;
 };
+
+export const accelaUrl = (parcel: string): string => {
+  return `https://av-oregon-config.accela.com/portlets/parcel/refParcelForm.do?mode=view&refParcelNumber=${parcel}`;
+};
+
+export const ePermittingUrl = (/*parcel: string*/): string => {
+  return `https://aca-oregon.accela.com/oregon/Default.aspx`;
+};

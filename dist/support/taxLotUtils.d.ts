@@ -20,3 +20,5 @@ export declare const propertyInfoUrl: (accountId: number | string) => string;
  * @returns tax map url string
  */
 export declare const taxMapUrl: (mapId: string) => string;
+export declare const accelaUrl: (parcel: string) => string;
+export declare const ePermittingUrl: () => string;

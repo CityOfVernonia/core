@@ -3,7 +3,6 @@ import esri = __esri;
 import type { TaxLotInfoTableInfoLayers } from '../components/TaxLotInfoTable';
 
 export interface TaxLotPopupTemplateProperties extends esri.PopupTemplateProperties {
-  accelaParcelURLTemplate?: string;
   infoLayers: TaxLotInfoTableInfoLayers;
 }
 
@@ -17,8 +16,6 @@ export default class TaxLotPopupTemplate extends PopupTemplate {
     super(properties);
   }
 
-  accelaParcelURLTemplate?: string;
-
   infoLayers!: TaxLotInfoTableInfoLayers;
 
   outFields = ['*'];
@@ -29,11 +26,9 @@ export default class TaxLotPopupTemplate extends PopupTemplate {
   content = (event: { graphic: esri.Graphic }): HTMLElement => {
     const infoLayers = this.infoLayers as TaxLotInfoTableInfoLayers;
 
-    const accelaParcelURLTemplate = this.accelaParcelURLTemplate;
-
     const container = document.createElement('table');
 
-    new TaxLotInfoTable({ accelaParcelURLTemplate, container, graphic: event.graphic, infoLayers });
+    new TaxLotInfoTable({ container, graphic: event.graphic, infoLayers });
 
     return container;
   };
