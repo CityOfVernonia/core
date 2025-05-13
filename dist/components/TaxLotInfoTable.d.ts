@@ -9,6 +9,7 @@ export interface TaxLotInfoTableInfoLayers {
     };
 }
 export interface TaxLotInfoTableProperties extends esri.WidgetProperties {
+    accelaParcelURLTemplate?: string;
     graphic: esri.Graphic;
     infoLayers?: TaxLotInfoTableInfoLayers;
 }
@@ -17,6 +18,7 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
 export default class TaxLotInfoTable extends Widget {
     constructor(properties: TaxLotInfoTableProperties);
     postInitialize(): Promise<void>;
+    accelaParcelURLTemplate?: string;
     graphic: esri.Graphic;
     infoLayers: TaxLotInfoTableInfoLayers;
     private _flood;
@@ -29,4 +31,5 @@ export default class TaxLotInfoTable extends Widget {
     private _zoningInfo;
     render(): tsx.JSX.Element;
     private _renderTaxLotInfo;
+    private _renderAccela;
 }

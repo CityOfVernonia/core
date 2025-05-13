@@ -11,6 +11,7 @@ export interface TaxLotInfoTableInfoLayers {
 }
 
 export interface TaxLotInfoTableProperties extends esri.WidgetProperties {
+  accelaParcelURLTemplate?: string;
   graphic: esri.Graphic;
   infoLayers?: TaxLotInfoTableInfoLayers;
 }
@@ -62,6 +63,8 @@ export default class TaxLotInfoTable extends Widget {
 
     this._wetlandInfo(_geometry);
   }
+
+  accelaParcelURLTemplate?: string;
 
   graphic!: esri.Graphic;
 
@@ -382,7 +385,7 @@ export default class TaxLotInfoTable extends Widget {
       </tr>,
       <tr>
         <th>Accela id</th>
-        <td>{ACCELA_MT}</td>
+        <td>{this._renderAccela(ACCELA_MT)}</td>
       </tr>,
       <tr>
         <th>Tax map</th>
@@ -408,5 +411,19 @@ export default class TaxLotInfoTable extends Widget {
         <td>{accounts}</td>
       </tr>,
     ];
+  }
+
+  private _renderAccela(id: string): tsx.JSX.Element | string {
+    const { accelaParcelURLTemplate } = this;
+
+    if (!accelaParcelURLTemplate) {
+      return id;
+    }
+
+    return (
+      <calcite-link href={accelaParcelURLTemplate.replace('{id}', id)} target="_blank">
+        {id}
+      </calcite-link>
+    );
   }
 }
