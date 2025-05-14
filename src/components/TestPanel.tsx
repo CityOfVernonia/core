@@ -25,7 +25,7 @@ export default class TestPanel extends Widget {
   override render(): tsx.JSX.Element {
     return (
       <calcite-panel heading="Test">
-        <calcite-block heading="Testing 1 2 3" open>
+        <calcite-block heading="Testing 1 2 3" expanded>
           A panel for testing...
         </calcite-block>
         <calcite-button

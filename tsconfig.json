@@ -3,7 +3,7 @@
     "lib": ["ESNext", "dom"],
     "strict": true,
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "paths": {
       "tslib": ["./node_modules/tslib/tslib.d.ts"]
@@ -16,7 +16,7 @@
     "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
-    "types": ["@arcgis/core/interfaces.d.ts", "@arcgis/map-components", "@esri/calcite-components"]
+    "types": ["@arcgis/core/interfaces.d.ts", "@arcgis/map-components", "@esri/calcite-components", "@arcgis/lumina"]
   },
   "typedocOptions": {
     "entryPoints": ["src"],
