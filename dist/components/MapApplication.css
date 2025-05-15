@@ -231,16 +231,16 @@
   color: #d9534f;
 }
 
-.cov-layouts-support--view-control-2d {
+.cov--view-control-2d {
   box-shadow: none !important;
 }
 
-.cov-layouts-support--view-control-2d_pads {
+.cov--view-control-2d_actions {
   display: flex;
   flex-flow: column;
   gap: 0.75rem;
 }
-.cov-layouts-support--view-control-2d_pads calcite-action-pad {
+.cov--view-control-2d_actions calcite-action-bar {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 

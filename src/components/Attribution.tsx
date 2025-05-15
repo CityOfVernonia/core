@@ -33,7 +33,7 @@ export default class Attribution extends Widget {
 
     this._vm.view = properties.view;
 
-    this.container = document.createElement('calcite-action-pad');
+    this.container = document.createElement('calcite-action-bar');
   }
 
   readonly view!: esri.MapView;
@@ -53,8 +53,8 @@ export default class Attribution extends Widget {
       .join(', ');
 
     return (
-      <calcite-action-pad class={CSS.attribution} expand-disabled="" scale="s">
-        <calcite-action icon="information" scale="s" text="Attribution"></calcite-action>
+      <calcite-action-bar class={CSS.attribution} expand-disabled="" floating scale="s">
+        <calcite-action icon="map-information" scale="s" text="Attribution"></calcite-action>
         <calcite-popover
           auto-close=""
           closable
@@ -66,7 +66,7 @@ export default class Attribution extends Widget {
         >
           <div class={CSS.attributionContent}>{attribution}</div>
         </calcite-popover>
-      </calcite-action-pad>
+      </calcite-action-bar>
     );
   }
 }

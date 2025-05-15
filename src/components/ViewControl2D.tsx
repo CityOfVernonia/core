@@ -45,9 +45,12 @@ import ZoomViewModel from '@arcgis/core/widgets/Zoom/ZoomViewModel';
 //////////////////////////////////////
 // Constants
 //////////////////////////////////////
+
+const CSS_BASE = 'cov--view-control-2d';
+
 const CSS = {
-  base: 'cov-layouts-support--view-control-2d',
-  pads: 'cov-layouts-support--view-control-2d_pads',
+  base: CSS_BASE,
+  actions: `${CSS_BASE}_actions`,
 };
 
 /**
@@ -229,8 +232,8 @@ export default class ViewControl2D extends Widget {
     const magnifier = view.magnifier.visible;
     return (
       <div class={CSS.base}>
-        <div class={CSS.pads}>
-          <calcite-action-pad expand-disabled="">
+        <div class={CSS.actions}>
+          <calcite-action-bar expand-disabled="" floating>
             <calcite-action-group>
               <calcite-action
                 text="Zoom in"
@@ -255,8 +258,8 @@ export default class ViewControl2D extends Widget {
                 </calcite-tooltip>
               </calcite-action>
             </calcite-action-group>
-          </calcite-action-pad>
-          <calcite-action-pad expand-disabled="">
+          </calcite-action-bar>
+          <calcite-action-bar expand-disabled="" floating>
             <calcite-action-group>
               <calcite-action text="Default extent" icon="home" scale="s" onclick={_home.go.bind(_home)}>
                 <calcite-tooltip close-on-click="" overlay-positioning="fixed" scale="s" slot="tooltip">
@@ -290,9 +293,9 @@ export default class ViewControl2D extends Widget {
                 </calcite-action>
               ) : null}
             </calcite-action-group>
-          </calcite-action-pad>
+          </calcite-action-bar>
           {includeFullscreen ? (
-            <calcite-action-pad expand-disabled="">
+            <calcite-action-bar expand-disabled="" floating>
               <calcite-action-group>
                 <calcite-action
                   text="Enter fullscreen"
@@ -306,10 +309,10 @@ export default class ViewControl2D extends Widget {
                   </calcite-tooltip>
                 </calcite-action>
               </calcite-action-group>
-            </calcite-action-pad>
+            </calcite-action-bar>
           ) : null}
           {includeMagnifier ? (
-            <calcite-action-pad expand-disabled="">
+            <calcite-action-bar expand-disabled="" floating>
               <calcite-action-group>
                 <calcite-action
                   text={magnifier ? 'Hide magnifier' : 'Show magnifier'}
@@ -323,7 +326,7 @@ export default class ViewControl2D extends Widget {
                   </calcite-tooltip>
                 </calcite-action>
               </calcite-action-group>
-            </calcite-action-pad>
+            </calcite-action-bar>
           ) : null}
         </div>
       </div>

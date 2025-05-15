@@ -118,6 +118,15 @@ const files = ['esri/widgets/support/t9n/uriUtils.json', `esri/widgets/support/t
       if (!file.includes(`${language}.`) && !file.includes('icon')) await fs.remove(file);
     }
 
+    // copy calcite icons for arcgis
+    const arcgisIcons = `${arcgisDest}/components/assets/icon`;
+
+    await fs.remove(arcgisIcons);
+
+    await fs.ensureDir(arcgisIcons);
+
+    await fs.copy(`${calciteDest}/icon`, arcgisIcons);
+
     console.log(chalk.green('@esri/calcite-components copied'));
 
     /**
