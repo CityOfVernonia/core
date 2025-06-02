@@ -52,7 +52,7 @@ export const taxMapUrl = (mapId: string): string => {
 };
 
 export const accelaUrl = (parcel: string): string => {
-  return `https://av-oregon-config.accela.com/portlets/parcel/refParcelForm.do?mode=view&refParcelNumber=${parcel}`;
+  return `https://av-oregon.accela.com/portlets/parcel/refParcelForm.do?mode=view&refParcelNumber=${parcel}`;
 };
 
 export const ePermittingUrl = (/*parcel: string*/): string => {
