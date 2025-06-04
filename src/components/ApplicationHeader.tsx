@@ -27,13 +27,12 @@ export interface ApplicationHeaderProperties extends esri.WidgetProperties, Appl
   title: string;
 }
 
-import { watch } from '@arcgis/core/core/reactiveUtils';
 import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
 import logoSvg from './../support/logo';
-import { referenceElement, wrapValuesInHtml } from './support';
+import { referenceElement } from './support';
 
 const CSS_BASE = {
   HEADER: 'cov--application-header',
@@ -49,12 +48,6 @@ const CSS = {
   headerSearchContainer: `${CSS_BASE.HEADER}_search-container`,
   headerControlsContainer: `${CSS_BASE.HEADER}_controls-container`,
   search: CSS_BASE.SEARCH,
-  searchWrapper: `${CSS_BASE.SEARCH}_wrapper`,
-  searchBar: `${CSS_BASE.SEARCH}_bar`,
-  searchButton: `${CSS_BASE.SEARCH}_button`,
-  searchForm: `${CSS_BASE.SEARCH}_form`,
-  searchInput: `${CSS_BASE.SEARCH}_input`,
-  searchDropdown: `${CSS_BASE.SEARCH}_dropdown`,
   user: CSS_BASE.USER,
   userPopover: `${CSS_BASE.USER}_popover`,
 };
@@ -125,15 +118,6 @@ class HeaderSearch extends Widget {
     this._addSources(_sources);
 
     this.addHandles(_sources.on('change', this._addSources.bind(this, _sources)));
-
-    this.addHandles(
-      watch(
-        (): string => this._value,
-        (value: string): void => {
-          if (value) this._search(value);
-        },
-      ),
-    );
   }
 
   readonly search!: esri.SearchViewModel;
@@ -141,27 +125,20 @@ class HeaderSearch extends Widget {
   @property({ aliasOf: 'search.activeSource' })
   private _activeSource!: esri.LayerSearchSource;
 
-  private _input!: HTMLInputElement;
+  private _autocomplete!: HTMLCalciteAutocompleteElement;
 
   private _searchAbortController: AbortController | null = null;
+
+  private _selectingResult = false;
 
   @property({ aliasOf: 'search.sources' })
   private _sources!: esri.Collection<esri.LayerSearchSource>;
 
-  private _sourcesDropdown!: HTMLCalciteDropdownElement;
-
+  @property()
   private _sourcesDropdownItems: esri.Collection<tsx.JSX.Element> = new Collection();
 
   @property()
-  private _sourcesDropdownOpen = false;
-
-  @property()
   private _suggestions: esri.Collection<esri.SuggestResult> = new Collection();
-
-  private _suggestionsDropdown!: HTMLCalciteDropdownElement;
-
-  @property()
-  private _value = '';
 
   @property({ aliasOf: 'search.view' })
   private _view?: esri.MapView;
@@ -180,11 +157,11 @@ class HeaderSearch extends Widget {
           selected={_activeSource === source}
           afterCreate={(dropdownItem: HTMLCalciteDropdownItemElement): void => {
             dropdownItem.addEventListener('calciteDropdownItemSelect', (): void => {
-              this._sourcesDropdownOpen = false;
+              // this._sourcesDropdownOpen = false;
 
               search.activeSourceIndex = index;
 
-              this._input.focus();
+              // this._input.focus();
             });
           }}
         >
@@ -192,18 +169,6 @@ class HeaderSearch extends Widget {
         </calcite-dropdown-item>,
       );
     });
-  }
-
-  private _clear(): void {
-    const { _input, _suggestions, _view } = this;
-
-    _input.value = '';
-
-    _suggestions.removeAll();
-
-    if (_view) _view.closePopup();
-
-    this._value = '';
   }
 
   private async _search(value: string): Promise<void> {
@@ -214,7 +179,9 @@ class HeaderSearch extends Widget {
     _suggestions.removeAll();
 
     const controller = new AbortController();
+
     const { signal } = controller;
+
     this._searchAbortController = controller;
 
     try {
@@ -222,6 +189,7 @@ class HeaderSearch extends Widget {
       const response = await search.suggest(value, null, { signal });
 
       if (this._searchAbortController !== controller) return;
+
       this._searchAbortController = null;
 
       if (!response || !response.numResults) return;
@@ -229,6 +197,7 @@ class HeaderSearch extends Widget {
       _suggestions.addMany(response.results[0].results || []);
     } catch (error) {
       this._searchAbortController = null;
+
       // @ts-expect-error error has message
       if (error.message !== 'Aborted') console.log(error);
     }
@@ -243,9 +212,15 @@ class HeaderSearch extends Widget {
   }
 
   private async _selectResult(suggestion: esri.SuggestResult): Promise<void> {
-    const { search, _input, _view } = this;
+    const { search, _autocomplete, _selectingResult, _suggestions, _view } = this;
 
-    _input.value = suggestion.text || '';
+    if (_selectingResult) return;
+
+    this._selectingResult = true;
+
+    _autocomplete.inputValue = suggestion.text as string;
+
+    _suggestions.removeAll();
 
     try {
       const response = (await search.search(suggestion)) as esri.SearchViewModelSearchResponse;
@@ -265,64 +240,37 @@ class HeaderSearch extends Widget {
 
         _view.openPopup({ features: [feature] });
       }
+
+      this._selectingResult = false;
     } catch (error) {
+      this._selectingResult = false;
+
       console.log(error);
     }
   }
 
   override render(): tsx.JSX.Element {
-    const { _activeSource, _suggestions, _sources, _sourcesDropdownItems, _sourcesDropdownOpen, _value } = this;
+    const { _activeSource, _sources, _sourcesDropdownItems } = this;
 
     return _activeSource ? (
       <div class={CSS.search}>
-        <div class={CSS.searchWrapper}>
-          <div class={CSS.searchBar}>
-            <calcite-icon
-              class={CSS.searchButton}
-              hidden={_sources && _sources.length <= 1 ? true : false}
-              icon="chevron-down"
-              roll="button"
-              afterCreate={this._sourcesButtonAfterCreate.bind(this)}
-            ></calcite-icon>
-            <form class={CSS.searchForm} afterCreate={this._searchFormAfterCreate.bind(this)}>
-              <input
-                class={CSS.searchInput}
-                placeholder={_activeSource.placeholder}
-                type="text"
-                afterCreate={this._searchInputAfterCreate.bind(this)}
-              ></input>
-            </form>
-            <calcite-icon
-              class={CSS.searchButton}
-              hidden={!_value}
-              icon="x"
-              roll="button"
-              afterCreate={this._clearButtonAfterCreate.bind(this)}
-            ></calcite-icon>
-            <calcite-icon class={CSS.searchButton} icon="search" roll="button"></calcite-icon>
-          </div>
-          {/* suggestions list */}
-          <calcite-dropdown
-            class={CSS.searchDropdown}
-            role="listbox"
-            open={_suggestions.length > 0}
-            afterCreate={this._suggestionDropdownAfterCreate.bind(this)}
-          >
-            <calcite-button slot="trigger" style="display: none"></calcite-button>
-            <calcite-dropdown-group selection-mode="none">{this._renderSuggestions()}</calcite-dropdown-group>
-          </calcite-dropdown>
-
-          {/* sources list */}
-          <calcite-dropdown
-            class={CSS.searchDropdown}
-            role="listbox"
-            open={_sourcesDropdownOpen}
-            afterCreate={this._sourcesDropdownAfterCreate.bind(this)}
-          >
-            <calcite-button slot="trigger" style="display: none !important;"></calcite-button>
+        {_sources && _sources.length > 1 ? (
+          <calcite-dropdown overlay-positioning="fixed" afterCreate={this._dropdownAfterCreate.bind(this)}>
+            <calcite-button icon-start="chevron-down" slot="trigger"></calcite-button>
             <calcite-dropdown-group>{_sourcesDropdownItems.toArray()}</calcite-dropdown-group>
           </calcite-dropdown>
-        </div>
+        ) : null}
+        <form afterCreate={this._formAfterCreate.bind(this)}>
+          <calcite-autocomplete
+            autocomplete={false}
+            icon={false}
+            placeholder={_activeSource.placeholder}
+            afterCreate={this._autocompleteAfterCreate.bind(this)}
+          >
+            {this._renderSuggestions()}
+          </calcite-autocomplete>
+        </form>
+        <calcite-button icon-start="search" afterCreate={this._buttonAfterCreate.bind(this)}></calcite-button>
       </div>
     ) : (
       <div></div>
@@ -330,92 +278,87 @@ class HeaderSearch extends Widget {
   }
 
   private _renderSuggestions(): tsx.JSX.Element[] {
-    const { _suggestions, _value } = this;
+    const { _suggestions } = this;
 
     if (_suggestions.length === 0) return [];
 
     return _suggestions.toArray().map((suggestion: esri.SuggestResult): tsx.JSX.Element => {
       return (
-        <calcite-dropdown-item
-          key={KEY++}
-          afterCreate={(dropdownItem: HTMLCalciteDropdownItemElement): void => {
-            dropdownItem.innerHTML = wrapValuesInHtml(suggestion.text || '', _value);
-
-            dropdownItem.addEventListener('calciteDropdownItemSelect', this._selectResult.bind(this, suggestion));
-          }}
-        ></calcite-dropdown-item>
+        <calcite-autocomplete-item key={KEY++} heading={suggestion.text} value={suggestion}>
+          <calcite-icon icon="search" scale="s" slot="content-start"></calcite-icon>
+        </calcite-autocomplete-item>
       );
     });
   }
 
-  private _clearButtonAfterCreate(icon: HTMLCalciteIconElement): void {
-    icon.addEventListener('click', this._clear.bind(this));
+  private _autocompleteAfterCreate(autocomplete: HTMLCalciteAutocompleteElement): void {
+    this._autocomplete = autocomplete;
+
+    autocomplete.addEventListener('calciteAutocompleteTextInput', (): void => {
+      const { _selectingResult, _suggestions } = this;
+
+      if (_selectingResult) return;
+
+      const { inputValue } = autocomplete;
+
+      if (!inputValue) {
+        _suggestions.removeAll();
+
+        return;
+      }
+
+      this._search(inputValue);
+    });
+
+    autocomplete.addEventListener('calciteAutocompleteChange', (): void => {
+      const suggestion = autocomplete.value as unknown as esri.SuggestResult;
+
+      if (!suggestion) return;
+
+      this._selectResult(suggestion);
+    });
   }
 
-  private _searchFormAfterCreate(form: HTMLFormElement): void {
-    form.addEventListener('submit', (event: Event): void => {
-      event.preventDefault();
+  private _buttonAfterCreate(button: HTMLCalciteButtonElement): void {
+    button.addEventListener('click', (): void => {
+      const { _autocomplete, _suggestions } = this;
 
-      const {
-        _input: { value },
-        _suggestions,
-      } = this;
+      const suggestion = _suggestions.getItemAt(0);
 
-      if (_suggestions.length) {
-        const item = _suggestions.find((suggestion: esri.SuggestResult): boolean => {
-          return value === suggestion.text;
-        });
-
-        if (item) this._selectResult(item);
+      if (suggestion) {
+        this._selectResult(suggestion);
+      } else if (_autocomplete.inputValue) {
+        _autocomplete.selectText();
+      } else {
+        _autocomplete.setFocus();
       }
     });
   }
 
-  private _searchInputAfterCreate(input: HTMLInputElement): void {
-    this._input = input;
+  private _dropdownAfterCreate(dropdown: HTMLCalciteDropdownElement): void {
+    dropdown.addEventListener('calciteDropdownSelect', (): void => {
+      const { _autocomplete, _suggestions } = this;
 
-    input.addEventListener('input', (): void => {
-      const { value } = input;
+      _suggestions.removeAll();
 
-      this._value = value;
-    });
+      _autocomplete.inputValue = '';
 
-    input.addEventListener('keydown', (event: KeyboardEvent): void => {
-      const { key } = event;
-
-      if (key !== 'Escape' && key !== 'ArrowDown') return;
-
-      const { _suggestions, _suggestionsDropdown } = this;
-
-      if (key === 'Escape') this._clear();
-
-      if (key === 'ArrowDown' && _suggestions.length)
-        _suggestionsDropdown.querySelector('calcite-dropdown-item')?.setFocus();
+      _autocomplete.setFocus();
     });
   }
 
-  private _sourcesDropdownAfterCreate(dropdown: HTMLCalciteDropdownElement): void {
-    this._sourcesDropdown = dropdown;
+  private _formAfterCreate(form: HTMLFormElement): void {
+    form.addEventListener('submit', (event: Event): void => {
+      event.preventDefault();
 
-    dropdown.addEventListener('calciteDropdownClose', (): void => {
-      this._sourcesDropdownOpen = false;
+      const { _suggestions } = this;
+
+      const suggestion = _suggestions.getItemAt(0);
+
+      if (!suggestion) return;
+
+      this._selectResult(suggestion);
     });
-  }
-
-  private _sourcesButtonAfterCreate(button: HTMLCalciteIconElement): void {
-    button.addEventListener('click', (): void => {
-      const { _sourcesDropdown } = this;
-
-      this._clear();
-
-      this._sourcesDropdownOpen = true;
-
-      _sourcesDropdown.querySelector('calcite-dropdown-item')?.setFocus();
-    });
-  }
-
-  private _suggestionDropdownAfterCreate(dropdown: HTMLCalciteDropdownElement): void {
-    this._suggestionsDropdown = dropdown;
   }
 }
 
