@@ -231,8 +231,6 @@ class HeaderSearch extends Widget {
 
       const feature = results.results[0].feature;
 
-      this.emit('selected-result', feature);
-
       if (_view) {
         _view.goTo(feature.geometry);
 
@@ -284,9 +282,12 @@ class HeaderSearch extends Widget {
 
     return _suggestions.toArray().map((suggestion: esri.SuggestResult): tsx.JSX.Element => {
       return (
-        <calcite-autocomplete-item key={KEY++} heading={suggestion.text} value={suggestion}>
-          <calcite-icon icon="search" scale="s" slot="content-start"></calcite-icon>
-        </calcite-autocomplete-item>
+        <calcite-autocomplete-item
+          key={KEY++}
+          heading={suggestion.text}
+          icon-start="search"
+          value={suggestion}
+        ></calcite-autocomplete-item>
       );
     });
   }

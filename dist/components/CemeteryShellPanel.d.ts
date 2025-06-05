@@ -17,6 +17,7 @@ export default class CemeteryShellPanel extends Widget {
     readonly reservations: esri.FeatureLayer;
     readonly view: esri.MapView;
     private _abortController;
+    private _graphicsLayer;
     private _infos;
     private _input;
     private _plotId;

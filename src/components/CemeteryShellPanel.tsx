@@ -26,6 +26,7 @@ import { subclass, property } from '@arcgis/core/core/accessorSupport/decorators
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
+import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Graphic from '@arcgis/core/Graphic';
 import { SimpleFillSymbol } from '@arcgis/core/symbols';
 import { referenceElement } from './support';
@@ -53,9 +54,11 @@ export default class CemeteryShellPanel extends Widget {
   }
 
   override async postInitialize(): Promise<void> {
-    const { plots, view } = this;
+    const { plots, view, _graphicsLayer } = this;
 
     await this.view.when();
+
+    view.map.add(_graphicsLayer);
 
     this.addHandles(
       view.on('click', async (event: esri.ViewClickEvent): Promise<void> => {
@@ -85,6 +88,8 @@ export default class CemeteryShellPanel extends Widget {
   readonly view!: esri.MapView;
 
   private _abortController: AbortController | null = null;
+
+  private _graphicsLayer = new GraphicsLayer();
 
   private _infos: esri.Collection<tsx.JSX.Element> = new Collection();
 
@@ -123,13 +128,13 @@ export default class CemeteryShellPanel extends Widget {
   }
 
   private _clearPlot(): void {
-    const { view } = this;
+    const { _graphicsLayer } = this;
 
     this._infos.removeAll();
 
     this._plotId = '';
 
-    view.graphics.removeAll();
+    _graphicsLayer.removeAll();
   }
 
   private _burialDates(feature: esri.Graphic): { dob: string; dod: string; doi: string } {
@@ -145,7 +150,7 @@ export default class CemeteryShellPanel extends Widget {
   }
 
   private async _plotInfo(id: string): Promise<void> {
-    const { burials, plots, reservations, _infos, _symbol, view } = this;
+    const { burials, plots, reservations, _graphicsLayer, _infos, _symbol, view } = this;
 
     this._clearPlot();
 
@@ -247,7 +252,7 @@ export default class CemeteryShellPanel extends Widget {
           symbol: _symbol.clone(),
         });
 
-        view.graphics.add(graphic);
+        _graphicsLayer.add(graphic);
 
         view.goTo(geometry.extent?.expand(3));
       }
