@@ -45,7 +45,8 @@ import {
 import { execute as simplify } from '@arcgis/core/geometry/operators/simplifyOperator';
 import { midpoint, textAngle } from './../support/geometryUtils';
 import Graphic from '@arcgis/core/Graphic';
-import { Point, Polyline } from '@arcgis/core/geometry';
+import Point from '@arcgis/core/geometry/Point';
+import Polyline from '@arcgis/core/geometry/Polyline';
 import Sketch from './Measure/Sketch';
 import Units, { FEET_IN_METERS } from '../support/Units';
 import UnitsDropdown from './UnitsDropdown';

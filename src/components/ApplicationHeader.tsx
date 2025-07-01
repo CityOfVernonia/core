@@ -185,7 +185,6 @@ class HeaderSearch extends Widget {
     this._searchAbortController = controller;
 
     try {
-      // @ts-expect-error signal is not typed
       const response = await search.suggest(value, null, { signal });
 
       if (this._searchAbortController !== controller) return;
@@ -223,7 +222,7 @@ class HeaderSearch extends Widget {
     _suggestions.removeAll();
 
     try {
-      const response = (await search.search(suggestion)) as esri.SearchViewModelSearchResponse;
+      const response = (await search.search(suggestion)) as esri.SearchSearchResponse;
 
       const results = response.results[0];
 

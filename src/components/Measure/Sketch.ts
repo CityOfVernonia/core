@@ -8,8 +8,10 @@ import FeatureSnappingLayerSource from '@arcgis/core/views/interactive/snapping/
 import GroupLayer from '@arcgis/core/layers/GroupLayer';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Graphic from '@arcgis/core/Graphic';
-import { Point } from '@arcgis/core/geometry';
-import { CIMSymbol, SimpleMarkerSymbol, TextSymbol } from '@arcgis/core/symbols';
+import Point from '@arcgis/core/geometry/Point';
+import CIMSymbol from '@arcgis/core/symbols/CIMSymbol';
+import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol';
+import TextSymbol from '@arcgis/core/symbols/TextSymbol';
 
 import { APPLICATION_MEASURE_LAYER } from '../../support/layerUtils';
 
@@ -136,6 +138,8 @@ export default class Sketch extends SketchViewModel {
 
     whenOnce((): esri.MapView | esri.SceneView | nullish => this.view).then(
       async (view: esri.MapView | esri.SceneView): Promise<void> => {
+        if (!view || !view.map) return;
+
         await view.when();
 
         if (APPLICATION_MEASURE_LAYER) {

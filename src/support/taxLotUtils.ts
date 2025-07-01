@@ -25,7 +25,7 @@ export const taxLotColor = async (
   const tls = tlr.symbol as esri.SimpleFillSymbol;
 
   watch(
-    (): esri.Basemap | nullish => view.map.basemap,
+    (): esri.Basemap | nullish => view.map?.basemap,
     (basemap: esri.Basemap | nullish): void => {
       if (basemap && tls && tls.outline)
         tls.outline.color = basemap === imagery ? TAX_LOT_IMAGERY_COLOR : TAX_LOT_HILLSHADE_COLOR;

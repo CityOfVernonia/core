@@ -28,7 +28,7 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Graphic from '@arcgis/core/Graphic';
-import { SimpleFillSymbol } from '@arcgis/core/symbols';
+import SimpleFillSymbol from '@arcgis/core/symbols/SimpleFillSymbol';
 import { referenceElement } from './support';
 import { DateTime } from 'luxon';
 
@@ -57,6 +57,8 @@ export default class CemeteryShellPanel extends Widget {
     const { plots, view, _graphicsLayer } = this;
 
     await this.view.when();
+
+    if (!view.map) return;
 
     view.map.add(_graphicsLayer);
 

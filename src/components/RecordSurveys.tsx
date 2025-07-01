@@ -23,7 +23,7 @@ import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
 import Graphic from '@arcgis/core/Graphic';
-import { SimpleFillSymbol } from '@arcgis/core/symbols';
+import SimpleFillSymbol from '@arcgis/core/symbols/SimpleFillSymbol';
 import {
   load as bufferLoad,
   isLoaded as bufferLoaded,
@@ -120,6 +120,8 @@ export default class RecordSurveys extends Widget {
     const { surveysUrl, view } = this;
 
     this._graphics = new (await import('@arcgis/core/layers/GraphicsLayer')).default({ listMode: 'hide' });
+
+    if (!view.map) return;
 
     view.map.add(this._graphics);
 

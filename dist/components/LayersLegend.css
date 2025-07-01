@@ -664,6 +664,65 @@
   left: auto;
 }
 
+.esri-spike-ramp__container {
+  display: flex;
+  flex-direction: row;
+  gap: var(--calcite-spacing-sm-plus);
+  margin-left: var(--calcite-spacing-sm);
+}
+
+.esri-spike-ramp__preview-container {
+  display: flex;
+  position: relative;
+  gap: var(--calcite-spacing-sm-plus);
+  border-bottom: var(--calcite-border-width-sm) solid var(--calcite-color-border-2);
+  padding: 0 var(--calcite-spacing-xl);
+}
+
+.esri-spike-ramp__preview {
+  display: flex;
+  gap: var(--calcite-spacing-sm-plus);
+  align-items: end;
+}
+
+.esri-spike-ramp__symbol-preview {
+  display: flex;
+}
+
+.esri-spike-ramp__lines {
+  display: flex;
+  position: absolute;
+  bottom: 0;
+}
+
+.esri-spike-ramp__labels-container {
+  display: flex;
+  position: relative;
+  top: -5px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.esri-spike-ramp__label {
+  position: relative;
+  padding: 0 7px;
+  line-height: 1em;
+  word-break: break-all;
+  font-size: 12px;
+}
+.esri-spike-ramp__label::before {
+  display: block;
+  position: absolute;
+  top: 0.25em;
+  right: 100%;
+  border-width: 3px 4px 3px 0;
+  border-style: solid;
+  border-color: transparent rgba(50, 50, 50, 0.8) transparent transparent;
+  width: 0;
+  height: 0;
+  content: "";
+}
+
 .cov--layers-legend .esri-legend {
   padding: 0;
 }

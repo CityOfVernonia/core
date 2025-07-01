@@ -136,7 +136,7 @@ const files = ['esri/widgets/support/t9n/uriUtils.json', `esri/widgets/support/t
 
     const mapComponentSrc = path.resolve(
       __dirname,
-      './../node_modules/@arcgis/map-components/dist/arcgis-map-components/assets',
+      './../node_modules/@arcgis/map-components/dist/cdn/assets',
     );
 
     const mapComponentDest = path.resolve(__dirname, './../dev/public/map-components');

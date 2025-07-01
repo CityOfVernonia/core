@@ -1,6 +1,7 @@
 import esri = __esri;
 
-import { Point, SpatialReference } from '@arcgis/core/geometry';
+import Point from '@arcgis/core/geometry/Point';
+import SpatialReference from '@arcgis/core/geometry/SpatialReference';
 import {
   load as bufferLoad,
   isLoaded as bufferLoaded,

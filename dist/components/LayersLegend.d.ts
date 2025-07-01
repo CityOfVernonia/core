@@ -21,6 +21,4 @@ export default class LayersLegend extends Widget {
     view: esri.MapView;
     private _viewState;
     render(): tsx.JSX.Element;
-    private _layers;
-    private _legend;
 }

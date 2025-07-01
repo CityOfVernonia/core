@@ -8,12 +8,13 @@ import esri = __esri;
 //////////////////////////////////////
 import { XMLParser } from 'fast-xml-parser';
 import { watch } from '@arcgis/core/core/reactiveUtils';
-import { Point, SpatialReference } from '@arcgis/core/geometry';
+import Point from '@arcgis/core/geometry/Point';
+import SpatialReference from '@arcgis/core/geometry/SpatialReference';
 import MediaLayer from '@arcgis/core/layers/MediaLayer';
 import ControlPointsGeoreference from '@arcgis/core/layers/support/ControlPointsGeoreference';
 import ImageElement from '@arcgis/core/layers/support/ImageElement';
 import Graphic from '@arcgis/core/Graphic';
-import { SimpleMarkerSymbol } from '@arcgis/core/symbols';
+import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol';
 
 let DISPLAYED_CONTROL_POINTS: esri.Graphic[] = [];
 

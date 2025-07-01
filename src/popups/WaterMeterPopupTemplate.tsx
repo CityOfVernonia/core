@@ -43,7 +43,10 @@ class PopupContent extends Widget {
     const notes = graphic.attributes.Notes;
 
     try {
-      const layer = graphic.layer as esri.FeatureLayer;
+      let layer = graphic.layer as esri.FeatureLayer;
+
+      // @ts-expect-error sourceLayer not typed
+      if (!layer) layer = graphic.sourceLayer as esri.FeatureLayer;
 
       const objectId = graphic.attributes[layer.objectIdField];
 

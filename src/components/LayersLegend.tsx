@@ -48,7 +48,7 @@ export default class LayersLegend extends Widget {
   private _viewState: 'layers' | 'legend' = 'layers';
 
   override render(): tsx.JSX.Element {
-    const { _viewState } = this;
+    const { view, _viewState } = this;
 
     const heading = _viewState === 'layers' ? 'Layers' : 'Legend';
 
@@ -83,19 +83,19 @@ export default class LayersLegend extends Widget {
         </calcite-action>
 
         {/* layers */}
-        <arcgis-layer-list hidden={_viewState !== 'layers'} afterCreate={this._layers.bind(this)}></arcgis-layer-list>
+        <arcgis-layer-list hidden={_viewState !== 'layers'} view={view}></arcgis-layer-list>
 
         {/* legend */}
-        <arcgis-legend hidden={_viewState !== 'legend'} afterCreate={this._legend.bind(this)}></arcgis-legend>
+        <arcgis-legend hidden={_viewState !== 'legend'} view={view}></arcgis-legend>
       </calcite-panel>
     );
   }
 
-  private _layers(layerList: HTMLArcgisLayerListElement & { view: esri.MapView }): void {
-    layerList.view = this.view;
-  }
+  // private _layers(layerList: HTMLArcgisLayerListElement & { view: esri.MapView }): void {
+  //   layerList.view = this.view;
+  // }
 
-  private _legend(legend: HTMLArcgisLegendElement & { view: esri.MapView }): void {
-    legend.view = this.view;
-  }
+  // private _legend(legend: HTMLArcgisLegendElement & { view: esri.MapView }): void {
+  //   legend.view = this.view;
+  // }
 }

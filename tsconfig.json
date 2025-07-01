@@ -16,7 +16,8 @@
     "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
-    "types": ["@arcgis/core/interfaces.d.ts", "@arcgis/map-components", "@esri/calcite-components", "@arcgis/lumina"]
+    "types": ["@arcgis/core/interfaces.d.ts", "@arcgis/map-components", "@esri/calcite-components", "@arcgis/lumina"],
+    "skipLibCheck": true
   },
   "typedocOptions": {
     "entryPoints": ["src"],

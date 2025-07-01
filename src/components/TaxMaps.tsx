@@ -94,7 +94,7 @@ export default class TaxMaps extends Widget {
       );
     });
 
-    view.map.add(_layer, 0);
+    if (view.map) view.map.add(_layer, 0);
 
     this.addHandles(
       watch(

@@ -25,7 +25,7 @@ export let APPLICATION_SKETCH_LAYER: esri.GroupLayer | null = null;
  * @returns `esri.GroupLayer` | `undefined`
  */
 export const applicationGraphicsLayer = (view: esri.MapView | esri.SceneView): esri.GroupLayer | nullish => {
-  if (APPLICATION_GRAPHICS_LAYER) return;
+  if (APPLICATION_GRAPHICS_LAYER || !view.map) return;
 
   const layers = view.map.layers;
 

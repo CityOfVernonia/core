@@ -54,9 +54,14 @@ export default class TaxLotInfoTable extends Widget {
 
     if (!geometry || VERNONIA === 0) return;
 
-    esriId.checkSignInStatus(new Portal().url).then((): void => {
-      this._authed = true;
-    });
+    esriId
+      .checkSignInStatus(new Portal().url)
+      .then((): void => {
+        this._authed = true;
+      })
+      .catch((error: esri.Error): void => {
+        if (error.message !== 'User is not signed in.') console.log(error);
+      });
 
     if (!bufferLoaded()) await bufferLoad();
 
@@ -176,7 +181,10 @@ export default class TaxLotInfoTable extends Widget {
     const { graphic } = this;
 
     try {
-      const layer = graphic.layer as esri.FeatureLayer;
+      let layer = graphic.layer as esri.FeatureLayer;
+
+      // @ts-expect-error sourceLayer not typed
+      if (!layer) layer = graphic.sourceLayer as esri.FeatureLayer;
 
       const objectId = graphic.attributes[layer.objectIdField];
 
