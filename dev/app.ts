@@ -22,7 +22,7 @@ setAssetPath('./map-components');
 
 // calcite assets
 import { defineCustomElements } from '@esri/calcite-components/dist/loader';
-defineCustomElements(window, { resourcesUrl: './calcite/assets' });
+defineCustomElements(window, { resourcesUrl: './calcite' });
 
 const load = async (): Promise<void> => {
   // arcgis modules

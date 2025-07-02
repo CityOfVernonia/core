@@ -375,10 +375,10 @@ export default class Measure extends Widget {
 
               this._labels.add(elevationGeometry);
             }
-          } catch (error: any & { message: string }) {
+          } catch (error: unknown) {
             this._cursorAbortController = null;
 
-            if (error.message !== 'Aborted') console.log('elevation query error', error);
+            if (error instanceof Error && error.message !== 'Aborted') console.log('elevation query error', error);
           }
         }),
       ],

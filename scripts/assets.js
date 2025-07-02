@@ -3,7 +3,6 @@ import { fileURLToPath } from 'url';
 import fs from 'fs-extra';
 import { glob } from 'glob';
 import path from 'path';
-import { replaceInFile } from 'replace-in-file';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const include3D = false;
@@ -95,8 +94,7 @@ const files = ['esri/widgets/support/t9n/uriUtils.json', `esri/widgets/support/t
 
     const calciteSrc = path.resolve(__dirname, './../node_modules/@esri/calcite-components/dist/calcite/assets');
 
-    // cannot be flat directory must be `calcite/assets`
-    const calciteDest = path.resolve(__dirname, './../dev/public/calcite/assets');
+    const calciteDest = path.resolve(__dirname, './../dev/public/calcite');
 
     if (!calciteSrc) {
       console.log(chalk.red.bold('@esri/calcite-components must be installed'));
@@ -160,19 +158,6 @@ const files = ['esri/widgets/support/t9n/uriUtils.json', `esri/widgets/support/t
     for (const file of mapComponentsJson) {
       if (!file.includes(`${language}.`)) await fs.remove(file);
     }
-
-    // remove bad typing (hopefully be fixed soon)
-    await replaceInFile({
-      files: 'node_modules/@arcgis/map-components/dist/components/arcgis-basemap-gallery-item/customElement.d.ts',
-      from: 'type BasemapGalleryMessages = ArcgisBasemapGallery["messages"];',
-      to: '',
-    });
-
-    await replaceInFile({
-      files: 'node_modules/@arcgis/map-components/dist/components/arcgis-basemap-gallery-item/customElement.d.ts',
-      from: 'messages: BasemapGalleryMessages;',
-      to: '',
-    });
 
     console.log(chalk.green('@argis/map-components assets copied'));
   } catch (error) {
