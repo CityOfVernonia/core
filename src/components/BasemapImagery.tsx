@@ -28,7 +28,7 @@ export const DEFAULT_LAYER_INFOS: LayerInfo[] = [
   },
   {
     description: '2020 (60cm resolution)',
-    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2020/NAIP_2020_WM/ImageServer',
+    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2020/NAIP_2020_SL/ImageServer',
   },
   {
     description: '2018 (60cm resolution)',
@@ -36,7 +36,7 @@ export const DEFAULT_LAYER_INFOS: LayerInfo[] = [
   },
   {
     description: '2016 (1m resolution)',
-    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2016/NAIP_2016_WM/ImageServer',
+    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2016/NAIP_2016_SL/ImageServer',
   },
   {
     description: '2014 (1m resolution)',
@@ -52,11 +52,11 @@ export const DEFAULT_LAYER_INFOS: LayerInfo[] = [
   },
   {
     description: '2009 (unknown resolution)',
-    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2009/NAIP_2009_SL/ImageServer',
+    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2009/NAIP_2009_WM/ImageServer',
   },
   {
     description: '2005 (0.5m resolution)',
-    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2005/NAIP_2005_SL/ImageServer',
+    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2005/NAIP_2005_WM/ImageServer',
   },
   {
     description: '2000 (1m resolution)',
