@@ -89,7 +89,7 @@ const load = async (): Promise<void> => {
           mow: new FeatureLayer({
             url: 'https://gis.vernonia-or.gov/server/rest/services/Hosted/Oregon_Wetlands_2019/FeatureServer/2',
           }),
-        }
+        },
       },
     }),
   });

@@ -3,7 +3,7 @@ export interface BasemapImageryProperties extends esri.WidgetProperties {
     layerInfos?: esri.Collection<LayerInfo> | LayerInfo[];
 }
 export interface LayerInfo {
-    description: string;
+    value: string;
     url: string;
 }
 interface _LayerInfo extends LayerInfo {
@@ -16,8 +16,8 @@ export default class BasemapImagery extends Widget {
     constructor(properties?: BasemapImageryProperties);
     postInitialize(): void;
     readonly layerInfos: esri.Collection<_LayerInfo>;
-    private _listItems;
+    private _options;
     render(): tsx.JSX.Element;
-    private _listAfterCreate;
+    private _selectAfterCreate;
 }
 export {};

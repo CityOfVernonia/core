@@ -24,7 +24,7 @@ export default class TaxLotPopupTemplate extends PopupTemplate {
 
   // @ts-expect-error content cannot be a setter/getter
   content = (event: { graphic: esri.Graphic }): HTMLElement => {
-    console.log(event);
+    // console.log(event);
 
     const infoLayers = this.infoLayers as TaxLotInfoTableInfoLayers;
 

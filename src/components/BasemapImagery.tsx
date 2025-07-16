@@ -5,7 +5,7 @@ export interface BasemapImageryProperties extends esri.WidgetProperties {
 }
 
 export interface LayerInfo {
-  description: string;
+  value: string;
   url: string;
 }
 
@@ -23,47 +23,43 @@ import { IMAGERY_LAYER_TOPIC } from './Basemap';
 
 export const DEFAULT_LAYER_INFOS: LayerInfo[] = [
   {
-    description: '2022 (1ft resolution)',
+    value: '2022',
     url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/OSIP_2022/OSIP_2022_WM/ImageServer',
   },
   {
-    description: '2020 (60cm resolution)',
+    value: '2020',
     url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2020/NAIP_2020_SL/ImageServer',
   },
   {
-    description: '2018 (60cm resolution)',
+    value: '2018',
     url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/OSIP_2018/OSIP_2018_WM/ImageServer',
   },
   {
-    description: '2016 (1m resolution)',
+    value: '2016',
     url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2016/NAIP_2016_SL/ImageServer',
   },
   {
-    description: '2014 (1m resolution)',
+    value: '2014',
     url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2014/NAIP_2014_WM/ImageServer',
   },
   {
-    description: '2012 (1m resolution)',
+    value: '2012',
     url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2012/NAIP_2012_WM/ImageServer',
   },
   {
-    description: '2011 (1m resolution)',
+    value: '2011',
     url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2011/NAIP_2011_WM/ImageServer',
   },
   {
-    description: '2009 (unknown resolution)',
+    value: '2009',
     url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2009/NAIP_2009_WM/ImageServer',
   },
   {
-    description: '2005 (0.5m resolution)',
+    value: '2005',
     url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2005/NAIP_2005_WM/ImageServer',
   },
   {
-    description: '2000 (1m resolution)',
-    url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_2000/NAIP_2000_SL/ImageServer',
-  },
-  {
-    description: '1995 (1m resolution)',
+    value: '1995',
     url: 'https://imagery.oregonexplorer.info/arcgis/rest/services/NAIP_1995/NAIP_1995_WM/ImageServer',
   },
 ];
@@ -75,39 +71,48 @@ export default class BasemapImagery extends Widget {
   }
 
   override postInitialize(): void {
-    const { layerInfos, _listItems } = this;
+    const { layerInfos, _options } = this;
 
     layerInfos.forEach((layerInfo: LayerInfo) => {
-      const { description } = layerInfo;
+      const { value } = layerInfo;
 
-      _listItems.add(<calcite-list-item description={description} value={description}></calcite-list-item>);
+      _options.add(<calcite-option value={value}>{value}</calcite-option>);
     });
   }
 
   @property({ type: Collection })
   readonly layerInfos: esri.Collection<_LayerInfo> = new Collection(DEFAULT_LAYER_INFOS);
 
-  private _listItems: esri.Collection<tsx.JSX.Element> = new Collection([
-    <calcite-list-item description="Current imagery" selected value="default"></calcite-list-item>,
+  private _options: esri.Collection<tsx.JSX.Element> = new Collection([
+    <calcite-option selected value="default">
+      2024 (default)
+    </calcite-option>,
   ]);
 
   override render(): tsx.JSX.Element {
-    const { _listItems } = this;
+    const { _options } = this;
 
     return (
-      <calcite-panel heading="Basemap Imagery">
-        <calcite-list selection-mode="single-persist" afterCreate={this._listAfterCreate.bind(this)}>
-          {_listItems.toArray()}
-        </calcite-list>
+      <calcite-panel
+        heading="Basemap Imagery"
+        style="--calcite-panel-background-color: var(--calcite-color-foreground-1); --calcite-panel-space: 0.75rem;"
+      >
+        <calcite-notice icon="image-layer" scale="s" style="margin-bottom: 0.75rem;" open>
+          <div slot="title">Select imagery by year</div>
+          <div slot="message">
+            Some imagery may have georeferencing or orthocorrection issues, and may not be available at all scales.
+          </div>
+        </calcite-notice>
+        <calcite-select afterCreate={this._selectAfterCreate.bind(this)}>{_options.toArray()}</calcite-select>
       </calcite-panel>
     );
   }
 
-  private _listAfterCreate(list: HTMLCalciteListElement): void {
+  private _selectAfterCreate(select: HTMLCalciteSelectElement): void {
     const { layerInfos } = this;
 
-    list.addEventListener('calciteListChange', async (): Promise<void> => {
-      const value = list.selectedItems[0].value;
+    select.addEventListener('calciteSelectChange', async (): Promise<void> => {
+      const value = select.selectedOption.value;
 
       if (value === 'default') {
         publish(IMAGERY_LAYER_TOPIC, 'default');
@@ -115,7 +120,7 @@ export default class BasemapImagery extends Widget {
       }
 
       const _layerInfo: _LayerInfo | nullish = layerInfos.find((layerInfo: _LayerInfo): boolean => {
-        return layerInfo.description === value;
+        return layerInfo.value === value;
       });
 
       if (!_layerInfo) return;
@@ -124,6 +129,8 @@ export default class BasemapImagery extends Widget {
 
       if (!layer) {
         _layerInfo.layer = await Layer.fromArcGISServerUrl({ url });
+
+        await _layerInfo.layer.load();
       }
 
       publish(IMAGERY_LAYER_TOPIC, _layerInfo.layer);
