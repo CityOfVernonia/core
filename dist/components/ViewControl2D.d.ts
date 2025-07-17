@@ -47,6 +47,7 @@ export default class ViewControl2D extends Widget {
     magnifierProperties: esri.MagnifierProperties;
     view: esri.MapView;
     private _home;
+    private _fullscreen;
     private _magnifierHandle;
     private _zoom;
     private _compassRotation;

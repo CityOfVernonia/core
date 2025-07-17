@@ -36,11 +36,12 @@ export interface ViewControlOptions {
 // Modules
 //////////////////////////////////////
 import { watch } from '@arcgis/core/core/reactiveUtils';
-import { subclass } from '@arcgis/core/core/accessorSupport/decorators';
+import { property, subclass } from '@arcgis/core/core/accessorSupport/decorators';
 import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import HomeViewModel from '@arcgis/core/widgets/Home/HomeViewModel';
 import ZoomViewModel from '@arcgis/core/widgets/Zoom/ZoomViewModel';
+import { referenceElement } from './support';
 
 //////////////////////////////////////
 // Constants
@@ -79,9 +80,15 @@ export default class ViewControl2D extends Widget {
       view,
       view: { magnifier },
     } = this;
+
     this._home = new HomeViewModel({ view });
+
     this._zoom = new ZoomViewModel({ view });
+
+    if (document.fullscreenElement) this._fullscreen = true;
+
     magnifier.visible = false;
+
     if (magnifierProperties) Object.assign(magnifier, magnifierProperties);
   }
 
@@ -105,6 +112,9 @@ export default class ViewControl2D extends Widget {
   //////////////////////////////////////
   private _home!: esri.HomeViewModel;
 
+  @property()
+  private _fullscreen = false;
+
   private _magnifierHandle!: IHandle;
 
   private _zoom!: esri.ZoomViewModel;
@@ -115,11 +125,15 @@ export default class ViewControl2D extends Widget {
   // very hacky - better solution?
   private _compassRotation(action: HTMLCalciteActionElement) {
     const { view } = this;
+
     let icon: HTMLDivElement;
+
     if (action.shadowRoot) {
       icon = action.shadowRoot.querySelector('.icon-container') as HTMLDivElement;
+
       if (icon) {
         icon.style.transform = `rotate(${view.rotation}deg)`;
+
         this.watch('view.rotation', (): void => {
           icon.style.transform = `rotate(${view.rotation}deg)`;
         });
@@ -136,74 +150,55 @@ export default class ViewControl2D extends Widget {
   }
 
   private _initializeFullscreen(action: HTMLCalciteActionElement): void {
-    const { view } = this;
+    if (!document.body.requestFullscreen) {
+      action.disabled = true;
 
-    import('@arcgis/core/widgets/Fullscreen/FullscreenViewModel').then(
-      (module: { default: typeof esri.FullscreenViewModel }): void => {
-        const fullscreen = new module.default({
-          view,
-          element: document.body,
-        });
+      return;
+    }
 
-        action.addEventListener('click', fullscreen.toggle.bind(fullscreen));
-        action.disabled = fullscreen.state === 'disabled' || fullscreen.state === 'feature-unsupported';
+    action.addEventListener('click', (): void => {
+      const { _fullscreen } = this;
 
-        this.addHandles(
-          watch(
-            (): esri.FullscreenViewModel['state'] => fullscreen.state,
-            (state?: esri.FullscreenViewModel['state']): void => {
-              action.disabled = state === 'disabled' || state === 'feature-unsupported';
+      if (!_fullscreen) {
+        document.body.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
 
-              const tooltip = action.querySelector('calcite-tooltip') as HTMLCalciteTooltipElement;
-
-              if (state === 'ready') {
-                action.icon = 'extent';
-                action.text = 'Enter fullscreen';
-                tooltip.innerText = 'Enter fullscreen';
-              }
-              if (state === 'active') {
-                action.icon = 'full-screen-exit';
-                action.text = 'Exit fullscreen';
-                tooltip.innerText = 'Exit fullscreen';
-              }
-            },
-          ),
-        );
-      },
-    );
+    document.addEventListener('fullscreenchange', (): void => {
+      this._fullscreen = document.fullscreenElement ? true : false;
+    });
   }
 
-  private _initializeLocate(action: HTMLCalciteActionElement): void {
+  private async _initializeLocate(action: HTMLCalciteActionElement): Promise<void> {
     const { view, locateProperties } = this;
 
-    import('@arcgis/core/widgets/Locate/LocateViewModel').then(
-      (module: { default: typeof esri.LocateViewModel }): void => {
-        const locate = new module.default({
-          view,
-          ...locateProperties,
-        });
+    const locate = new (await import('@arcgis/core/widgets/Locate/LocateViewModel')).default({
+      view,
+      ...locateProperties,
+    });
 
-        action.addEventListener('click', locate.locate.bind(locate));
-        action.disabled = locate.state === 'disabled';
+    action.addEventListener('click', locate.locate.bind(locate));
 
-        this.addHandles(
-          watch(
-            (): esri.LocateViewModel['state'] => locate.state,
-            (state?: esri.LocateViewModel['state']): void => {
-              action.disabled = state === 'disabled';
+    action.disabled = locate.state === 'disabled';
 
-              action.icon =
-                locate.state === 'ready'
-                  ? 'gps-on'
-                  : locate.state === 'locating'
-                    ? 'gps-on-f'
-                    : locate.state === 'disabled'
-                      ? 'gps-off'
-                      : '';
-            },
-          ),
-        );
-      },
+    this.addHandles(
+      watch(
+        (): esri.LocateViewModel['state'] => locate.state,
+        (state?: esri.LocateViewModel['state']): void => {
+          action.disabled = state === 'disabled';
+
+          action.icon =
+            locate.state === 'ready'
+              ? 'gps-on'
+              : locate.state === 'locating'
+                ? 'gps-on-f'
+                : locate.state === 'disabled'
+                  ? 'gps-off'
+                  : '';
+        },
+      ),
     );
   }
 
@@ -228,8 +223,14 @@ export default class ViewControl2D extends Widget {
   // Render and rendering methods
   //////////////////////////////////////
   render(): tsx.JSX.Element {
-    const { view, _zoom, _home, includeLocate, includeFullscreen, includeMagnifier } = this;
+    const { view, _zoom, _fullscreen, _home, includeLocate, includeFullscreen, includeMagnifier } = this;
+
     const magnifier = view.magnifier.visible;
+
+    const fullscreenText = _fullscreen ? 'Exit fullscreen' : 'Enter fullscreen';
+
+    const fullscreenIcon = _fullscreen ? 'full-screen-exit' : 'extent';
+
     return (
       <div class={CSS.base}>
         <div class={CSS.actions}>
@@ -241,73 +242,88 @@ export default class ViewControl2D extends Widget {
                 scale="s"
                 disabled={!_zoom.canZoomIn}
                 onclick={_zoom.zoomIn.bind(_zoom)}
-              >
-                <calcite-tooltip close-on-click="" overlay-positioning="fixed" scale="s" slot="tooltip">
-                  Zoom in
-                </calcite-tooltip>
-              </calcite-action>
+              ></calcite-action>
+              <calcite-tooltip close-on-click="" overlay-positioning="fixed" afterCreate={referenceElement.bind(this)}>
+                Zoom in
+              </calcite-tooltip>
               <calcite-action
                 text="Zoom out"
                 icon="minus"
                 scale="s"
                 disabled={!_zoom.canZoomOut}
                 onclick={_zoom.zoomOut.bind(_zoom)}
-              >
-                <calcite-tooltip close-on-click="" overlay-positioning="fixed" scale="s" slot="tooltip">
-                  Zoom out
-                </calcite-tooltip>
-              </calcite-action>
+              ></calcite-action>
+              <calcite-tooltip close-on-click="" overlay-positioning="fixed" afterCreate={referenceElement.bind(this)}>
+                Zoom out
+              </calcite-tooltip>
             </calcite-action-group>
           </calcite-action-bar>
           <calcite-action-bar expand-disabled="" floating>
             <calcite-action-group>
-              <calcite-action text="Default extent" icon="home" scale="s" onclick={_home.go.bind(_home)}>
-                <calcite-tooltip close-on-click="" overlay-positioning="fixed" scale="s" slot="tooltip">
-                  Default extent
-                </calcite-tooltip>
-              </calcite-action>
-              {includeLocate ? (
-                <calcite-action
-                  text="Zoom to location"
-                  icon="gps-on"
-                  scale="s"
-                  disabled=""
-                  afterCreate={this._initializeLocate.bind(this)}
-                >
-                  <calcite-tooltip close-on-click="" overlay-positioning="fixed" scale="s" slot="tooltip">
-                    Zoom to location
-                  </calcite-tooltip>
-                </calcite-action>
-              ) : null}
-              {view.constraints.rotationEnabled ? (
-                <calcite-action
-                  text="Reset orientation"
-                  icon="compass-needle"
-                  scale="s"
-                  afterCreate={this._compassRotation.bind(this)}
-                  onclick={() => ((view as esri.MapView).rotation = 0)}
-                >
-                  <calcite-tooltip close-on-click="" overlay-positioning="fixed" scale="s" slot="tooltip">
-                    Reset orientation
-                  </calcite-tooltip>
-                </calcite-action>
-              ) : null}
+              <calcite-action
+                text="Default extent"
+                icon="home"
+                scale="s"
+                onclick={_home.go.bind(_home)}
+              ></calcite-action>
+              <calcite-tooltip close-on-click="" overlay-positioning="fixed" afterCreate={referenceElement.bind(this)}>
+                Default extent
+              </calcite-tooltip>
+              {includeLocate
+                ? [
+                    <calcite-action
+                      text="Zoom to location"
+                      icon="gps-on"
+                      scale="s"
+                      disabled=""
+                      afterCreate={this._initializeLocate.bind(this)}
+                    ></calcite-action>,
+                    <calcite-tooltip
+                      close-on-click=""
+                      overlay-positioning="fixed"
+                      afterCreate={referenceElement.bind(this)}
+                    >
+                      Zoom to location
+                    </calcite-tooltip>,
+                  ]
+                : null}
+              {view.constraints.rotationEnabled
+                ? [
+                    <calcite-action
+                      text="Reset orientation"
+                      icon="compass-needle"
+                      scale="s"
+                      afterCreate={this._compassRotation.bind(this)}
+                      onclick={() => ((view as esri.MapView).rotation = 0)}
+                    ></calcite-action>,
+                    <calcite-tooltip
+                      close-on-click=""
+                      overlay-positioning="fixed"
+                      afterCreate={referenceElement.bind(this)}
+                    >
+                      Reset orientation
+                    </calcite-tooltip>,
+                  ]
+                : null}
             </calcite-action-group>
           </calcite-action-bar>
           {includeFullscreen ? (
             <calcite-action-bar expand-disabled="" floating>
               <calcite-action-group>
                 <calcite-action
-                  text="Enter fullscreen"
+                  text={fullscreenText}
                   disabled=""
                   scale="s"
-                  icon="extent"
+                  icon={fullscreenIcon}
                   afterCreate={this._initializeFullscreen.bind(this)}
+                ></calcite-action>
+                <calcite-tooltip
+                  close-on-click=""
+                  overlay-positioning="fixed"
+                  afterCreate={referenceElement.bind(this)}
                 >
-                  <calcite-tooltip close-on-click="" overlay-positioning="fixed" scale="s" slot="tooltip">
-                    Enter fullscreen
-                  </calcite-tooltip>
-                </calcite-action>
+                  {fullscreenText}
+                </calcite-tooltip>
               </calcite-action-group>
             </calcite-action-bar>
           ) : null}
@@ -320,11 +336,14 @@ export default class ViewControl2D extends Widget {
                   icon="magnifying-glass"
                   indicator={magnifier ? true : false}
                   onclick={this._toggleMagnifier.bind(this)}
+                ></calcite-action>
+                <calcite-tooltip
+                  close-on-click=""
+                  overlay-positioning="fixed"
+                  afterCreate={referenceElement.bind(this)}
                 >
-                  <calcite-tooltip close-on-click="" overlay-positioning="fixed" scale="s" slot="tooltip">
-                    {magnifier ? 'Hide magnifier' : 'Show magnifier'}
-                  </calcite-tooltip>
-                </calcite-action>
+                  {magnifier ? 'Hide magnifier' : 'Show magnifier'}
+                </calcite-tooltip>
               </calcite-action-group>
             </calcite-action-bar>
           ) : null}
