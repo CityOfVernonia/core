@@ -75,7 +75,7 @@ export default class Basemap extends Widget {
       this._imageryThumbnail = imagery.thumbnailUrl || '';
     }
 
-    const _default = imagery.baseLayers.getItemAt(1);
+    const _default = imagery.baseLayers.getItemAt(0);
 
     if (_default) this._default = _default;
 
@@ -105,7 +105,7 @@ export default class Basemap extends Widget {
       _basemap,
     } = this;
 
-    baseLayers.splice(1, 1, layer);
+    baseLayers.splice(0, 1, layer);
 
     if (_basemap !== imagery) this._basemap = imagery;
   }
