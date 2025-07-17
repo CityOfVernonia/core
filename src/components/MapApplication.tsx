@@ -4,6 +4,7 @@ import type { BasemapOptions } from './Basemap';
 import type { DisclaimerOptions } from './DisclaimerDialog';
 import type { ApplicationHeaderOptions } from './ApplicationHeader';
 import type { ViewControlOptions } from './ViewControl2D';
+import type Loading from './Loading';
 
 /**
  * Options for shell panel component and action bar action.
@@ -88,6 +89,8 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
 
   headerOptions?: ApplicationHeaderOptions;
 
+  loading?: Loading;
+
   position?: 'end' | 'start';
 
   shellPanel?: esri.Widget;
@@ -147,6 +150,7 @@ export default class MapApplication extends Widget {
       container,
       endComponent,
       float,
+      loading,
       position,
       title,
       shellPanel,
@@ -157,7 +161,9 @@ export default class MapApplication extends Widget {
 
     container.contentBehind = float; // must be programmatically set
 
-    const loading = new (await import('./Loading')).default({ title });
+    if (!loading) {
+      this.loading = new (await import('./Loading')).default({ title });
+    }
 
     let includeDisclaimer = true;
 
@@ -201,7 +207,7 @@ export default class MapApplication extends Widget {
 
     await view.when();
 
-    loading.end();
+    this.loading?.end();
   }
 
   readonly basemapOptions?: BasemapOptions;
@@ -218,6 +224,8 @@ export default class MapApplication extends Widget {
   readonly header = true;
 
   readonly headerOptions: ApplicationHeaderOptions = {};
+
+  public loading?: Loading;
 
   readonly position: 'end' | 'start' = 'end';
 

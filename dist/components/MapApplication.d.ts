@@ -3,6 +3,7 @@ import type { BasemapOptions } from './Basemap';
 import type { DisclaimerOptions } from './DisclaimerDialog';
 import type { ApplicationHeaderOptions } from './ApplicationHeader';
 import type { ViewControlOptions } from './ViewControl2D';
+import type Loading from './Loading';
 /**
  * Options for shell panel component and action bar action.
  */
@@ -77,6 +78,7 @@ export interface MapApplicationProperties extends esri.WidgetProperties {
     float?: boolean;
     header?: boolean;
     headerOptions?: ApplicationHeaderOptions;
+    loading?: Loading;
     position?: 'end' | 'start';
     shellPanel?: esri.Widget;
     title: string;
@@ -102,6 +104,7 @@ export default class MapApplication extends Widget {
     readonly float = true;
     readonly header = true;
     readonly headerOptions: ApplicationHeaderOptions;
+    loading?: Loading;
     readonly position: 'end' | 'start';
     readonly shellPanel?: esri.Widget;
     readonly title: string;
