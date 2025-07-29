@@ -40,7 +40,12 @@ const CSS = {
 export const IMAGERY_LAYER_TOPIC = 'basemap-imagery-layer-topic';
 
 /**
- * Basemap toggle component to switch between hillshade and imagery.
+ * Pub/Sub topic to toggle imagery reference layer visibility.
+ */
+export const IMAGERY_REFERENCE_LAYER_TOPIC = 'basemap-imagery-reference-layer-topic';
+
+/**
+ * Basemap toggle component to switch between hillshade and imagery, as well as manipulate basemap properties.
  */
 @subclass('cov.components.Basemap')
 export default class Basemap extends Widget {
@@ -86,6 +91,10 @@ export default class Basemap extends Widget {
         this.imageryLayer(layer);
       }
     });
+
+    subscribe(IMAGERY_REFERENCE_LAYER_TOPIC, (message: string, visible: boolean): void => {
+      this.imageryReferenceVisibility(visible);
+    });
   }
 
   readonly hillshade!: esri.Basemap;
@@ -98,7 +107,7 @@ export default class Basemap extends Widget {
    * Set the imagery layer.
    * @param layer esri.Layer
    */
-  public imageryLayer(layer: esri.Layer) {
+  public imageryLayer(layer: esri.Layer): void {
     const {
       imagery,
       imagery: { baseLayers },
@@ -106,6 +115,20 @@ export default class Basemap extends Widget {
     } = this;
 
     baseLayers.splice(0, 1, layer);
+
+    if (_basemap !== imagery) this._basemap = imagery;
+  }
+
+  public imageryReferenceVisibility(visible: boolean): void {
+    const {
+      imagery,
+      imagery: { baseLayers },
+      _basemap,
+    } = this;
+
+    const reference = baseLayers.getItemAt(baseLayers.length - 1);
+
+    if (reference) reference.visible = visible;
 
     if (_basemap !== imagery) this._basemap = imagery;
   }

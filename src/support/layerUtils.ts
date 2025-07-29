@@ -138,3 +138,93 @@ export const queryFeatureGeometry = async (options: {
     console.log(error);
   }
 };
+
+/**
+ * Create unique value renderer and matching label colors for utility plans layer by `title` attribute.
+ * @param layer esri.FeatureLayer
+ * @param colorRampName any valid esri color ramp name
+ */
+export const utilityPlansColors = async (layer: esri.FeatureLayer, colorRampName?: string): Promise<void> => {
+  const Color = (await import('@arcgis/core/Color')).default;
+  const SimpleFillSymbol = (await import('@arcgis/core/symbols/SimpleFillSymbol')).default;
+  const UniqueValueInfo = (await import('@arcgis/core/renderers/support/UniqueValueInfo')).default;
+  const UniqueValueRenderer = (await import('@arcgis/core/renderers/UniqueValueRenderer')).default;
+  const byName = (await import('@arcgis/core/smartMapping/symbology/support/colorRamps')).byName;
+  const isBright = (await import('@arcgis/core/applications/SceneViewer/colorUtils')).isBright;
+
+   const colors = byName(colorRampName || 'Point Cloud 3')?.colors;
+
+  if (!colors) return;
+
+  let colorIndex = 0;
+
+  await layer.load();
+
+  const features = (
+    await layer.queryFeatures({
+      where: '1 = 1',
+      outFields: ['title'],
+      returnDistinctValues: true,
+      orderByFields: ['title ASC'],
+      returnGeometry: false,
+    })
+  ).features;
+
+  const defaultSymbol = new SimpleFillSymbol({
+    color: [255, 255, 255, 0],
+    outline: {
+      color: [255, 0, 0],
+      width: 2,
+    },
+  });
+
+  const labelingInfo: esri.LabelClass[] = [];
+
+  // @ts-expect-error layer has labeling info
+  const defaultLabelClass = layer.labelingInfo[0] as esri.LabelClass;
+
+  const uniqueValueInfos = features
+    .map((feature: esri.Graphic): string => {
+      return feature.attributes.title;
+    })
+    .map((title: string): esri.UniqueValueInfo => {
+      const symbol = defaultSymbol.clone();
+
+      if (colorIndex === colors.length - 1) colorIndex = 0;
+
+      const color = new Color(colors[colorIndex]);
+
+      colorIndex++;
+
+      if (symbol.outline) symbol.outline.color = color;
+
+      const labelClass = defaultLabelClass.clone();
+
+      (labelClass.symbol as esri.TextSymbol).color = color;
+
+      (labelClass.symbol as esri.TextSymbol).font.size = 10;
+
+      (labelClass.symbol as esri.TextSymbol).font.weight = 'bold';
+
+      (labelClass.symbol as esri.TextSymbol).haloSize = 1.5;
+
+      (labelClass.symbol as esri.TextSymbol).haloColor = isBright(color) ? new Color('black') : new Color('white');
+
+      labelClass.where = `title = '${title}'`;
+
+      labelingInfo.push(labelClass);
+
+      return new UniqueValueInfo({
+        value: title,
+        symbol,
+      });
+    });
+
+  layer.renderer = new UniqueValueRenderer({
+    field: 'title',
+    defaultSymbol,
+    uniqueValueInfos,
+  });
+
+  layer.labelingInfo = labelingInfo;
+};

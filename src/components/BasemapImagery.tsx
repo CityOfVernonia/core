@@ -19,7 +19,7 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
 import Collection from '@arcgis/core/core/Collection';
 import Layer from '@arcgis/core/layers/Layer';
 import { publish } from 'pubsub-js';
-import { IMAGERY_LAYER_TOPIC } from './Basemap';
+import { IMAGERY_LAYER_TOPIC, IMAGERY_REFERENCE_LAYER_TOPIC } from './Basemap';
 
 export const DEFAULT_LAYER_INFOS: LayerInfo[] = [
   {
@@ -98,12 +98,19 @@ export default class BasemapImagery extends Widget {
         style="--calcite-panel-background-color: var(--calcite-color-foreground-1); --calcite-panel-space: 0.75rem;"
       >
         <calcite-notice icon="image-layer" scale="s" style="margin-bottom: 0.75rem;" open>
-          <div slot="title">Select imagery by year</div>
+          {/* <div slot="title">Select imagery by year</div> */}
           <div slot="message">
             Some imagery may have georeferencing or orthocorrection issues, and may not be available at all scales.
           </div>
         </calcite-notice>
-        <calcite-select afterCreate={this._selectAfterCreate.bind(this)}>{_options.toArray()}</calcite-select>
+        <calcite-label layout="inline" name="">
+          <calcite-switch checked afterCreate={this._switchAfterCreate.bind(this)}></calcite-switch>
+          Reference layer
+        </calcite-label>
+        <calcite-label style="--calcite-label-margin-bottom: 0;">
+          Imagery year
+          <calcite-select afterCreate={this._selectAfterCreate.bind(this)}>{_options.toArray()}</calcite-select>
+        </calcite-label>
       </calcite-panel>
     );
   }
@@ -134,6 +141,12 @@ export default class BasemapImagery extends Widget {
       }
 
       publish(IMAGERY_LAYER_TOPIC, _layerInfo.layer);
+    });
+  }
+
+  private _switchAfterCreate(_switch: HTMLCalciteSwitchElement): void {
+    _switch.addEventListener('calciteSwitchChange', (): void => {
+      publish(IMAGERY_REFERENCE_LAYER_TOPIC, _switch.checked);
     });
   }
 }
