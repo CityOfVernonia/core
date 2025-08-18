@@ -8,6 +8,7 @@ import '../src/components/Measure.scss';
 import '../src/components/Sketch.scss';
 import '../src/components/TaxLotBuffer.scss';
 import '../src/components/RecordSurveys.scss';
+import '../src/components/Streets.scss';
 
 // import esri = __esri;
 
@@ -22,7 +23,7 @@ setAssetPath('./map-components');
 
 // calcite assets
 import { defineCustomElements } from '@esri/calcite-components/dist/loader';
-defineCustomElements(window, { resourcesUrl: './calcite' });
+defineCustomElements(window, { resourcesUrl: './arcgis/components/assets' });
 
 const load = async (): Promise<void> => {
   // arcgis modules
@@ -30,6 +31,8 @@ const load = async (): Promise<void> => {
   const MapView = (await import('@arcgis/core/views/MapView')).default;
   const Basemap = (await import('@arcgis/core/Basemap')).default;
   const FeatureLayer = (await import('@arcgis/core/layers/FeatureLayer')).default;
+  const GroupLayer = (await import('@arcgis/core/layers/GroupLayer')).default;
+  const MapImageLayer = (await import('@arcgis/core/layers/MapImageLayer')).default;
   const SearchViewModel = (await import('@arcgis/core/widgets/Search/SearchViewModel')).default;
   const LayerSearchSource = (await import('@arcgis/core/widgets/Search/LayerSearchSource')).default;
 
@@ -47,6 +50,7 @@ const load = async (): Promise<void> => {
   const RecordSurveys = (await import('../src/components/RecordSurveys')).default;
   const TaxLotBuffer = (await import('../src/components/TaxLotBuffer')).default;
   const TaxMaps = (await import('../src/components/TaxMaps')).default;
+  const Streets = (await import('../src/components/Streets')).default;
 
   const MarkdownDialog = (await import('../src/components/MarkdownDialog')).default;
 
@@ -65,6 +69,26 @@ const load = async (): Promise<void> => {
   const hillshade = new Basemap({ portalItem: { id: '6e9f78f3a26f48c89575941141fd4ac3' }, title: 'Hillshade' });
 
   const imagery = new Basemap({ portalItem: { id: '2622b9aecacd401583981410e07d5bb9' }, title: 'Imagery' });
+
+  const centerlines = new FeatureLayer({
+    legendEnabled: false,
+    listMode: 'hide',
+    portalItem: { id: 'c616c25335f94d3eb9880c057a372ac9' },
+    outFields: ['*'],
+  });
+
+  const streetsInfo = new MapImageLayer({
+    legendEnabled: false,
+    listMode: 'hide',
+    portalItem: { id: '14747b921aec4ecdab09fed9dc6a25e5' },
+  });
+
+  const streets = new GroupLayer({
+    listMode: 'hide',
+    layers: [centerlines, streetsInfo],
+    title: 'Streets',
+    visible: false,
+  });
 
   const taxLots = new FeatureLayer({
     portalItem: {
@@ -100,7 +124,7 @@ const load = async (): Promise<void> => {
   );
 
   const view = new MapView({
-    map: new Map({ basemap: hillshade, layers: [taxLots, cityLimits, taxMaps], ground: 'world-elevation' }),
+    map: new Map({ basemap: hillshade, layers: [taxLots, cityLimits, taxMaps, streets], ground: 'world-elevation' }),
     extent,
     constraints: { geometry: constraintExtent, minScale: 40000, rotationEnabled: false },
     popup: { dockEnabled: true, dockOptions: { breakpoint: false, buttonEnabled: false, position: 'bottom-left' } },
@@ -153,6 +177,18 @@ const load = async (): Promise<void> => {
   new MapApplication({
     basemapOptions: { hillshade, imagery },
     components: [
+      {
+        component: new Streets({
+          centerlines,
+          streets,
+          streetsInfo,
+          view,
+          visible: false,
+        }),
+        icon: 'car',
+        text: 'Streets',
+        type: 'calcite-panel',
+      },
       {
         component: new (await import('../src/components/BasemapImagery')).default(),
         icon: 'basemap',

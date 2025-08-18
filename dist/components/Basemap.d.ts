@@ -26,7 +26,11 @@ import { tsx } from '@arcgis/core/widgets/support/widget';
  */
 export declare const IMAGERY_LAYER_TOPIC = "basemap-imagery-layer-topic";
 /**
- * Basemap toggle component to switch between hillshade and imagery.
+ * Pub/Sub topic to toggle imagery reference layer visibility.
+ */
+export declare const IMAGERY_REFERENCE_LAYER_TOPIC = "basemap-imagery-reference-layer-topic";
+/**
+ * Basemap toggle component to switch between hillshade and imagery, as well as manipulate basemap properties.
  */
 export default class Basemap extends Widget {
     private _container;
@@ -42,6 +46,7 @@ export default class Basemap extends Widget {
      * @param layer esri.Layer
      */
     imageryLayer(layer: esri.Layer): void;
+    imageryReferenceVisibility(visible: boolean): void;
     private _basemap;
     private _default;
     private _hillshadeThumbnail;

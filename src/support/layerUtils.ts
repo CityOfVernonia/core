@@ -152,7 +152,7 @@ export const utilityPlansColors = async (layer: esri.FeatureLayer, colorRampName
   const byName = (await import('@arcgis/core/smartMapping/symbology/support/colorRamps')).byName;
   const isBright = (await import('@arcgis/core/applications/SceneViewer/colorUtils')).isBright;
 
-   const colors = byName(colorRampName || 'Point Cloud 3')?.colors;
+  const colors = byName(colorRampName || 'Point Cloud 3')?.colors;
 
   if (!colors) return;
 

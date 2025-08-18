@@ -1,0 +1,9 @@
+@use "./../scss/variables" as vars;
+
+.cov--streets_notice {
+  padding: 0.5rem;
+}
+
+.cov--streets_table-block {
+  --calcite-block-padding: 0;
+}

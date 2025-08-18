@@ -19,5 +19,6 @@ export default class BasemapImagery extends Widget {
     private _options;
     render(): tsx.JSX.Element;
     private _selectAfterCreate;
+    private _switchAfterCreate;
 }
 export {};

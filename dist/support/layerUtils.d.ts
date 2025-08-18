@@ -32,3 +32,9 @@ export declare const queryFeatureGeometry: (options: {
     graphic: esri.Graphic;
     outSpatialReference?: esri.SpatialReference;
 }) => Promise<esri.Geometry | nullish>;
+/**
+ * Create unique value renderer and matching label colors for utility plans layer by `title` attribute.
+ * @param layer esri.FeatureLayer
+ * @param colorRampName any valid esri color ramp name
+ */
+export declare const utilityPlansColors: (layer: esri.FeatureLayer, colorRampName?: string) => Promise<void>;
