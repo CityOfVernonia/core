@@ -1,3 +1,12 @@
+.cov--streets_data-select {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 0.5rem;
+}
+.cov--streets_data-select calcite-select {
+  width: 100%;
+}
+
 .cov--streets_notice {
   padding: 0.5rem;
 }

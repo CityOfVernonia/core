@@ -917,6 +917,7 @@
   --calcite-color-brand-press: rgb(78.0444897959, 108.6787755102, 70.0212244898);
   --calcite-color-brand-underline: rgba(78.0444897959, 108.6787755102, 70.0212244898, 0.4);
   --calcite-sans-family: Roboto, sans-serif;
+  --calcite-font-family: Roboto, sans-serif;
   --calcite-color-text-link: rgb(90.2948979591, 125.737755102, 81.0122448979);
   --calcite-color-focus: #6b9560;
 }

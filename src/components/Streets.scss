@@ -1,4 +1,12 @@
-@use "./../scss/variables" as vars;
+.cov--streets_data-select {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 0.5rem;
+
+  calcite-select {
+    width: 100%;
+  }
+}
 
 .cov--streets_notice {
   padding: 0.5rem;

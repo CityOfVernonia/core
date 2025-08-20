@@ -184,6 +184,7 @@ $include_Features: true;
   --calcite-color-brand-press: #{vars.$brand-press};
   --calcite-color-brand-underline: #{vars.$link-underline};
   --calcite-sans-family: #{vars.$font-family};
+  --calcite-font-family: #{vars.$font-family};
   --calcite-color-text-link: #{vars.$brand-hover};
   --calcite-color-focus: #{vars.$brand};
 }

@@ -34,12 +34,9 @@ import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Graphic from '@arcgis/core/Graphic';
-// import SimpleLineSymbol from '@arcgis/core/symbols/SimpleLineSymbol';
 import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol';
-
 import Point from '@arcgis/core/geometry/Point';
 import Polyline from '@arcgis/core/geometry/Polyline';
-
 import {
   load as projectLoad,
   isLoaded as projectLoaded,
@@ -49,10 +46,13 @@ import { getNearestCoordinate } from '@arcgis/core/geometry/operators/proximityO
 import { execute as planarLength } from '@arcgis/core/geometry/operators/lengthOperator';
 import { execute as distance } from '@arcgis/core/geometry/operators/distanceOperator';
 import { execute as contains } from '@arcgis/core/geometry/operators/containsOperator';
+// import { referenceElement } from './support';
+import StreetsInfoDialog from './StreetsInfoDialog';
 
 const CSS_BASE = 'cov--streets';
 
 const CSS = {
+  dataSelect: `${CSS_BASE}_data-select`,
   notice: `${CSS_BASE}_notice`,
   table: 'esri-widget__table',
   tableBlock: `${CSS_BASE}_table-block`,
@@ -181,6 +181,9 @@ export default class Streets extends Widget {
 
   readonly view!: esri.MapView;
 
+  @property()
+  private _about = 'Functional classification';
+
   private _centerlinesView!: esri.FeatureLayerView;
 
   @property()
@@ -195,6 +198,8 @@ export default class Streets extends Widget {
 
   @property()
   private _legendIndex = 10;
+
+  private _streetsInfoDialog = new StreetsInfoDialog();
 
   @property()
   private _viewState: I['state'] = 'home';
@@ -379,7 +384,7 @@ export default class Streets extends Widget {
   }
 
   override render(): tsx.JSX.Element {
-    const { _featureInfo, _legendIndex, _viewState } = this;
+    const { _about, _featureInfo, _legendIndex, _viewState } = this;
 
     const heading = _featureInfo
       ? _featureInfo.feature.attributes.LABEL || `Unnamed (${_featureInfo.feature.attributes.FUNC_CLASS})`
@@ -387,10 +392,11 @@ export default class Streets extends Widget {
 
     return (
       <calcite-panel class={CSS_BASE} heading={heading}>
+        {/* home view */}
         <div hidden={_viewState !== 'home'}>
           {/* data display */}
           <calcite-block collapsible heading="Data display" expanded>
-            <calcite-label>
+            <div class={CSS.dataSelect}>
               <calcite-select afterCreate={this._dataDisplaySelectAfterCreate.bind(this)}>
                 <calcite-option selected value={10}>
                   Functional classification
@@ -401,7 +407,14 @@ export default class Streets extends Widget {
                 <calcite-option value={22}>Surface width</calcite-option>
                 <calcite-option value={11}>ODOT reported</calcite-option>
               </calcite-select>
-            </calcite-label>
+              <calcite-action
+                disabled={_about === 'Ownership' || _about === 'Surface width'}
+                icon="question"
+                scale="s"
+                text="About"
+                afterCreate={this._aboutActionAfterCreate.bind(this)}
+              ></calcite-action>
+            </div>
             {this._renderLegend(_legendIndex)}
           </calcite-block>
 
@@ -418,18 +431,39 @@ export default class Streets extends Widget {
           </calcite-block>
         </div>
 
+        {/* feature view */}
         {this._renderFeature()}
 
-        {/* <calcite-notice closable icon="cursor-click" open scale="s">
-          <div slot="message">Click on a street asset in the map to view information.</div>
-        </calcite-notice> */}
+        <calcite-button
+          appearance="outline"
+          hidden={_viewState !== 'feature'}
+          slot={_viewState === 'feature' ? 'footer' : null}
+          width="full"
+          afterCreate={this._clearButtonAfterCreate.bind(this)}
+        >
+          Clear
+        </calcite-button>
       </calcite-panel>
     );
+  }
+
+  private _aboutActionAfterCreate(action: HTMLCalciteActionElement): void {
+    const { _streetsInfoDialog } = this;
+
+    action.addEventListener('click', (): void => {
+      _streetsInfoDialog.show(this._about as 'Functional classification');
+    });
+  }
+
+  private _clearButtonAfterCreate(button: HTMLCalciteButtonElement): void {
+    button.addEventListener('click', this._reset.bind(this));
   }
 
   private _dataDisplaySelectAfterCreate(select: HTMLCalciteSelectElement): void {
     select.addEventListener('calciteSelectChange', (): void => {
       const { streetsInfo } = this;
+
+      this._about = select.selectedOption.innerText;
 
       const layerId = select.selectedOption.value;
 
@@ -460,9 +494,9 @@ export default class Streets extends Widget {
   }
 
   private _renderFeature(): tsx.JSX.Element | tsx.JSX.Element[] {
-    const { centerlines, _featureInfo } = this;
+    const { centerlines, _featureInfo, _viewState } = this;
 
-    if (!_featureInfo) return <div></div>;
+    if (!_featureInfo || _viewState !== 'feature') return <div></div>;
 
     const { feature, m, networkData, z } = _featureInfo;
 
@@ -486,7 +520,7 @@ export default class Streets extends Widget {
             <div slot="message">Selected asset is not owned by the City. Extended asset data is not available.</div>
           </calcite-notice>
         </div>,
-        <calcite-block class={CSS.tableBlock} key={KEY++} open>
+        <calcite-block class={CSS.tableBlock} key={KEY++} label="Asset information" expanded>
           <table class={CSS.table}>
             <tr>
               <th>Classification</th>
@@ -517,12 +551,16 @@ export default class Streets extends Widget {
 
       if (feature.attributes.BEG_M < m && feature.attributes.END_M > m) surface_width = Width;
 
+      const area = Number(((END_M - BEG_M) * Width).toFixed(0)).toLocaleString();
+
       return (
         <tr key={KEY++}>
           <th>
             {BEG_M} - {END_M}
           </th>
-          <td>{Width}'</td>
+          <td>
+            {Width}' - {area} ft²
+          </td>
         </tr>
       );
     });
@@ -559,7 +597,7 @@ export default class Streets extends Widget {
     });
 
     return [
-      <calcite-block class={CSS.tableBlock} key={KEY++} open>
+      <calcite-block class={CSS.tableBlock} key={KEY++} label="Asset information" expanded>
         <table class={CSS.table}>
           <tr>
             <th>Classification</th>
@@ -599,13 +637,13 @@ export default class Streets extends Widget {
           </tr>
         </table>
       </calcite-block>,
-      <calcite-block class={CSS.tableBlock} collapsible heading="Surface type" key={KEY++}>
+      <calcite-block class={CSS.tableBlock} collapsible heading="Surface types" key={KEY++}>
         <table class={CSS.table}>{surface_types}</table>
       </calcite-block>,
-      <calcite-block class={CSS.tableBlock} collapsible heading="Surface condition" key={KEY++}>
+      <calcite-block class={CSS.tableBlock} collapsible heading="Surface conditions" key={KEY++}>
         <table class={CSS.table}>{surface_conditions}</table>
       </calcite-block>,
-      <calcite-block class={CSS.tableBlock} collapsible heading="Surface width" key={KEY++}>
+      <calcite-block class={CSS.tableBlock} collapsible heading="Surface widths and areas" key={KEY++}>
         <table class={CSS.table}>{surface_widths}</table>
       </calcite-block>,
     ];
