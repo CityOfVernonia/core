@@ -123,6 +123,12 @@ const SYMBOLS = {
   }),
 };
 
+const RELATIONSHIP_IDS = {
+  SurfaceCondition: 0,
+  SurfaceType: 0,
+  SurfaceWidth: 0,
+};
+
 @subclass('cov.components.Streets')
 export default class Streets extends Widget {
   constructor(properties: StreetsProperties) {
@@ -151,6 +157,12 @@ export default class Streets extends Widget {
       if (DATA_LAYER_IDS.indexOf(layerId) !== -1) {
         LEGEND_INFOS[layerId] = legend;
       }
+    });
+
+    centerlines.relationships?.forEach((relationship: esri.Relationship): void => {
+      const { id, name } = relationship;
+
+      if (name && name in RELATIONSHIP_IDS) RELATIONSHIP_IDS[name as 'SurfaceCondition'] = id;
     });
 
     const visibility = watch(
@@ -258,21 +270,21 @@ export default class Streets extends Widget {
       const networkData = await Promise.all([
         // surface width
         centerlines.queryRelatedFeatures({
-          relationshipId: 0,
+          relationshipId: RELATIONSHIP_IDS['SurfaceWidth'],
           objectIds: [objectId],
           outFields: ['*'],
           orderByFields: ['BEG_M ASC'],
         }),
         // surface type
         centerlines.queryRelatedFeatures({
-          relationshipId: 2,
+          relationshipId: RELATIONSHIP_IDS['SurfaceType'],
           objectIds: [objectId],
           outFields: ['*'],
           orderByFields: ['BEG_M ASC'],
         }),
         // surface condition
         centerlines.queryRelatedFeatures({
-          relationshipId: 1,
+          relationshipId: RELATIONSHIP_IDS['SurfaceCondition'],
           objectIds: [objectId],
           outFields: ['*'],
           orderByFields: ['BEG_M ASC'],
