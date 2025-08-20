@@ -30,6 +30,10 @@ export declare const IMAGERY_LAYER_TOPIC = "basemap-imagery-layer-topic";
  */
 export declare const IMAGERY_REFERENCE_LAYER_TOPIC = "basemap-imagery-reference-layer-topic";
 /**
+ * Pub/Sub topic to toggle road layers visibility.
+ */
+export declare const ROAD_LAYER_TOPIC = "basemap-road-layer-topic";
+/**
  * Basemap toggle component to switch between hillshade and imagery, as well as manipulate basemap properties.
  */
 export default class Basemap extends Widget {
@@ -47,6 +51,7 @@ export default class Basemap extends Widget {
      */
     imageryLayer(layer: esri.Layer): void;
     imageryReferenceVisibility(visible: boolean): void;
+    roadLayerVisibility(visible: boolean): Promise<void>;
     private _basemap;
     private _default;
     private _hillshadeThumbnail;

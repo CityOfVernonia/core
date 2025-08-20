@@ -45,6 +45,11 @@ export const IMAGERY_LAYER_TOPIC = 'basemap-imagery-layer-topic';
 export const IMAGERY_REFERENCE_LAYER_TOPIC = 'basemap-imagery-reference-layer-topic';
 
 /**
+ * Pub/Sub topic to toggle road layers visibility.
+ */
+export const ROAD_LAYER_TOPIC = 'basemap-road-layer-topic';
+
+/**
  * Basemap toggle component to switch between hillshade and imagery, as well as manipulate basemap properties.
  */
 @subclass('cov.components.Basemap')
@@ -95,6 +100,10 @@ export default class Basemap extends Widget {
     subscribe(IMAGERY_REFERENCE_LAYER_TOPIC, (message: string, visible: boolean): void => {
       this.imageryReferenceVisibility(visible);
     });
+
+    subscribe(ROAD_LAYER_TOPIC, (message: string, visible: boolean): void => {
+      this.roadLayerVisibility(visible);
+    });
   }
 
   readonly hillshade!: esri.Basemap;
@@ -131,6 +140,34 @@ export default class Basemap extends Widget {
     if (reference) reference.visible = visible;
 
     if (_basemap !== imagery) this._basemap = imagery;
+  }
+
+  public async roadLayerVisibility(visible: boolean): Promise<void> {
+    const { hillshade, imagery } = this;
+
+    const hillshadeVTL = hillshade.baseLayers.getItemAt(1) as esri.VectorTileLayer;
+
+    if (!hillshadeVTL.loaded) await hillshadeVTL.load();
+
+    const imageryVTL = imagery.baseLayers.getItemAt(1) as esri.VectorTileLayer;
+
+    if (!imageryVTL.loaded) await imageryVTL.load();
+
+    hillshadeVTL.currentStyleInfo.style.layers.forEach((layer: { id: string }): void => {
+      const { id } = layer;
+
+      if (id.includes('Road')) {
+        hillshadeVTL.setStyleLayerVisibility(id, visible ? 'visible' : 'none');
+      }
+    });
+
+    imageryVTL.currentStyleInfo.style.layers.forEach((layer: { id: string }): void => {
+      const { id } = layer;
+
+      if (id.includes('Road')) {
+        imageryVTL.setStyleLayerVisibility(id, visible ? 'visible' : 'none');
+      }
+    });
   }
 
   @property({ aliasOf: 'view.map.basemap' })

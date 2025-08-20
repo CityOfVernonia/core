@@ -48,6 +48,8 @@ import { execute as distance } from '@arcgis/core/geometry/operators/distanceOpe
 import { execute as contains } from '@arcgis/core/geometry/operators/containsOperator';
 // import { referenceElement } from './support';
 import StreetsInfoDialog from './StreetsInfoDialog';
+import { publish } from 'pubsub-js';
+import { ROAD_LAYER_TOPIC } from './Basemap';
 
 const CSS_BASE = 'cov--streets';
 
@@ -160,10 +162,14 @@ export default class Streets extends Widget {
           view.closePopup();
 
           this.addHandles(view.on('click', this._viewClick.bind(this)), HANDLES.VIEW_CLICK);
+
+          publish(ROAD_LAYER_TOPIC, false);
         } else {
           this.removeHandles(HANDLES.VIEW_CLICK);
 
           this._reset();
+
+          publish(ROAD_LAYER_TOPIC, true);
         }
       },
     );
