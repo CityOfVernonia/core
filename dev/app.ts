@@ -51,6 +51,7 @@ const load = async (): Promise<void> => {
   const TaxLotBuffer = (await import('../src/components/TaxLotBuffer')).default;
   const TaxMaps = (await import('../src/components/TaxMaps')).default;
   const Streets = (await import('../src/components/Streets')).default;
+  const UtilityPlans = (await import('../src/components/UtilityPlans')).default;
 
   const MarkdownDialog = (await import('../src/components/MarkdownDialog')).default;
 
@@ -123,8 +124,17 @@ const load = async (): Promise<void> => {
     { visible: false, listMode: 'hide' },
   );
 
+  const plansLayer = new FeatureLayer({
+    portalItem: {
+      id: '6982a41039dd42f5a500de07efc44469',
+    },
+    listMode: 'hide',
+    legendEnabled: false,
+    visible: false,
+  });
+
   const view = new MapView({
-    map: new Map({ basemap: hillshade, layers: [taxLots, cityLimits, taxMaps, streets], ground: 'world-elevation' }),
+    map: new Map({ basemap: hillshade, layers: [taxLots, cityLimits, taxMaps, streets, plansLayer], ground: 'world-elevation' }),
     extent,
     constraints: { geometry: constraintExtent, minScale: 40000, rotationEnabled: false },
     popup: { dockEnabled: true, dockOptions: { breakpoint: false, buttonEnabled: false, position: 'bottom-left' } },
@@ -177,6 +187,16 @@ const load = async (): Promise<void> => {
   new MapApplication({
     basemapOptions: { hillshade, imagery },
     components: [
+      {
+        component: new UtilityPlans({
+          layer: plansLayer,
+          view,
+          visible: false,
+        }),
+        icon: 'plans',
+        text: 'Utility Plans',
+        type: 'calcite-panel',
+      },
       {
         component: new Streets({
           centerlines,
