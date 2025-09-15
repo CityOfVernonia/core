@@ -238,7 +238,6 @@
   pointer-events: none;
   container: esri-view-canvas/size;
   contain: layout;
-  /* attribution's position is a special case */
 }
 .esri-ui calcite-flow,
 .esri-ui calcite-panel {
@@ -247,6 +246,9 @@
 }
 .esri-ui .esri-component {
   pointer-events: auto;
+}
+.esri-ui {
+  /* attribution's position is a special case */
 }
 .esri-ui .esri-attribution {
   position: absolute;
@@ -306,11 +308,11 @@
   inset: 0;
 }
 
-.esri-ui-manual-container {
-  /* swipe needs to be placed behind all UI components */
-}
 .esri-ui-manual-container > .esri-component {
   position: absolute;
+}
+.esri-ui-manual-container {
+  /* swipe needs to be placed behind all UI components */
 }
 .esri-ui-manual-container .esri-swipe {
   z-index: -1;

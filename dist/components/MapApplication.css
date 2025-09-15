@@ -58,6 +58,14 @@
   border-radius: var(--calcite-border-radius);
   --calcite-button-background-color: transparent;
   --calcite-color-focus: rgba(255, 255, 255, 0);
+}
+.cov--header-search form, .cov--header-search calcite-autocomplete {
+  width: 100%;
+}
+.cov--header-search calcite-autocomplete-item {
+  --calcite-color-focus: var(--calcite-color-brand);
+}
+.cov--header-search {
   --calcite-autocomplete-input-background-color: transparent;
   --calcite-autocomplete-input-border-color: transparent;
   --calcite-autocomplete-input-placeholder-text-color: rgba(255, 255, 255, 0.75);
@@ -69,12 +77,6 @@
   --calcite-autocomplete-input-actions-icon-color: #fff;
   --calcite-autocomplete-input-actions-icon-color-hover: #fff;
   --calcite-autocomplete-input-actions-icon-color-press: #fff;
-}
-.cov--header-search form, .cov--header-search calcite-autocomplete {
-  width: 100%;
-}
-.cov--header-search calcite-autocomplete-item {
-  --calcite-color-focus: var(--calcite-color-brand);
 }
 
 .cov--header-user {

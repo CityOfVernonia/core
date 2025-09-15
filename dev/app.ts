@@ -52,6 +52,7 @@ const load = async (): Promise<void> => {
   const TaxMaps = (await import('../src/components/TaxMaps')).default;
   const Streets = (await import('../src/components/Streets')).default;
   const UtilityPlans = (await import('../src/components/UtilityPlans')).default;
+  const TopoMaps = (await import('../src/components/TopoMaps')).default;
 
   const MarkdownDialog = (await import('../src/components/MarkdownDialog')).default;
 
@@ -133,8 +134,30 @@ const load = async (): Promise<void> => {
     visible: false,
   });
 
+  const usgsTopo = new MapImageLayer({
+    url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer',
+    maxScale: 0,
+    minScale: 0,
+    visible: false,
+    listMode: 'hide',
+    legendEnabled: false,
+  });
+
+  const historicalTopo = new MapImageLayer({
+    portalItem: {
+      id: '4cf31b2f72ba49e0874478913ca9af56',
+    },
+    visible: false,
+    listMode: 'hide',
+    legendEnabled: false,
+  });
+
   const view = new MapView({
-    map: new Map({ basemap: hillshade, layers: [taxLots, cityLimits, taxMaps, streets, plansLayer], ground: 'world-elevation' }),
+    map: new Map({
+      basemap: hillshade,
+      layers: [historicalTopo, usgsTopo, taxLots, cityLimits, taxMaps, streets, plansLayer],
+      ground: 'world-elevation',
+    }),
     extent,
     constraints: { geometry: constraintExtent, minScale: 40000, rotationEnabled: false },
     popup: { dockEnabled: true, dockOptions: { breakpoint: false, buttonEnabled: false, position: 'bottom-left' } },
@@ -187,6 +210,16 @@ const load = async (): Promise<void> => {
   new MapApplication({
     basemapOptions: { hillshade, imagery },
     components: [
+      {
+        component: new TopoMaps({
+          historicalTopo,
+          usgsTopo,
+          visible: false,
+        }),
+        icon: 'contour',
+        text: 'Topo Maps',
+        type: 'calcite-panel',
+      },
       {
         component: new UtilityPlans({
           layer: plansLayer,
