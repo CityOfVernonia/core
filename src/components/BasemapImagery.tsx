@@ -137,6 +137,10 @@ export default class BasemapImagery extends Widget {
       if (!layer) {
         _layerInfo.layer = await Layer.fromArcGISServerUrl({ url });
 
+        (_layerInfo.layer as esri.ImageryTileLayer).maxScale = 0;
+
+        (_layerInfo.layer as esri.ImageryTileLayer).minScale = 0;
+
         await _layerInfo.layer.load();
       }
 
