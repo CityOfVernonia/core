@@ -1,6 +1,8 @@
 // https://vitejs.dev/config/
 
-export default {
+import { defineConfig } from 'vite';
+
+export default defineConfig({
   root: './dev',
   server: {
     port: 8080,
@@ -9,4 +11,11 @@ export default {
   esbuild: {
     jsxFactory: 'tsx',
   },
-};
+  css: {
+    preprocessorOptions: {
+      scss: {
+        silenceDeprecations: ['import'],
+      },
+    },
+  },
+});
