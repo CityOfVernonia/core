@@ -21,7 +21,9 @@ export default class Sketch extends SketchViewModel {
     polylineView: esri.GraphicsLayerView;
     text: esri.GraphicsLayer;
     textView: esri.GraphicsLayerView;
-    textSymbol: esri.TextSymbol;
+    private _textSymbol;
+    get textSymbol(): esri.TextSymbol;
+    set textSymbol(textSymbol: esri.TextSymbol);
     updateOnGraphicClick: boolean;
     addGeometry(geometry: esri.Geometry): esri.Graphic | nullish;
     addJSON(featureJSON: object): esri.Graphic | nullish;

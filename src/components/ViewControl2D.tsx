@@ -41,6 +41,11 @@ import Widget from '@arcgis/core/widgets/Widget';
 import { tsx } from '@arcgis/core/widgets/support/widget';
 import HomeViewModel from '@arcgis/core/widgets/Home/HomeViewModel';
 import ZoomViewModel from '@arcgis/core/widgets/Zoom/ZoomViewModel';
+// @ts-expect-error not typed
+import { getCurrentPosition, supported } from '@arcgis/core/widgets/support/geolocationUtils.js';
+import Point from '@arcgis/core/geometry/Point';
+import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol';
+import Graphic from '@arcgis/core/Graphic';
 import { referenceElement } from './support';
 
 //////////////////////////////////////
@@ -171,35 +176,98 @@ export default class ViewControl2D extends Widget {
     });
   }
 
+  private _locateGraphic!: esri.Graphic;
+
+  @property()
+  private _locateState: 'ready' | 'locating' | 'disabled' = 'ready';
+
   private async _initializeLocate(action: HTMLCalciteActionElement): Promise<void> {
-    const { view, locateProperties } = this;
+    const { view } = this;
 
-    const locate = new (await import('@arcgis/core/widgets/Locate/LocateViewModel')).default({
-      view,
-      ...locateProperties,
+    if (supported() === false) {
+      this._locateState = 'disabled';
+    }
+
+    action.addEventListener('click', (): void => {
+      view.graphics.remove(this._locateGraphic);
+
+      this._locateState = 'locating';
+
+      getCurrentPosition()
+        .then((position: GeolocationPosition) => {
+          const { latitude, longitude } = position.coords;
+
+          const point = new Point({
+            latitude,
+            longitude,
+          });
+
+          this._locateGraphic = new Graphic({
+            geometry: point,
+            symbol: new SimpleMarkerSymbol({
+              color: 'blue',
+              size: 12,
+              style: 'circle',
+              outline: {
+                color: 'white',
+                width: 2,
+              },
+            }),
+          });
+
+          view.graphics.add(this._locateGraphic);
+
+          view.goTo(point);
+
+          view.scale = 2500;
+
+          this._locateState = 'ready';
+
+          setTimeout((): void => {
+            view.graphics.remove(this._locateGraphic);
+          }, 5000);
+        })
+        .catch((error: Error) => {
+          console.log(error);
+
+          this._locateState = 'ready';
+        });
     });
-
-    action.addEventListener('click', locate.locate.bind(locate));
-
-    action.disabled = locate.state === 'disabled';
 
     this.addHandles(
       watch(
-        (): esri.LocateViewModel['state'] => locate.state,
-        (state?: esri.LocateViewModel['state']): void => {
+        (): 'ready' | 'locating' | 'disabled' => this._locateState,
+        (state?: 'ready' | 'locating' | 'disabled'): void => {
           action.disabled = state === 'disabled';
-
           action.icon =
-            locate.state === 'ready'
-              ? 'gps-on'
-              : locate.state === 'locating'
-                ? 'gps-on-f'
-                : locate.state === 'disabled'
-                  ? 'gps-off'
-                  : '';
+            state === 'ready' ? 'gps-on' : state === 'locating' ? 'gps-on-f' : state === 'disabled' ? 'gps-off' : '';
         },
       ),
     );
+
+    // const { view, locateProperties } = this;
+    // const locate = new (await import('@arcgis/core/widgets/Locate/LocateViewModel')).default({
+    //   view,
+    //   ...locateProperties,
+    // });
+    // action.addEventListener('click', locate.locate.bind(locate));
+    // action.disabled = locate.state === 'disabled';
+    // this.addHandles(
+    //   watch(
+    //     (): esri.LocateViewModel['state'] => locate.state,
+    //     (state?: esri.LocateViewModel['state']): void => {
+    //       action.disabled = state === 'disabled';
+    //       action.icon =
+    //         locate.state === 'ready'
+    //           ? 'gps-on'
+    //           : locate.state === 'locating'
+    //             ? 'gps-on-f'
+    //             : locate.state === 'disabled'
+    //               ? 'gps-off'
+    //               : '';
+    //     },
+    //   ),
+    // );
   }
 
   private _toggleMagnifier(): void {

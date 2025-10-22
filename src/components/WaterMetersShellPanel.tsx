@@ -163,7 +163,12 @@ export default class WaterMetersShellPanel extends Widget {
         objectIds: [objectId],
       });
 
-      this._data = query[objectId].features[0].attributes;
+      const related = query[objectId as number];
+      if (related && related.features && related.features.length > 0) {
+        this._data = related.features[0].attributes;
+      } else {
+        this._data = {};
+      }
 
       this._state = 'info';
     } catch (error: unknown) {

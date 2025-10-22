@@ -52,6 +52,8 @@ export default class ViewControl2D extends Widget {
     private _zoom;
     private _compassRotation;
     private _initializeFullscreen;
+    private _locateGraphic;
+    private _locateState;
     private _initializeLocate;
     private _toggleMagnifier;
     render(): tsx.JSX.Element;

@@ -10,7 +10,7 @@ interface I {
   featureInfo:
     | {
         feature: esri.Graphic;
-        networkData: { [key: number]: { features: esri.Graphic[] } }[];
+        networkData: [HashMap<esri.FeatureSet>, HashMap<esri.FeatureSet>, HashMap<esri.FeatureSet>] | [];
         m: number;
         z: number;
       }
@@ -37,6 +37,7 @@ import Graphic from '@arcgis/core/Graphic';
 import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol';
 import Point from '@arcgis/core/geometry/Point';
 import Polyline from '@arcgis/core/geometry/Polyline';
+import HighlightOptions from '@arcgis/core/views/support/HighlightOptions';
 import {
   load as projectLoad,
   isLoaded as projectLoaded,
@@ -72,6 +73,8 @@ const HANDLES = {
   HIGHLIGHT: 'highlight-handle',
   VIEW_CLICK: 'view-click-handle',
 };
+
+const HIGHLIGHT_NAME = 'cov-streets';
 
 let KEY = 0;
 
@@ -142,10 +145,21 @@ export default class Streets extends Widget {
 
     this._centerlinesView = await view.whenLayerView(centerlines);
 
-    this._centerlinesView.highlightOptions = {
-      fillOpacity: 0.1,
-      haloOpacity: 0.5,
-    };
+    // depreciated - add and use named `HighlightOptions` to `view.highlights` collection
+    // https://arcg.is/inbTa1#highlights
+    // this._centerlinesView.highlightOptions = {
+    //   fillOpacity: 0.1,
+    //   haloOpacity: 0.5,
+    // };
+
+    // throws error `Uncaught (in promise) TypeError: Cannot read properties of undefined (reading '0')`
+    view.highlights.add(
+      new HighlightOptions({
+        name: HIGHLIGHT_NAME,
+        fillOpacity: 0.1,
+        haloOpacity: 0.5,
+      }),
+    );
 
     await streetsInfo.load();
 
@@ -248,7 +262,7 @@ export default class Streets extends Widget {
       }
 
       // add highlight
-      this.addHandles(_centerlinesView.highlight(feature), HANDLES.HIGHLIGHT);
+      this.addHandles(_centerlinesView.highlight(feature, { name: HIGHLIGHT_NAME }), HANDLES.HIGHLIGHT);
 
       // non-city assets
       if (feature.attributes.OWNER !== 'City of Vernonia') {
@@ -564,55 +578,68 @@ export default class Streets extends Widget {
 
     let surface_condition = '';
 
-    const surface_widths = networkData[0][objectId].features.map((feature: esri.Graphic): tsx.JSX.Element => {
-      const { BEG_M, END_M, Width } = feature.attributes;
+    let surface_widths = <tr key={KEY++}></tr>;
 
-      if (feature.attributes.BEG_M < m && feature.attributes.END_M > m) surface_width = Width;
+    if (networkData[0] && networkData[0][objectId]) {
+      surface_widths = networkData[0][objectId].features.map((feature: esri.Graphic): tsx.JSX.Element => {
+        const { BEG_M, END_M, Width } = feature.attributes;
 
-      const area = Number(((END_M - BEG_M) * Width).toFixed(0)).toLocaleString();
+        if (feature.attributes.BEG_M < m && feature.attributes.END_M > m) surface_width = Width;
 
-      return (
-        <tr key={KEY++}>
-          <th>
-            {BEG_M} - {END_M}
-          </th>
-          <td>
-            {Width}' - {area} ft²
-          </td>
-        </tr>
-      );
-    });
+        const area = Number(((END_M - BEG_M) * Width).toFixed(0)).toLocaleString();
 
-    const surface_types = networkData[1][objectId].features.map((feature: esri.Graphic): tsx.JSX.Element => {
-      const { BEG_M, END_M, SURF_TYPE } = feature.attributes;
+        return (
+          <tr key={KEY++}>
+            <th>
+              {BEG_M} - {END_M}
+            </th>
+            <td>
+              {Width}' - {area} ft²
+            </td>
+          </tr>
+        );
+      });
+    }
 
-      if (feature.attributes.BEG_M < m && feature.attributes.END_M > m) surface_type = SURFACE_TYPES[SURF_TYPE as 'U'];
+    let surface_types = <tr key={KEY++}></tr>;
 
-      return (
-        <tr key={KEY++}>
-          <th>
-            {BEG_M} - {END_M}
-          </th>
-          <td>{SURFACE_TYPES[SURF_TYPE as 'U']}</td>
-        </tr>
-      );
-    });
+    if (networkData[1] && networkData[1][objectId]) {
+      surface_types = networkData[1][objectId].features.map((feature: esri.Graphic): tsx.JSX.Element => {
+        const { BEG_M, END_M, SURF_TYPE } = feature.attributes;
 
-    const surface_conditions = networkData[2][objectId].features.map((feature: esri.Graphic): tsx.JSX.Element => {
-      const { BEG_M, END_M, SURF_CONDITION } = feature.attributes;
+        if (feature.attributes.BEG_M < m && feature.attributes.END_M > m)
+          surface_type = SURFACE_TYPES[SURF_TYPE as 'U'];
 
-      if (feature.attributes.BEG_M < m && feature.attributes.END_M > m)
-        surface_condition = SURFACE_CONDITIONS[SURF_CONDITION as 1];
+        return (
+          <tr key={KEY++}>
+            <th>
+              {BEG_M} - {END_M}
+            </th>
+            <td>{SURFACE_TYPES[SURF_TYPE as 'U']}</td>
+          </tr>
+        );
+      });
+    }
 
-      return (
-        <tr key={KEY++}>
-          <th>
-            {BEG_M} - {END_M}
-          </th>
-          <td>{SURFACE_CONDITIONS[SURF_CONDITION as 1]}</td>
-        </tr>
-      );
-    });
+    let surface_conditions = <tr key={KEY++}></tr>;
+
+    if (networkData[2] && networkData[2][objectId]) {
+      surface_conditions = networkData[2][objectId].features.map((feature: esri.Graphic): tsx.JSX.Element => {
+        const { BEG_M, END_M, SURF_CONDITION } = feature.attributes;
+
+        if (feature.attributes.BEG_M < m && feature.attributes.END_M > m)
+          surface_condition = SURFACE_CONDITIONS[SURF_CONDITION as 1];
+
+        return (
+          <tr key={KEY++}>
+            <th>
+              {BEG_M} - {END_M}
+            </th>
+            <td>{SURFACE_CONDITIONS[SURF_CONDITION as 1]}</td>
+          </tr>
+        );
+      });
+    }
 
     return [
       <calcite-block class={CSS.tableBlock} key={KEY++} label="Asset information" expanded>

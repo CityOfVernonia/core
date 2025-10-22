@@ -86,16 +86,55 @@ export default class LayersLegend extends Widget {
         <arcgis-layer-list hidden={_viewState !== 'layers'} view={view}></arcgis-layer-list>
 
         {/* legend */}
-        <arcgis-legend hidden={_viewState !== 'legend'} view={view}></arcgis-legend>
+        <arcgis-legend
+          hidden={_viewState !== 'legend'}
+          view={view}
+          // afterCreate={this._legendAfterCreate.bind(this)}
+        ></arcgis-legend>
       </calcite-panel>
     );
   }
 
-  // private _layers(layerList: HTMLArcgisLayerListElement & { view: esri.MapView }): void {
-  //   layerList.view = this.view;
-  // }
+  // private _legendAfterCreate(legend: HTMLArcgisLegendElement): void {
+  //   // @ts-expect-error dev temp
+  //   window.temp = legend.shadowRoot;
 
-  // private _legend(legend: HTMLArcgisLegendElement & { view: esri.MapView }): void {
-  //   legend.view = this.view;
+  //   const legendShadowRoot = legend.shadowRoot;
+
+  //   if (!legendShadowRoot) return;
+
+  //   const observerCallback = (mutations: MutationRecord[]): void => {
+  //     for (const mutation of mutations) {
+  //       if (mutation.type === 'childList') {
+  //         mutation.addedNodes.forEach((node: Node) => {
+  //           if (node.nodeType === Node.ELEMENT_NODE) {
+  //             const classicViewShadowRoot = (node as HTMLDivElement).querySelector(
+  //               'arcgis-legend-classic-view',
+  //             )?.shadowRoot;
+
+  //             if (!classicViewShadowRoot) return;
+
+  //             const style = document.createElement('style');
+
+  //             style.textContent = `
+  //               * {
+  //                 font-weight: var(--cov-layers-legend-font-weight) !important;
+  //               }
+
+  //               .arcgis-legend__symbol svg {
+  //                 transform: scale(75%) !important;
+  //               }
+  //             `;
+
+  //             classicViewShadowRoot.appendChild(style);
+  //           }
+  //         });
+  //       }
+  //     }
+  //   };
+
+  //   const observer = new MutationObserver(observerCallback);
+
+  //   observer.observe(legendShadowRoot, { childList: true, subtree: true });
   // }
 }

@@ -56,6 +56,9 @@ class PopupContent extends Widget {
         objectIds: [objectId],
       });
 
+      const related = query[objectId as number];
+      const attrs = related?.features?.[0]?.attributes ?? {};
+
       const {
         WSC_TYPE,
         ACCT_TYPE,
@@ -67,7 +70,7 @@ class PopupContent extends Widget {
         LINE_IN_SIZE,
         LINE_OUT_MATERIAL,
         LINE_OUT_SIZE,
-      } = query[objectId].features[0].attributes;
+      } = attrs as Record<string, string | number>;
 
       _rows.addMany([
         <tr>

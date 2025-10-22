@@ -155,6 +155,8 @@ export default class Sketch extends SketchViewModel {
     // @ts-expect-error not typed
     this.vertexSymbol = VERTEX_SYMBOL;
 
+    this.textSymbol = TEXT_SYMBOL;
+
     const sketchLayers = [this.polygon, this.polyline, this.point, this.text];
 
     // layers
@@ -235,7 +237,15 @@ export default class Sketch extends SketchViewModel {
 
   public textView!: esri.GraphicsLayerView;
 
-  public textSymbol = TEXT_SYMBOL;
+  // requires getter and setter
+  private _textSymbol = TEXT_SYMBOL;
+
+  public get textSymbol(): esri.TextSymbol {
+    return this._textSymbol;
+  }
+  public set textSymbol(textSymbol: esri.TextSymbol) {
+    this._textSymbol = textSymbol;
+  }
 
   override updateOnGraphicClick = false;
 

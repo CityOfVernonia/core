@@ -838,8 +838,7 @@
   border: none;
   width: 100%;
   border-collapse: collapse;
-  line-height: 1.3em;
-  color: #323232;
+  font-size: var(--calcite-font-size--2);
 }
 
 .esri-widget__table tr td,
@@ -848,13 +847,16 @@
   padding: 0.5em 0.7em;
   vertical-align: top;
   word-break: break-word;
-  font-size: 12px;
-  font-weight: 400;
+  font-weight: 100;
   text-align: left;
 }
 
 .esri-widget__table tr th {
   border-right: 3px solid rgba(107, 149, 96, 0.125);
+}
+
+.esri-widget__table tr th[colspan="2"] {
+  border-right: none;
 }
 
 .esri-widget__table tr:nth-child(odd) {

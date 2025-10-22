@@ -8,7 +8,9 @@ export default class Sketch extends SketchViewModel {
     labels: esri.GraphicsLayer;
     layer: esri.GraphicsLayer;
     layers: esri.GroupLayer;
-    textSymbol: esri.TextSymbol;
+    private _textSymbol;
+    get textSymbol(): esri.TextSymbol;
+    set textSymbol(textSymbol: esri.TextSymbol);
     updateOnGraphicClick: boolean;
     private _initialized;
     clearGraphics(type: 'all' | 'labels' | 'geometry'): void;

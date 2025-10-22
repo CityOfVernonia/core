@@ -133,6 +133,8 @@ export default class Sketch extends SketchViewModel {
     // @ts-expect-error not typed
     this.vertexSymbol = POINT_SYMBOL;
 
+    this.textSymbol = TEXT_SYMBOL;
+
     // layers
     this.layers.addMany([this.layer, this.labels]);
 
@@ -171,7 +173,15 @@ export default class Sketch extends SketchViewModel {
 
   public layers = new GroupLayer({ listMode: 'hide' });
 
-  public textSymbol = TEXT_SYMBOL;
+  // requires getter and setter
+  private _textSymbol = TEXT_SYMBOL;
+
+  public get textSymbol(): esri.TextSymbol {
+    return this._textSymbol;
+  }
+  public set textSymbol(textSymbol: esri.TextSymbol) {
+    this._textSymbol = textSymbol;
+  }
 
   override updateOnGraphicClick = false;
 
