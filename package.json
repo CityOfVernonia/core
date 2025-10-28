@@ -1,6 +1,6 @@
 {
   "name": "@vernonia/core",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "City of Vernonia friends for ArcGIS Maps SDK for JavaScript.",
   "type": "module",
   "scripts": {
@@ -44,11 +44,11 @@
     "typedoc": "^0.28.14",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.2",
-    "vite": "^7.1.11"
+    "vite": "^7.1.12"
   },
   "dependencies": {
-    "@arcgis/core": "4.34.2",
-    "@arcgis/map-components": "^4.34.2",
+    "@arcgis/core": "4.34.4",
+    "@arcgis/map-components": "^4.34.5",
     "@esri/calcite-components": "^3.3.3",
     "fast-xml-parser": "^5.3.0",
     "js-cookie": "^3.0.5",
