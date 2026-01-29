@@ -1,2 +1,2 @@
-/* His name was Bruce McNair. Copyright 2025 City of Vernonia, Oregon. */
+/* His name was Bruce McNair. Copyright 2026 City of Vernonia, Oregon. */
 import{__awaiter as e}from"tslib";export default(t,r)=>e(void 0,void 0,void 0,function*(){const e=new((yield import("@arcgis/core/layers/FeatureLayer")).default)({portalItem:{id:t}});yield e.load();const o=(yield e.queryFeatures({outSpatialReference:r||{wkid:4326},returnGeometry:!0,where:"1 = 1"})).features[0].geometry,i=e.fullExtent.clone();return{cityLimits:e,constraintExtent:i.clone().expand(3),extent:i,geometry:o}});

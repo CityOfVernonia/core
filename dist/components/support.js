@@ -1,2 +1,2 @@
-/* His name was Bruce McNair. Copyright 2025 City of Vernonia, Oregon. */
+/* His name was Bruce McNair. Copyright 2026 City of Vernonia, Oregon. */
 import{escapeRegExpString as e}from"@arcgis/core/core/string";const t=new RegExp(/https:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/);export const isUrl=e=>!!e.match(t);export const referenceElement=e=>{const t=e.previousElementSibling;t&&(e.referenceElement=t)};export const wrapValuesInHtml=(t,r,n,s)=>(n=n||"strong",t.replace(new RegExp(`(${e(r).split(/\s/).join("|")})`,"gi"),e=>`<${n} class="${s}">${e}</${n}>`));

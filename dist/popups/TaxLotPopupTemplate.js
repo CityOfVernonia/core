@@ -1,2 +1,2 @@
-/* His name was Bruce McNair. Copyright 2025 City of Vernonia, Oregon. */
+/* His name was Bruce McNair. Copyright 2026 City of Vernonia, Oregon. */
 import{__decorate as o}from"tslib";import{subclass as t}from"@arcgis/core/core/accessorSupport/decorators";import e from"@arcgis/core/PopupTemplate";import r from"../components/TaxLotInfoTable";let s=class extends e{constructor(o){super(o),this.outFields=["*"],this.title="{TAXLOT_ID}",this.content=o=>{const t=this.infoLayers,e=document.createElement("table");return new r({container:e,graphic:o.graphic,infoLayers:t}),e}}};s=o([t("cov.popups.TaxLotPopupTemplate")],s);export default s;

@@ -230,7 +230,7 @@ export default class TaxLotBuffer extends Widget {
       });
 
       const json = _results.map((result: esri.Graphic): object => {
-        const { TAXLOT_ID, ACCELA_MT, ACCOUNT_IDS, TAXMAP, ADDRESS, ACRES } = result.attributes;
+        const { OWNER, TAXLOT_ID, ACCELA_MT, ACCOUNT_IDS, TAXMAP, ADDRESS, ACRES } = result.attributes;
 
         const objectId = result.attributes[objectIdField];
 
@@ -248,6 +248,7 @@ export default class TaxLotBuffer extends Widget {
           ADDRESS,
           ACRES,
           ACCOUNT_LINK: accountLink || '',
+          OWNER,
           M_ADDRESS: '',
           M_CITY: '',
           M_STATE: '',
