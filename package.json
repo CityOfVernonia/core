@@ -1,6 +1,6 @@
 {
   "name": "@vernonia/core",
-  "version": "5.2.4",
+  "version": "5.2.5",
   "description": "City of Vernonia friends for ArcGIS Maps SDK for JavaScript.",
   "type": "module",
   "scripts": {
